@@ -364,7 +364,7 @@
         return attachmentNames.split(',').map(entry => {
             const parts = entry.trim().split('|');
             if (parts.length === 2) {
-                return `<a href="/api/uploads/${encodeURIComponent(parts[1])}" target="_blank" class="attachment-link">📎 ${escapeHtml(parts[0].length > 25 ? parts[0].substring(0,25)+'...' : parts[0])}</a>`;
+                return `<a href="${tunavUrl('/api/uploads/' + encodeURIComponent(parts[1]))}" target="_blank" class="attachment-link">📎 ${escapeHtml(parts[0].length > 25 ? parts[0].substring(0,25)+'...' : parts[0])}</a>`;
             }
             return `<span class="attachment-link">📎 ${escapeHtml(entry.trim())}</span>`;
         }).join(' ');

@@ -181,9 +181,15 @@
 
 @section Scripts {
 <script>
-    const API = 'http://localhost:5057';
     let editingId = null;
     let deletingId = null;
+
+    function tunavPublicFileUrl(pathOrUrl) {
+        if (!pathOrUrl) return '';
+        if (pathOrUrl.startsWith('http://') || pathOrUrl.startsWith('https://')) return pathOrUrl;
+        const p = pathOrUrl.startsWith('/') ? pathOrUrl : '/' + pathOrUrl;
+        return window.location.origin + tunavUrl(p);
+    }
 
     /* ── ONGLETS ─────────────────────────────────────────────────────────── */
     function switchTab(tab) {
@@ -198,7 +204,7 @@
     async function loadSubscribers() {
         document.getElementById('subTable').innerHTML = '<tr class="loading-row"><td colspan="5">Chargement...</td></tr>';
         try {
-            const res  = await fetch(`${API}/api/newsletter-subscribers`, { headers: authHeaders() });
+            const res  = await fetch(tunavUrl('/api/newsletter-subscribers'), { headers: authHeaders() });
             if (!res.ok) { document.getElementById('subTable').innerHTML = '<tr class="empty-row"><td colspan="5">Erreur ' + res.status + '</td></tr>'; return; }
             const list = await res.json();
             document.getElementById('subCount').textContent = list.length;
@@ -234,7 +240,7 @@
     async function load() {
         document.getElementById('nlTable').innerHTML = '<tr class="loading-row"><td colspan="6">Chargement...</td></tr>';
         try {
-            const res  = await fetch(`${API}/api/newsletters`, { headers: authHeaders() });
+            const res  = await fetch(tunavUrl('/api/newsletters'), { headers: authHeaders() });
             const list = await res.json();
             document.getElementById('nlCount').textContent = list.length;
             document.getElementById('nlTable').innerHTML = list.length
@@ -256,7 +262,7 @@
                         </td>
                         <td>
                             ${n.pdfUrl
-                                ? `<a href="${n.pdfUrl}" target="_blank" class="btn btn-outline btn-sm" style="border-color:var(--cyan);color:var(--cyan)">📄 PDF</a>`
+                                ? `<a href="${esc(tunavPublicFileUrl(n.pdfUrl))}" target="_blank" class="btn btn-outline btn-sm" style="border-color:var(--cyan);color:var(--cyan)">📄 PDF</a>`
                                 : '<span style="color:var(--muted);font-size:12px">—</span>'}
                         </td>
                         <td>
@@ -296,7 +302,7 @@
 
     async function openEdit(id) {
         try {
-            const res = await fetch(`${API}/api/newsletters/${id}`, { headers: authHeaders() });
+            const res = await fetch(tunavUrl('/api/newsletters/' + id), { headers: authHeaders() });
             const n = await res.json();
             editingId = id;
             document.getElementById('modalTitle').textContent = 'Modifier la Newsletter';
@@ -311,10 +317,11 @@
             resetPdfZone();
             // Afficher l'URL existante
             if (n.pdfUrl) {
-                document.getElementById('nlPdfLabel').innerHTML = `✅ PDF actuel : <a href="${API}${n.pdfUrl.startsWith('/') ? '' : '/'}${esc(n.pdfUrl)}" target="_blank" style="color:var(--cyan)">${esc(n.pdfUrl.split('/').pop())}</a><br><span style="font-size:11px;color:var(--muted)">Cliquez pour remplacer</span>`;
+                const pdfHref = tunavPublicFileUrl(n.pdfUrl);
+                document.getElementById('nlPdfLabel').innerHTML = `✅ PDF actuel : <a href="${esc(pdfHref)}" target="_blank" style="color:var(--cyan)">${esc(n.pdfUrl.split('/').pop())}</a><br><span style="font-size:11px;color:var(--muted)">Cliquez pour remplacer</span>`;
                 const cur = document.getElementById('nlPdfCurrent');
                 cur.style.display = 'block';
-                cur.innerHTML = `📄 <a href="${API}${n.pdfUrl.startsWith('/') ? '' : '/'}${esc(n.pdfUrl)}" target="_blank" style="color:var(--cyan)">${esc(n.pdfUrl)}</a>`;
+                cur.innerHTML = `📄 <a href="${esc(pdfHref)}" target="_blank" style="color:var(--cyan)">${esc(n.pdfUrl)}</a>`;
             }
             hideMsg();
             document.getElementById('modalNl').classList.add('show');
@@ -351,7 +358,7 @@
         // Upload avec XMLHttpRequest pour avoir la progression
         return new Promise((resolve, reject) => {
             const xhr = new XMLHttpRequest();
-            xhr.open('POST', `${API}/api/newsletters/upload-pdf`);
+            xhr.open('POST', tunavUrl('/api/newsletters/upload-pdf'));
 
             // Ajouter le token JWT
             const token = localStorage.getItem('tunav_token');
@@ -411,7 +418,7 @@
         };
 
         const u = JSON.parse(localStorage.getItem('tunav_user') || '{}');
-        const url    = editingId ? `${API}/api/newsletters/${editingId}` : `${API}/api/newsletters?userId=${u.userId || 1}`;
+        const url    = editingId ? tunavUrl('/api/newsletters/' + editingId) : tunavUrl('/api/newsletters?userId=' + (u.userId || 1));
         const method = editingId ? 'PUT' : 'POST';
 
         try {
@@ -423,7 +430,7 @@
     }
 
     async function toggle(id) {
-        await fetch(`${API}/api/newsletters/${id}/toggle`, { method: 'PATCH', headers: authHeaders() });
+        await fetch(tunavUrl('/api/newsletters/' + id + '/toggle'), { method: 'PATCH', headers: authHeaders() });
         load();
     }
 
@@ -431,7 +438,7 @@
         if (!confirm(`Notifier tous les abonnés avec l'édition : ${title} ?`)) return;
         showMsg('Envoi en cours de démarrage...', true);
         try {
-            const res = await fetch(`${API}/api/newsletters/${id}/notify`, { method: 'POST', headers: authHeaders() });
+            const res = await fetch(tunavUrl('/api/newsletters/' + id + '/notify'), { method: 'POST', headers: authHeaders() });
             const d = await res.json().catch(() => ({}));
             if (res.status === 202 || res.ok) showMsg(d.message || 'Envoi démarré.', true);
             else showMsg(d.message || `Erreur ${res.status}`, false);
@@ -444,7 +451,7 @@
         const action = isActive ? 'désactiver' : 'activer';
         if (!confirm(`Voulez-vous ${action} l'abonné : ${email} ?`)) return;
         try {
-            const res = await fetch(`${API}/api/newsletter-subscribers/${id}/toggle`, { method: 'PATCH', headers: authHeaders() });
+            const res = await fetch(tunavUrl('/api/newsletter-subscribers/' + id + '/toggle'), { method: 'PATCH', headers: authHeaders() });
             const d = await res.json().catch(() => ({}));
             if (!res.ok) {
                 showMsg(d.message || `Erreur ${res.status}`, false);
@@ -473,7 +480,7 @@
         const btn = document.getElementById('btnDelete');
         btn.disabled = true; btn.textContent = 'Suppression...';
         try {
-            const res = await fetch(`${API}/api/newsletters/${deletingId}`, { method: 'DELETE', headers: authHeaders() });
+            const res = await fetch(tunavUrl('/api/newsletters/' + deletingId), { method: 'DELETE', headers: authHeaders() });
             if (res.ok || res.status === 204) { closeDelete(); load(); }
             else alert('Erreur lors de la suppression.');
         } catch { alert('Erreur réseau.'); }

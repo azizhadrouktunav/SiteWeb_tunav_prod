@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <partial name="_TunavPathBase" />
     <title>@ViewData["Title"] — Tunav Backoffice</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -144,7 +145,7 @@
         }
 
         function redirectToLogin() {
-            window.location.href = '/auth/login';
+            window.location.href = tunavUrl('/auth/login');
         }
 
         function isSessionExpired() {
@@ -309,7 +310,7 @@
             const s12 = document.getElementById('nav-commercial-demands-section');
             if (s12) s12.style.display = perms.commercialDemands ? '' : 'none';
 
-            const path = window.location.pathname;
+            const path = tunavPathWithoutBase(window.location.pathname);
             const adminPages        = ['/backoffice/users', '/backoffice/roles', '/backoffice/permissions'];
             const contenuPages      = ['/backoffice/solutions', '/backoffice/packs', '/backoffice/team', '/backoffice/blogs'];
             const evenementsPages   = ['/backoffice/events'];
@@ -351,7 +352,7 @@
                     <p style="color:rgba(255,255,255,0.7);font-size:15px;max-width:400px;margin:0">
                         Vous n'avez pas les permissions nécessaires pour accéder à cette page.
                     </p>
-                    <a href="${homeHref}" style="background:#00c8d4;color:#0d1b4b;font-weight:700;
+                    <a href="${tunavUrl(homeHref)}" style="background:#00c8d4;color:#0d1b4b;font-weight:700;
                         padding:12px 28px;border-radius:8px;text-decoration:none;font-size:15px;margin-top:8px">
                         ${backLabel}
                     </a>
@@ -411,7 +412,7 @@
 <body>
     <aside class="sidebar">
         <div class="sidebar-brand">
-            <div class="brand-logo"><img src="/images/tunav.jpg" alt="Tunav" /></div>
+            <div class="brand-logo"><img src="@Url.Content("~/images/tunav.jpg")" alt="Tunav" /></div>
             <div>
                 <div class="brand-name">TUNAV IT Group</div>
                 <div class="brand-sub">Backoffice</div>
@@ -420,59 +421,59 @@
         <div class="sidebar-role">Role: <span class="role-badge js-role">Admin</span></div>
         <nav class="sidebar-nav">
             <div id="nav-dashboard-section">
-                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Dashboard" ? "active" : "")" href="/dashboard">Dashboard</a>
+                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Dashboard" ? "active" : "")" href="@Url.Content("~/dashboard")">Dashboard</a>
             </div>
 
             <div id="nav-admin-section">
                 
-                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Users" ? "active" : "")" href="/backoffice/users"> Utilisateurs</a>
-                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Roles" ? "active" : "")" href="/backoffice/roles"> Roles</a>
-                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Permissions" ? "active" : "")" href="/backoffice/permissions">Permissions</a>
+                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Users" ? "active" : "")" href="@Url.Content("~/backoffice/users")"> Utilisateurs</a>
+                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Roles" ? "active" : "")" href="@Url.Content("~/backoffice/roles")"> Roles</a>
+                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Permissions" ? "active" : "")" href="@Url.Content("~/backoffice/permissions")">Permissions</a>
             </div>
 
             <div id="nav-contenu-section">
                
-                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Solutions" ? "active" : "")" href="/backoffice/solutions"> Solutions</a>
-                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Packs" ? "active" : "")" href="/backoffice/packs">Packs</a>
-                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Team" ? "active" : "")" href="/backoffice/team"> Equipe</a>
-                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Blog" ? "active" : "")" href="/backoffice/blogs">Blog</a>
+                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Solutions" ? "active" : "")" href="@Url.Content("~/backoffice/solutions")"> Solutions</a>
+                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Packs" ? "active" : "")" href="@Url.Content("~/backoffice/packs")">Packs</a>
+                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Team" ? "active" : "")" href="@Url.Content("~/backoffice/team")"> Equipe</a>
+                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Blog" ? "active" : "")" href="@Url.Content("~/backoffice/blogs")">Blog</a>
             </div>
 
             <div id="nav-sectors-section">
-                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Sectors" ? "active" : "")" href="/backoffice/sectors">Secteurs d'Activité</a>
+                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Sectors" ? "active" : "")" href="@Url.Content("~/backoffice/sectors")">Secteurs d'Activité</a>
             </div>
 
             <div id="nav-evenements-section">
                 
-                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Events" ? "active" : "")" href="/backoffice/events"> Événements</a>
+                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Events" ? "active" : "")" href="@Url.Content("~/backoffice/events")"> Événements</a>
             </div>
 
             <div id="nav-newsletters-section">
                 
-                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Newsletters" ? "active" : "")" href="/backoffice/newsletters">Newsletters</a>
+                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Newsletters" ? "active" : "")" href="@Url.Content("~/backoffice/newsletters")">Newsletters</a>
             </div>
 
             <div id="nav-collabs-section">
                
-                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Collaborations" ? "active" : "")" href="/backoffice/collaborations"> Collaborations</a>
-                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "PartnerRequests" ? "active" : "")" href="/backoffice/partner-requests">Demandes Partenaires</a>
-                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "DemoRequests" ? "active" : "")" href="/backoffice/demo-requests">Demandes de Demo</a>
-                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "CustomPackRequests" ? "active" : "")" href="/backoffice/custom-pack-requests">Demandes de Packs</a>
-                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Formation" ? "active" : "")" href="/backoffice/formation">Pôle Formation</a>
+                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Collaborations" ? "active" : "")" href="@Url.Content("~/backoffice/collaborations")"> Collaborations</a>
+                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "PartnerRequests" ? "active" : "")" href="@Url.Content("~/backoffice/partner-requests")">Demandes Partenaires</a>
+                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "DemoRequests" ? "active" : "")" href="@Url.Content("~/backoffice/demo-requests")">Demandes de Demo</a>
+                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "CustomPackRequests" ? "active" : "")" href="@Url.Content("~/backoffice/custom-pack-requests")">Demandes de Packs</a>
+                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Formation" ? "active" : "")" href="@Url.Content("~/backoffice/formation")">Pôle Formation</a>
             </div>
 
             <div id="nav-rh-section">
                 
-                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Jobs" ? "active" : "")" href="/backoffice/jobs"> Offres d'emploi</a>
+                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Jobs" ? "active" : "")" href="@Url.Content("~/backoffice/jobs")"> Offres d'emploi</a>
             </div>
 
             <div id="nav-contact-section">
-                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Contacts" ? "active" : "")" href="/backoffice/contacts">Contacts & Rendez-vous</a>
+                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Contacts" ? "active" : "")" href="@Url.Content("~/backoffice/contacts")">Contacts & Rendez-vous</a>
             </div>
 
             <div id="nav-commercial-section">
-                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Clients" ? "active" : "")" href="/backoffice/clients">Clients</a>
-                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Partners" ? "active" : "")" href="/backoffice/partners">Partenaires</a>
+                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Clients" ? "active" : "")" href="@Url.Content("~/backoffice/clients")">Clients</a>
+                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Partners" ? "active" : "")" href="@Url.Content("~/backoffice/partners")">Partenaires</a>
             </div>
 
             <div id="nav-partner-portal-section">
@@ -500,12 +501,12 @@
 
             <div id="nav-sav-section">
 
-                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "SavClaims" ? "active" : "")" href="/backoffice/sav-claims">Réclamations</a>
+                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "SavClaims" ? "active" : "")" href="@Url.Content("~/backoffice/sav-claims")">Réclamations</a>
             </div>
 
             <div id="nav-commercial-demands-section">
 
-                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "CommercialDemands" ? "active" : "")" href="/backoffice/commercial-demands">Demandes Partenaires-Backoffice</a>
+                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "CommercialDemands" ? "active" : "")" href="@Url.Content("~/backoffice/commercial-demands")">Demandes Partenaires-Backoffice</a>
             </div>
         </nav>
         <div class="sidebar-footer">
@@ -549,10 +550,10 @@
                 </div>
                 <div class="dd-section">
                     <div class="dd-section-title">Gestion Systeme</div>
-                    <a class="dd-item" href="/backoffice/users">
+                    <a class="dd-item" href="@Url.Content("~/backoffice/users")">
                         <div><div class="dd-item-label">Utilisateurs</div><div class="dd-item-sub">Gestion des acces</div></div>
                     </a>
-                    <a class="dd-item" href="/backoffice/roles">
+                    <a class="dd-item" href="@Url.Content("~/backoffice/roles")">
                         <div><div class="dd-item-label">Roles et Permissions</div><div class="dd-item-sub">Configuration avancee</div></div>
                     </a>
                 </div>

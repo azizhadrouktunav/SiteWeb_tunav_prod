@@ -6,12 +6,13 @@ import {
   DemoRequest,
   DemoRequestSubmissionResponse,
 } from '../models/demo-request.model';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class DemoRequestsApiService {
-  private readonly apiOrigin = 'http://localhost:5057';
+  private readonly apiOrigin = environment.apiOrigin;
   private readonly baseUrl = `${this.apiOrigin}/api/demo-requests`;
 
   constructor(private readonly http: HttpClient) {}

@@ -3,6 +3,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../../environments/environment';
 
 interface NewsletterDto {
   id: number;
@@ -25,7 +26,7 @@ interface NewsletterDto {
 })
 export class NewsNewslettersComponent implements OnInit, AfterViewInit {
 
-  private readonly API = 'http://localhost:5057/api';
+  private readonly API = environment.apiBaseUrl;
 
   newsletters   = signal<NewsletterDto[]>([]);
   isLoading     = signal(true);
@@ -101,7 +102,7 @@ export class NewsNewslettersComponent implements OnInit, AfterViewInit {
     // Construire l'URL complète si c'est un chemin relatif (ex: /uploads/fichier.pdf)
     const fullUrl = pdfUrl.startsWith('http')
       ? pdfUrl
-      : `http://localhost:5057${pdfUrl}`;
+      : `${environment.apiOrigin}${pdfUrl}`;
 
     // Nom du fichier à télécharger
     const fileName = title

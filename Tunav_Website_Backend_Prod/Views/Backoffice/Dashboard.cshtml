@@ -52,7 +52,7 @@
     <div class="card">
         <div class="card-header">
             <h2>Derniers utilisateurs</h2>
-            <a href="/backoffice/users" class="btn btn-outline btn-sm">Voir tout</a>
+            <a href="@Url.Content("~/backoffice/users")" class="btn btn-outline btn-sm">Voir tout</a>
         </div>
         <table>
             <thead>
@@ -67,7 +67,7 @@
     <div class="card">
         <div class="card-header">
             <h2>Dernieres solutions</h2>
-            <a href="/backoffice/solutions" class="btn btn-outline btn-sm">Voir tout</a>
+            <a href="@Url.Content("~/backoffice/solutions")" class="btn btn-outline btn-sm">Voir tout</a>
         </div>
         <table>
             <thead>
@@ -86,7 +86,7 @@
     async function fetchJsonOk(url) {
         const h = authHeaders();
         const r = await fetch(url, { headers: h });
-        if (r.status === 401) { window.location.href = '/auth/login'; return null; }
+        if (r.status === 401) { window.location.href = tunavUrl('/auth/login'); return null; }
         if (!r.ok) return null;
         return r.json();
     }

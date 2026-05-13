@@ -3,6 +3,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../../environments/environment';
 
 // ── Formulaire 1 : Demande de collaboration (partenaire formation) ────────────
 interface CollabForm {
@@ -58,7 +59,7 @@ interface Testimonial {
 })
 export class PoleFormationComponent implements OnInit, AfterViewInit {
 
-  private readonly API = 'http://localhost:5057/api';
+  private readonly API = environment.apiBaseUrl;
 
   // ── Data signals ─────────────────────────────────────────────────────────
   partners            = signal<TrainingPartner[]>([]);

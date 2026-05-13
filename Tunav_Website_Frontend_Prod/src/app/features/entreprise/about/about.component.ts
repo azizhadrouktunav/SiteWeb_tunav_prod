@@ -3,6 +3,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { RouterLink } from '@angular/router';
+import { environment } from '../../../../environments/environment';
 
 
 interface TeamMember {
@@ -89,7 +90,7 @@ export class AboutComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit() {
-    this.http.get<TeamMember[]>('http://localhost:5057/api/team-members?isActiveOnly=true')
+    this.http.get<TeamMember[]>(`${environment.apiBaseUrl}/team-members?isActiveOnly=true`)
       .subscribe({
         next: (members) => { this.teamMembers.set(members); this.isLoadingTeam.set(false); },
         error: () => { this.isLoadingTeam.set(false); }

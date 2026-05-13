@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { TestRubrique } from '../models/test-rubrique.model';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
@@ -18,7 +19,7 @@ export class TestRubriqueApiService {
    * On utilise ici l'URL HTTPS. Si tu lances le backend en HTTP,
    * remplace simplement `https://localhost:7110` par `http://localhost:5057`.
    */
-  private readonly baseUrl = 'https://localhost:7110/api/test-rubriques';
+  private readonly baseUrl = `${environment.apiBaseUrl}/test-rubriques`;
 
   constructor(private readonly http: HttpClient) {}
 

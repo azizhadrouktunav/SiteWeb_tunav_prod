@@ -1,0 +1,32 @@
+@{
+    var pb = Context.Request.PathBase.Value ?? string.Empty;
+    if (pb.Length > 1)
+        pb = pb.TrimEnd('/');
+}
+<script>
+window.__TUNAV_PATH_BASE__ = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(pb));
+function tunavUrl(path) {
+    var b = (window.__TUNAV_PATH_BASE__ || '').replace(/\/$/, '');
+    var p = (path && path.charAt(0) === '/') ? path : '/' + (path || '');
+    return b + p;
+}
+function tunavPathWithoutBase(pathname) {
+    var b = (window.__TUNAV_PATH_BASE__ || '').replace(/\/$/, '');
+    if (!b) return pathname;
+    if (pathname === b || pathname === b + '/') return '/';
+    if (pathname.startsWith(b + '/')) return pathname.slice(b.length) || '/';
+    return pathname;
+}
+(function () {
+    var origFetch = window.fetch;
+    window.fetch = function (input, init) {
+        if (typeof input === 'string' && input.length > 0 && input[0] === '/' && input[1] !== '/') {
+            if (input.startsWith('/api/') || input.startsWith('/api?') || input === '/api' ||
+                input.startsWith('/uploads/')) {
+                input = tunavUrl(input);
+            }
+        }
+        return origFetch.call(this, input, init);
+    };
+})();
+</script>

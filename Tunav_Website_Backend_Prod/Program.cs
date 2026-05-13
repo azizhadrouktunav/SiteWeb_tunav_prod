@@ -333,6 +333,19 @@ using (var scope = app.Services.CreateScope())
 }
 
 // ── Pipeline ──────────────────────────────────────────────────────────────────
+// Optional: when the app is not at the domain root (e.g. https://tunav.com/backend/…).
+// Leave empty when hosted as an IIS virtual app (PathBase is usually set automatically).
+var configuredPathBase = builder.Configuration["PathBase"]?.Trim()
+    ?? Environment.GetEnvironmentVariable("ASPNETCORE_PATHBASE")?.Trim()
+    ?? "";
+if (!string.IsNullOrEmpty(configuredPathBase))
+{
+    if (!configuredPathBase.StartsWith('/'))
+        configuredPathBase = "/" + configuredPathBase;
+    configuredPathBase = configuredPathBase.TrimEnd('/');
+    app.UsePathBase(configuredPathBase);
+}
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -371,8 +384,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.MapControllers();
 app.MapControllerRoute(name: "default", pattern: "{controller=Home}/{action=Index}/{id?}");
-
 
 app.MapGet("/", () => Results.Redirect("/auth/login"));
 

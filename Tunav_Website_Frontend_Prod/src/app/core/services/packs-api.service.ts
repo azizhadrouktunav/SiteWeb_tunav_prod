@@ -6,12 +6,13 @@ import {
   CustomPackRequestSubmissionResponse,
   PackCatalogSolution,
 } from '../models/pack.model';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class PacksApiService {
-  private readonly apiOrigin = 'http://localhost:5057';
+  private readonly apiOrigin = environment.apiOrigin;
   private readonly packsUrl = `${this.apiOrigin}/api/packs`;
   private readonly customPackRequestsUrl = `${this.apiOrigin}/api/custom-pack-requests`;
 

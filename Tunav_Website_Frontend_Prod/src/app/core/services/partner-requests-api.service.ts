@@ -6,12 +6,13 @@ import {
   PartnerRequest,
   PartnerRequestSubmissionResponse,
 } from '../models/partner-request.model';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class PartnerRequestsApiService {
-  private readonly apiOrigin = 'http://localhost:5057';
+  private readonly apiOrigin = environment.apiOrigin;
   private readonly baseUrl = `${this.apiOrigin}/api/partner-requests`;
 
   constructor(private readonly http: HttpClient) {}

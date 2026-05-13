@@ -7,6 +7,7 @@ import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { environment } from '../../../../environments/environment';
 
 interface JobOffer {
   id: number;
@@ -39,7 +40,7 @@ interface JobOffer {
   styleUrl: './career.component.scss',
 })
 export class CareerComponent implements OnInit, AfterViewInit {
-  private readonly api = 'http://localhost:5057';
+  private readonly api = environment.apiOrigin;
 
   offers     = signal<JobOffer[]>([]);
   isLoading  = signal(true);

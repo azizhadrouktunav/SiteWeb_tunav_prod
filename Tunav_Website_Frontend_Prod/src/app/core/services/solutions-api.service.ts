@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Solution, SolutionType } from '../models/solution.model';
+import { environment } from '../../../environments/environment';
 
 export interface SolutionFilters {
   type?: SolutionType;
@@ -13,7 +14,7 @@ export interface SolutionFilters {
   providedIn: 'root',
 })
 export class SolutionsApiService {
-  private readonly apiOrigin = 'http://localhost:5057';
+  private readonly apiOrigin = environment.apiOrigin;
   private readonly baseUrl = `${this.apiOrigin}/api/solutions`;
 
   constructor(private readonly http: HttpClient) {}

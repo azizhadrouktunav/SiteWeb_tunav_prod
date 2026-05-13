@@ -7,6 +7,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <partial name="_TunavPathBase" />
     <title>Tunav Backoffice — Connexion</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -108,7 +109,7 @@
     <!-- LEFT -->
     <div class="left">
         <div class="brand">
-            <div class="brand-logo-img"><img src="/images/tunav.jpg" alt="Tunav Logo" /></div>
+            <div class="brand-logo-img"><img src="@Url.Content("~/images/tunav.jpg")" alt="Tunav Logo" /></div>
             <div>
                 <div class="brand-name">TUNAV IT Group</div>
                 <div class="brand-tagline">GPS leaders, IT experts</div>
@@ -245,7 +246,7 @@
                         permissions: Array.isArray(data.permissions) ? data.permissions : [],
                         partnerId:   data.partnerId ?? null
                     }));
-                    window.location.href = postLoginLanding(data.role, data.permissions || []);
+                    window.location.href = tunavUrl(postLoginLanding(data.role, data.permissions || []));
                 } else {
                     showErr('loginError', data.message || 'Email ou mot de passe incorrect.');
                 }

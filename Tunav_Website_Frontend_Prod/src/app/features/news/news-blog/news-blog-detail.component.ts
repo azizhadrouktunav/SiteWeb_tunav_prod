@@ -5,6 +5,7 @@ import { ActivatedRoute, RouterLink, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { switchMap } from 'rxjs/operators';
+import { environment } from '../../../../environments/environment';
 
 interface BlogArticle {
   id: number;
@@ -38,7 +39,7 @@ export class NewsBlogDetailComponent implements OnInit {
   copied = signal(false);
   expanded = signal(false);
 
-  private readonly api = 'http://localhost:5057';
+  private readonly api = environment.apiOrigin;
 
   constructor(
     private route: ActivatedRoute,

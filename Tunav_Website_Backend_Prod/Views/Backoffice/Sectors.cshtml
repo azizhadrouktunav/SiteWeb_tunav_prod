@@ -129,19 +129,18 @@
 
 <script>
     const API = '/api/industry-sectors';
-    // ✅ Base URL du serveur backend pour préfixer les chemins relatifs des images
-    const BASE_URL = 'http://localhost:5057';
-    let allSectors = [];
-    let deletingId = null;
 
-    // ✅ Fonction utilitaire pour construire l'URL complète de l'image
     function buildImageUrl(imageUrl) {
         if (!imageUrl) return null;
         if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
-            return imageUrl; // URL absolue → on la retourne telle quelle
+            return imageUrl;
         }
-        return BASE_URL + imageUrl; // Chemin relatif → on préfixe avec le serveur
+        const p = imageUrl.startsWith('/') ? imageUrl : '/' + imageUrl;
+        return window.location.origin + tunavUrl(p);
     }
+
+    let allSectors = [];
+    let deletingId = null;
 
     // ── Chargement ─────────────────────────────────────────────────────────────
     async function loadSectors() {

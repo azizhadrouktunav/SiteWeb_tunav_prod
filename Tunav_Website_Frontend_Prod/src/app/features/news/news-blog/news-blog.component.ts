@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
+import { environment } from '../../../../environments/environment';
 
 interface BlogCategory {
   id: number;
@@ -56,7 +57,7 @@ export class NewsBlogComponent implements OnInit, AfterViewInit {
     );
   });
 
-  private readonly api = 'http://localhost:5057';
+  private readonly api = environment.apiOrigin;
 
   constructor(
     private http: HttpClient,

@@ -323,7 +323,6 @@
     .card-header h2 { font-size:15px;font-weight:600;color:#1e2d5a; }
 </style>
 <script>
-    const API = 'http://localhost:5057';
     let currentTab = 'offers';
     let allOffers = [], allApplications = [], allArchived = [];
     let editingOfferId = null, editingAppId = null, deletingId = null, deleteType = null;
@@ -344,7 +343,7 @@
     async function loadOffers() {
         const contract = document.getElementById('filterContract').value;
         const postType = document.getElementById('filterPostType').value;
-        let url = `${API}/api/job-offers/all?isArchived=false`;
+        let url = tunavUrl('/api/job-offers/all?isArchived=false');
         if (contract) url += `&contractType=${contract}`;
         if (postType)  url += `&postType=${postType}`;
 
@@ -359,7 +358,7 @@
 
     async function refreshOfferCounts() {
         try {
-            const res  = await fetch(`${API}/api/job-applications`, { headers: authHeaders() });
+            const res  = await fetch(tunavUrl('/api/job-applications'), { headers: authHeaders() });
             const apps = await res.json();
             if (!Array.isArray(apps)) return;
             allOffers.forEach(o => {
@@ -406,7 +405,7 @@
     }
 
     async function toggleOffer(id) {
-        await fetch(`${API}/api/job-offers/${id}/toggle`, { method: 'PATCH', headers: authHeaders() });
+        await fetch(tunavUrl('/api/job-offers/' + id + '/toggle'), { method: 'PATCH', headers: authHeaders() });
         loadOffers();
     }
 
@@ -436,7 +435,7 @@
 
     async function editOffer(id) {
         try {
-            const res = await fetch(`${API}/api/job-offers/${id}`, { headers: authHeaders() });
+            const res = await fetch(tunavUrl('/api/job-offers/' + id), { headers: authHeaders() });
             if (!res.ok) { alert('Impossible de charger l\'offre.'); return; }
             const offer = await res.json();
             openOfferModal(offer);
@@ -470,8 +469,8 @@
         btn.disabled = true; btn.textContent = 'Enregistrement...';
         try {
             const url = editingOfferId
-                ? `${API}/api/job-offers/${editingOfferId}`
-                : `${API}/api/job-offers?userId=${u.userId || 1}`;
+                ? tunavUrl('/api/job-offers/' + editingOfferId)
+                : tunavUrl('/api/job-offers?userId=' + (u.userId || 1));
             const method = editingOfferId ? 'PUT' : 'POST';
             const res = await fetch(url, { method, headers: authHeaders(), body: JSON.stringify(body) });
             if (res.ok) {
@@ -499,7 +498,7 @@
     async function loadApplications() {
         const offerId = document.getElementById('filterAppOffer').value;
         const status  = document.getElementById('filterAppStatus').value;
-        let url = `${API}/api/job-applications?`;
+        let url = '/api/job-applications?';
         if (offerId) url += `jobOfferId=${offerId}&`;
         if (status)  url += `status=${status}`;
 
@@ -585,7 +584,7 @@
         if (btn) { btn.disabled = true; btn.textContent = '⏳'; }
         try {
             const res = await fetch(
-                `${API}/api/job-applications/file/${encodeURIComponent(uniqueName)}`,
+                tunavUrl('/api/job-applications/file/' + encodeURIComponent(uniqueName)),
                 { headers: authHeaders() }
             );
             if (!res.ok) {
@@ -652,7 +651,7 @@
         const btn = document.getElementById('btnSaveAppStatus');
         btn.disabled = true; btn.textContent = 'Enregistrement...';
         try {
-            const res = await fetch(`${API}/api/job-applications/${editingAppId}/status`, {
+            const res = await fetch(tunavUrl('/api/job-applications/' + editingAppId + '/status'), {
                 method: 'PATCH', headers: authHeaders(),
                 body: JSON.stringify({ status: document.getElementById('newAppStatus').value, internalNote: document.getElementById('appNote').value.trim() || null })
             });
@@ -666,7 +665,7 @@
     async function loadArchived() {
         document.getElementById('archivedTable').innerHTML = '<tr class="loading-row"><td colspan="5">Chargement...</td></tr>';
         try {
-            const res = await fetch(`${API}/api/job-offers/all?isArchived=true`, { headers: authHeaders() });
+            const res = await fetch(tunavUrl('/api/job-offers/all?isArchived=true'), { headers: authHeaders() });
             allArchived = await res.json();
             document.getElementById('archivedCount').textContent = allArchived.length;
             document.getElementById('countArchived').textContent  = allArchived.length;
@@ -686,7 +685,7 @@
 
     async function archiveExpired() {
         try {
-            const res = await fetch(`${API}/api/job-offers/archive-expired`, { method: 'POST', headers: authHeaders() });
+            const res = await fetch(tunavUrl('/api/job-offers/archive-expired'), { method: 'POST', headers: authHeaders() });
             const data = await res.json();
             alert(data.message);
             loadArchived(); loadOffers(); loadCounts();
@@ -706,8 +705,8 @@
         const btn = document.getElementById('btnConfirmDelete');
         btn.disabled = true; btn.textContent = 'Suppression...';
         const url = deleteType === 'offer'
-            ? `${API}/api/job-offers/${deletingId}`
-            : `${API}/api/job-applications/${deletingId}`;
+            ? tunavUrl('/api/job-offers/' + deletingId)
+            : tunavUrl('/api/job-applications/' + deletingId);
         try {
             const res = await fetch(url, { method: 'DELETE', headers: authHeaders() });
             if (res.ok || res.status === 204) {
@@ -734,9 +733,9 @@
     async function loadCounts() {
         try {
             const [rOffers, rApps, rArch] = await Promise.all([
-                fetch(`${API}/api/job-offers/all?isArchived=false`, { headers: authHeaders() }),
-                fetch(`${API}/api/job-applications`, { headers: authHeaders() }),
-                fetch(`${API}/api/job-offers/all?isArchived=true`, { headers: authHeaders() })
+                fetch(tunavUrl('/api/job-offers/all?isArchived=false'), { headers: authHeaders() }),
+                fetch(tunavUrl('/api/job-applications'), { headers: authHeaders() }),
+                fetch(tunavUrl('/api/job-offers/all?isArchived=true'), { headers: authHeaders() })
             ]);
             const [offers, apps, arch] = await Promise.all([rOffers.json(), rApps.json(), rArch.json()]);
             document.getElementById('countOffers').textContent       = Array.isArray(offers) ? offers.length : 0;

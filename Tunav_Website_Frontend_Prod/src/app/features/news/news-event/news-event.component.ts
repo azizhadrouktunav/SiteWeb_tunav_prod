@@ -3,6 +3,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../../environments/environment';
 
 interface EventDto {
   id: number;
@@ -52,7 +53,7 @@ interface RegisterForm {
 })
 export class NewsEventComponent implements OnInit, AfterViewInit {
 
-  private readonly API = 'http://localhost:5057/api';
+  private readonly API = environment.apiBaseUrl;
 
   upcomingEvents    = signal<EventDto[]>([]);
   pastEvents        = signal<EventDto[]>([]);

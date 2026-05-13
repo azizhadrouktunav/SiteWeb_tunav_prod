@@ -4,6 +4,7 @@ import { Component, OnInit, AfterViewInit, signal, PLATFORM_ID, Inject } from '@
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { environment } from '../../../environments/environment';
 
 interface Client { id: number; name: string; logoUrl?: string; isActive: boolean; }
 interface Partner { id: number; name: string; logoUrl?: string; contactPerson?: string; country?: string; description?: string; isActive: boolean; }
@@ -46,7 +47,7 @@ interface IndustrySector {
   styleUrl: './home.component.scss',
 })
 export class HomeComponent implements OnInit, AfterViewInit {
-  private readonly api = 'http://localhost:5057';
+  private readonly api = environment.apiOrigin;
 
   // ── Hero ──────────────────────────────────────────────────────────────────
   activeSlide = 0;
