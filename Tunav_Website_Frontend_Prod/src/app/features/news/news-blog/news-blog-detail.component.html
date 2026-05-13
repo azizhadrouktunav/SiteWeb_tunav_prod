@@ -1,0 +1,130 @@
+@if (isLoading()) {
+  <div class="detail-loading">
+    <div class="spinner"></div>
+    <p>Chargement de l'article...</p>
+  </div>
+} @else if (!article()) {
+  <div class="detail-empty">
+    <h2>Article introuvable</h2>
+    <a routerLink="/news/blog" class="btn-back">← Retour au blog</a>
+  </div>
+} @else {
+  <div class="article-detail">
+
+    <!-- BOUTON RETOUR -->
+    <div class="article-back-bar">
+      <a routerLink="/news/blog" class="btn-back">← Retour aux actualités</a>
+    </div>
+
+    <!-- HERO -->
+    <div class="article-hero">
+      @if (article()!.coverImageUrl) {
+        <img class="article-hero__img" [src]="article()!.coverImageUrl" [alt]="article()!.title" />
+      } @else {
+        <div class="article-hero__placeholder"></div>
+      }
+      <div class="article-hero__overlay"></div>
+      <div class="article-hero__content">
+        <div class="container">
+          @if (article()!.categoryName) {
+            <span class="article-hero__cat">{{ article()!.categoryName }}</span>
+          }
+          <h1>{{ article()!.title }}</h1>
+          <div class="article-hero__meta">
+            <span>📅 {{ formatDate(article()!.publishedAt || article()!.createdAt) }}</span>
+            <span>🕒 {{ readingTime(article()!.content) }} min de lecture</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTENU -->
+    <div class="article-body">
+      <div class="container">
+
+        <!-- RÉSUMÉ -->
+        @if (article()!.summary) {
+          <blockquote class="article-summary">
+            {{ article()!.summary }}
+          </blockquote>
+        }
+
+        <!-- TAGS / SECTEURS -->
+        @if (getTags(article()!).length > 0) {
+          <div class="article-tags">
+            @for (tag of getTags(article()!); track tag) {
+              <span class="article-tag">🏷️ {{ tag }}</span>
+            }
+          </div>
+        }
+        @if (article()!.sector) {
+          <div class="article-sectors">
+            @for (sec of getSectorTags(article()!.sector); track sec) {
+              <span class="article-sector">{{ sec }}</span>
+            }
+          </div>
+        }
+
+        <!-- CONTENU TEXTE -->
+        <div class="article-content" [class.article-content--collapsed]="!expanded()">
+          @for (paragraph of visibleParagraphs; track $index) {
+            <p>{{ paragraph }}</p>
+          }
+        </div>
+        @if (contentParagraphs.length > 4 && !expanded()) {
+          <button class="btn-expand" (click)="expanded.set(true)">Lire la suite ↓</button>
+        }
+
+        <!-- VIDÉO YOUTUBE -->
+        @if (getYoutubeEmbedUrl(article()!)) {
+          <div class="article-video">
+            <iframe
+              [src]="getYoutubeEmbedUrl(article()!)"
+              frameborder="0"
+              allowfullscreen>
+            </iframe>
+          </div>
+        }
+
+        <!-- PARTAGER -->
+        <div class="article-share">
+          <span>Partager cet article</span>
+          <button class="share-btn" (click)="share()">
+            🔗 {{ copied() ? 'Lien copié !' : 'Partager' }}
+          </button>
+        </div>
+
+        <!-- ARTICLES SIMILAIRES -->
+        @if (relatedArticles().length > 0) {
+          <div class="related-section">
+            <h2>Articles similaires</h2>
+            <div class="related-grid">
+              @for (related of relatedArticles(); track related.id) {
+                <div class="related-card" [routerLink]="['/news/blog', related.id]">
+                  <div class="related-card__img">
+                    @if (related.coverImageUrl) {
+                      <img [src]="related.coverImageUrl" [alt]="related.title" />
+                    } @else {
+                      <div class="related-card__placeholder"></div>
+                    }
+                  </div>
+                  <div class="related-card__body">
+                    <div class="article-meta">
+                      <span>📅 {{ formatDate(related.publishedAt || related.createdAt) }}</span>
+                    </div>
+                    <h4>{{ related.title }}</h4>
+                    @if (related.summary) {
+                      <p>{{ related.summary | slice:0:120 }}...</p>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+      </div>
+    </div>
+
+  </div>
+}

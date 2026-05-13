@@ -1,0 +1,893 @@
+@{
+    ViewData["Title"] = "Gestion des Blogs";
+    ViewData["ActivePage"] = "Blog";
+    Layout = "~/Views/Shared/_LayoutBackoffice.cshtml";
+}
+
+<div class="page-header">
+    <h1>Gestion des Blogs</h1>
+    <p>Publiez et gérez les articles et catégories du blog TUNAV</p>
+</div>
+
+<!-- ONGLETS ────────────────────────────────────────────────────────────────── -->
+<div class="tab-bar">
+    <button class="tab-btn tab-btn--active" id="tabArticles" onclick="switchTab('articles')">
+         Articles (<span id="articleCount">0</span>)
+    </button>
+    <button class="tab-btn" id="tabCategories" onclick="switchTab('categories')">
+         Catégories (<span id="categoryCount">0</span>)
+    </button>
+    <button class="tab-btn" id="tabSectors" onclick="switchTab('sectors')">
+         Secteurs (<span id="sectorCount">0</span>)
+    </button>
+</div>
+
+<!-- ── PANEL ARTICLES ───────────────────────────────────────────────────────── -->
+<div id="panelArticles">
+    <div class="card">
+        <div class="card-header">
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                <h2>Liste des articles</h2>
+                <select id="filterCategory" onchange="loadArticles()"
+                    style="padding:7px 12px;border:1.5px solid #dce4f5;border-radius:8px;font-size:13px;color:#1e2d5a;outline:none">
+                    <option value="">Toutes les catégories</option>
+                </select>
+                <!-- Secteur = liste déroulante dynamique depuis les secteurs gérés -->
+                <select id="filterSector" onchange="loadArticles()"
+                    style="padding:7px 12px;border:1.5px solid #dce4f5;border-radius:8px;font-size:13px;color:#1e2d5a;outline:none">
+                    <option value="">Tous les secteurs</option>
+                </select>
+                <select id="filterStatus" onchange="loadArticles()"
+                    style="padding:7px 12px;border:1.5px solid #dce4f5;border-radius:8px;font-size:13px;color:#1e2d5a;outline:none">
+                    <option value="">Tous les statuts</option>
+                    <option value="true">Actifs</option>
+                    <option value="false">Inactifs</option>
+                </select>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="openAddArticle()">+ Ajouter un article</button>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Article</th>
+                    <th>Catégorie</th>
+                    <th>Secteur</th>
+                    <th>Auteur</th>
+                    <th>Publication</th>
+                    <th>Média</th>
+                    <th>Statut</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="articlesTable">
+                <tr class="loading-row"><td colspan="8">Chargement...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- ── PANEL CATÉGORIES ─────────────────────────────────────────────────────── -->
+<div id="panelCategories" style="display:none">
+    <div class="card">
+        <div class="card-header">
+            <h2>Catégories</h2>
+            <button class="btn btn-primary btn-sm" onclick="openAddCategory()">+ Ajouter une catégorie</button>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Nom</th>
+                    <th>Description</th>
+                    <th>Articles actifs</th>
+                    <th>Statut</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="categoriesTable">
+                <tr class="loading-row"><td colspan="5">Chargement...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- ── PANEL SECTEURS ────────────────────────────────────────────────────────── -->
+<div id="panelSectors" style="display:none">
+    <div class="card">
+        <div class="card-header">
+            <h2>Secteurs (<span id="sectorTableCount">0</span>)</h2>
+            <button class="btn btn-primary btn-sm" onclick="openAddSector()">+ Ajouter un secteur</button>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Nom du secteur</th>
+                    <th style="text-align:center">Articles liés</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="sectorsTable">
+                <tr class="loading-row"><td colspan="3">Chargement...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     MODAL — ARTICLE (Ajouter / Modifier)
+════════════════════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modalArticle">
+    <div class="modal-box" style="max-width:680px;max-height:90vh;overflow-y:auto;display:flex;flex-direction:column">
+        <button class="modal-close-btn" onclick="closeArticleForm()" title="Fermer">✕</button>
+        <h3 id="articleModalTitle">Ajouter un article</h3>
+
+        <div id="articleFormError"
+             style="display:none;background:#fff0f0;border:1px solid #ffc5c5;color:#d63031;
+                    padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:14px"></div>
+
+        <!-- Titre -->
+        <div class="mfield" style="margin-bottom:14px">
+            <label>Titre *</label>
+            <input type="text" id="aTitle" placeholder="Ex : Comment optimiser votre flotte GPS" />
+        </div>
+
+        <!-- Ligne 1 : Catégorie + Secteur (liste déroulante) -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+            <div class="mfield">
+                <label>Catégorie *</label>
+                <select id="aCategoryId"></select>
+            </div>
+            <div class="mfield">
+                <label>Secteur</label>
+                <!-- Dropdown peuplé depuis les secteurs gérés -->
+                <select id="aSectorSelect">
+                    <option value="">— Sélectionner un secteur —</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Ligne 2 : Image + YouTube -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+            <div class="mfield">
+                <label>Image de couverture (URL)</label>
+                <input type="text" id="aCoverImageUrl" placeholder="https://..." />
+            </div>
+            <div class="mfield">
+                <label>Vidéo YouTube <span style="color:#b0bdd8;font-weight:400">(optionnel — URL ou ID)</span></label>
+                <input type="text" id="aYoutubeUrl"
+                    placeholder="https://youtu.be/... ou dQw4w9WgXcQ"
+                    oninput="previewYoutube(this.value)" />
+            </div>
+        </div>
+
+        <!-- Aperçu YouTube -->
+        <div id="youtubePreview" style="display:none;margin-bottom:14px">
+            <label style="font-size:12px;font-weight:500;color:#6b7db3;display:block;margin-bottom:6px">
+                Aperçu de la vidéo
+            </label>
+            <div style="position:relative;padding-bottom:56.25%;height:0;border-radius:10px;overflow:hidden;background:#000">
+                <iframe id="youtubeFrame"
+                    style="position:absolute;top:0;left:0;width:100%;height:100%;border:0"
+                    allowfullscreen></iframe>
+            </div>
+        </div>
+
+        <!-- Ligne 3 : Date de publication + Statut -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+            <div class="mfield">
+                <label>Date de publication <span style="color:#b0bdd8;font-weight:400">(vide = brouillon)</span></label>
+                <input type="datetime-local" id="aPublishedAt" />
+            </div>
+            <div class="mfield" id="aIsActiveField" style="display:none">
+                <label>Statut</label>
+                <select id="aIsActive">
+                    <option value="true">Actif</option>
+                    <option value="false">Inactif</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Résumé -->
+        <div class="mfield" style="margin-bottom:14px">
+            <label>Résumé <span style="color:#b0bdd8;font-weight:400">(affiché dans la liste)</span></label>
+            <textarea id="aSummary" rows="2"
+                placeholder="Courte description visible dans la liste des articles..."></textarea>
+        </div>
+
+        <!-- Contenu -->
+        <div class="mfield" style="margin-bottom:14px">
+            <label>Contenu *</label>
+            <textarea id="aContent" rows="8"
+                placeholder="Contenu complet de l'article..."></textarea>
+        </div>
+
+        <div class="modal-actions" style="position:sticky;bottom:0;background:white;padding-top:16px;margin-top:auto;border-top:1px solid #dce4f5">
+            <button class="btn btn-outline" onclick="closeArticleForm()">Annuler</button>
+            <button class="btn btn-primary" id="btnSaveArticle" onclick="saveArticle()">Enregistrer</button>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     MODAL — CATÉGORIE
+════════════════════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modalCategory">
+    <div class="modal-box" style="max-width:480px">
+        <button class="modal-close-btn" onclick="closeCategoryForm()" title="Fermer">✕</button>
+        <h3 id="categoryModalTitle">Ajouter une catégorie</h3>
+
+        <div id="categoryFormError"
+             style="display:none;background:#fff0f0;border:1px solid #ffc5c5;color:#d63031;
+                    padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:14px"></div>
+
+        <div class="mfield" style="margin-bottom:14px">
+            <label>Nom *</label>
+            <input type="text" id="cName" placeholder="Ex : Partenariats" />
+        </div>
+
+        <div class="mfield" style="margin-bottom:14px">
+            <label>Description</label>
+            <textarea id="cDescription" rows="3"
+                placeholder="Description optionnelle de la catégorie..."></textarea>
+        </div>
+
+        <div class="mfield" id="cIsActiveField" style="display:none;margin-bottom:14px">
+            <label>Statut</label>
+            <select id="cIsActive">
+                <option value="true">Actif</option>
+                <option value="false">Inactif</option>
+            </select>
+        </div>
+
+        <div class="modal-actions">
+            <button class="btn btn-outline" onclick="closeCategoryForm()">Annuler</button>
+            <button class="btn btn-primary" id="btnSaveCategory" onclick="saveCategory()">Enregistrer</button>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     MODAL — SECTEUR (Ajouter)
+════════════════════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modalSector">
+    <div class="modal-box" style="max-width:440px">
+        <button class="modal-close-btn" onclick="closeSectorForm()" title="Fermer">✕</button>
+        <h3 id="sectorModalTitle">Ajouter un secteur</h3>
+
+        <div id="sectorFormError"
+             style="display:none;background:#fff0f0;border:1px solid #ffc5c5;color:#d63031;
+                    padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:14px"></div>
+
+        <div class="mfield" style="margin-bottom:20px">
+            <label>Nom du secteur *</label>
+            <input type="text" id="sectorName"
+                placeholder="Ex: Transport, IoT, Énergie..."
+                onkeydown="if(event.key==='Enter')saveSector()" />
+        </div>
+
+        <div class="modal-actions">
+            <button class="btn btn-outline" onclick="closeSectorForm()">Annuler</button>
+            <button class="btn btn-primary" id="btnSaveSector" onclick="saveSector()">Enregistrer</button>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     MODAL — SUPPRESSION
+════════════════════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modalDelete">
+    <div class="modal-box" style="max-width:400px;text-align:center">
+        <div style="font-size:40px;margin-bottom:12px">🗑️</div>
+        <button class="modal-close-btn" onclick="closeDelete()" title="Fermer">✕</button>
+        <h3 style="margin-bottom:8px">Confirmer la suppression</h3>
+        <p style="font-size:14px;color:#6b7db3;margin-bottom:24px" id="deleteMsg">
+            Cette action est irréversible.
+        </p>
+        <div style="display:flex;gap:10px;justify-content:center">
+            <button class="btn btn-outline" onclick="closeDelete()">Annuler</button>
+            <button class="btn btn-danger" id="btnConfirmDelete" onclick="confirmDelete()">Supprimer</button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<style>
+    .modal-close-btn { position:absolute; top:16px; right:16px; background:none; border:none; font-size:20px; cursor:pointer; color:#6b7db3; line-height:1; padding:4px 8px; border-radius:6px; transition:background 0.2s; }
+    .modal-close-btn:hover { background:#f0f4ff; color:#1e2d5a; }
+    .modal-box { position:relative; }
+    .tab-bar {
+        display:flex;gap:8px;margin-bottom:20px;
+        border-bottom:2px solid #e8edf8;padding-bottom:0;
+    }
+    .tab-btn {
+        background:none;border:none;padding:10px 20px;
+        font-size:14px;font-weight:500;color:#6b7db3;
+        cursor:pointer;border-bottom:2px solid transparent;
+        margin-bottom:-2px;transition:color .2s,border-color .2s;
+    }
+    .tab-btn--active { color:#00c8d4;border-bottom-color:#00c8d4; }
+    .tab-btn:hover:not(.tab-btn--active) { color:#1e2d5a; }
+
+    .mfield label {
+        display:block;font-size:12px;font-weight:500;
+        color:#6b7db3;margin-bottom:5px;
+    }
+    .mfield input,.mfield textarea,.mfield select {
+        width:100%;padding:10px 12px;
+        border:1.5px solid #dce4f5;border-radius:8px;
+        font-size:14px;font-family:'Inter',sans-serif;
+        outline:none;color:#1e2d5a;
+        transition:border-color .2s;background:white;
+    }
+    .mfield input:focus,.mfield textarea:focus,.mfield select:focus {
+        border-color:#00c8d4;
+    }
+    .mfield textarea { resize:vertical; }
+
+    .cover-thumb {
+        width:60px;height:42px;object-fit:cover;
+        border-radius:6px;flex-shrink:0;
+    }
+    .cover-placeholder {
+        width:60px;height:42px;border-radius:6px;
+        background:#e8edf8;display:flex;
+        align-items:center;justify-content:center;
+        font-size:18px;flex-shrink:0;
+    }
+    .badge-sector {
+        background:#f0f4ff;color:#1a2a6c;
+        font-size:11px;font-weight:600;
+        padding:3px 8px;border-radius:6px;display:inline-block;
+    }
+    .badge-yt {
+        background:#fff0f0;color:#c0392b;
+        font-size:11px;font-weight:600;
+        padding:3px 8px;border-radius:6px;
+        display:inline-flex;align-items:center;gap:4px;
+        text-decoration:none;
+    }
+    .badge-yt:hover { background:#ffd5d5; }
+    .pub-date { font-size:12px;color:#1e2d5a;font-weight:500; }
+    .pub-draft { font-size:12px;color:#b0bdd8;font-style:italic; }
+</style>
+
+<script>
+    let editingArticleId  = null;
+    let editingCategoryId = null;
+    let editingSectorIdx  = null;   // index dans le tableau allSectors
+    let deletingId        = null;
+    let deleteType        = null;   // 'article' | 'category' | 'sector'
+    let allCategories     = [];
+
+    // ── Secteurs — stockés dans localStorage ─────────────────────────────────
+    // Clé : 'tunav_blog_sectors'  |  Valeur : JSON array de strings
+    const SECTOR_KEY = 'tunav_blog_sectors';
+
+    function loadSectors() {
+        try {
+            const raw = localStorage.getItem(SECTOR_KEY);
+            return raw ? JSON.parse(raw) : defaultSectors();
+        } catch { return defaultSectors(); }
+    }
+
+    function saveSectors(sectors) {
+        localStorage.setItem(SECTOR_KEY, JSON.stringify(sectors));
+    }
+
+    function defaultSectors() {
+        // Secteurs par défaut prédéfinis
+        return ['Transport', 'IoT', 'Énergie', 'Agriculture', 'Logistique', 'Industrie', 'Smart City'];
+    }
+
+    let allSectors = loadSectors();
+
+    /* ── ONGLETS ────────────────────────────────────────────────────────── */
+    function switchTab(tab) {
+        document.getElementById('panelArticles').style.display   = tab === 'articles'   ? '' : 'none';
+        document.getElementById('panelCategories').style.display = tab === 'categories' ? '' : 'none';
+        document.getElementById('panelSectors').style.display    = tab === 'sectors'    ? '' : 'none';
+        document.getElementById('tabArticles').classList.toggle('tab-btn--active',   tab === 'articles');
+        document.getElementById('tabCategories').classList.toggle('tab-btn--active', tab === 'categories');
+        document.getElementById('tabSectors').classList.toggle('tab-btn--active',    tab === 'sectors');
+        if (tab === 'sectors') renderSectorsTable();
+    }
+
+    /* ── SECTEURS — DROPDOWN ────────────────────────────────────────────── */
+    function populateSectorDropdowns() {
+        allSectors = loadSectors();
+        const opts = allSectors.map(s => `<option value="${esc(s)}">${esc(s)}</option>`).join('');
+
+        // Filtre articles
+        const cur = document.getElementById('filterSector').value;
+        document.getElementById('filterSector').innerHTML =
+            '<option value="">Tous les secteurs</option>' + opts;
+        if (cur) document.getElementById('filterSector').value = cur;
+
+        // Dropdown formulaire article
+        const curForm = document.getElementById('aSectorSelect').value;
+        document.getElementById('aSectorSelect').innerHTML =
+            '<option value="">— Sélectionner un secteur —</option>' + opts;
+        if (curForm) document.getElementById('aSectorSelect').value = curForm;
+
+        document.getElementById('sectorCount').textContent = allSectors.length;
+        document.getElementById('sectorTableCount').textContent = allSectors.length;
+    }
+
+    /* ── SECTEURS — TABLE ───────────────────────────────────────────────── */
+    function renderSectorsTable() {
+        allSectors = loadSectors();
+        document.getElementById('sectorCount').textContent = allSectors.length;
+        document.getElementById('sectorTableCount').textContent = allSectors.length;
+
+        document.getElementById('sectorsTable').innerHTML = allSectors.length
+            ? allSectors.map((s, i) => `
+                <tr>
+                    <td>
+                        <span class="badge-sector" style="font-size:13px;padding:4px 12px">${esc(s)}</span>
+                    </td>
+                    <td style="text-align:center;font-size:13px;color:#6b7db3">—</td>
+                    <td>
+                        <div style="display:flex;gap:6px">
+                            <button class="btn btn-danger btn-sm"
+                                onclick="openDeleteSector(${i},'${esc(s)}')">
+                                Supprimer
+                            </button>
+                        </div>
+                    </td>
+                </tr>`).join('')
+            : '<tr class="empty-row"><td colspan="3">Aucun secteur défini.</td></tr>';
+    }
+
+    /* ── MODAL SECTEUR ──────────────────────────────────────────────────── */
+    function openAddSector() {
+        editingSectorIdx = null;
+        document.getElementById('sectorModalTitle').textContent = 'Ajouter un secteur';
+        document.getElementById('sectorName').value = '';
+        document.getElementById('sectorFormError').style.display = 'none';
+        document.getElementById('modalSector').classList.add('show');
+        setTimeout(() => document.getElementById('sectorName').focus(), 100);
+    }
+
+    function closeSectorForm() {
+        document.getElementById('modalSector').classList.remove('show');
+    }
+
+    function saveSector() {
+        const name = document.getElementById('sectorName').value.trim();
+        if (!name) {
+            const el = document.getElementById('sectorFormError');
+            el.textContent = 'Le nom du secteur est obligatoire.';
+            el.style.display = 'block';
+            return;
+        }
+        const sectors = loadSectors();
+        if (sectors.some(s => s.toLowerCase() === name.toLowerCase())) {
+            const el = document.getElementById('sectorFormError');
+            el.textContent = 'Ce secteur existe déjà.';
+            el.style.display = 'block';
+            return;
+        }
+        sectors.push(name);
+        saveSectors(sectors);
+        closeSectorForm();
+        populateSectorDropdowns();
+        renderSectorsTable();
+    }
+
+    function openDeleteSector(idx, name) {
+        deleteType = 'sector';
+        deletingId = idx;
+        document.getElementById('deleteMsg').innerHTML =
+            `Voulez-vous vraiment supprimer le secteur <strong>"${esc(name)}"</strong> ?<br>
+             <small style="color:#d63031">Les articles liés conserveront ce secteur mais il ne sera plus disponible dans la liste.</small>`;
+        document.getElementById('modalDelete').classList.add('show');
+    }
+
+    /* ── YOUTUBE APERÇU ─────────────────────────────────────────────────── */
+    function extractYoutubeId(val) {
+        if (!val) return null;
+        val = val.trim();
+        if (val.includes('youtu.be/')) return val.split('youtu.be/').pop().split('?')[0];
+        if (val.includes('v='))        return val.split('v=').pop().split('&')[0];
+        return val.length <= 20 ? val : null;
+    }
+
+    function previewYoutube(val) {
+        const id  = extractYoutubeId(val);
+        const box = document.getElementById('youtubePreview');
+        if (id) {
+            document.getElementById('youtubeFrame').src =
+                'https://www.youtube-nocookie.com/embed/' + id;
+            box.style.display = 'block';
+        } else {
+            box.style.display = 'none';
+            document.getElementById('youtubeFrame').src = '';
+        }
+    }
+
+    /* ── CATÉGORIES ─────────────────────────────────────────────────────── */
+    async function loadCategories() {
+        try {
+            const res  = await fetch('/api/blog-categories', { headers: authHeaders() });
+            const cats = await res.json();
+            allCategories = Array.isArray(cats) ? cats : [];
+
+            document.getElementById('categoryCount').textContent = allCategories.length;
+
+            const filterSel = document.getElementById('filterCategory');
+            const formSel   = document.getElementById('aCategoryId');
+            const opts = allCategories.map(c =>
+                `<option value="${c.id}">${c.name}</option>`).join('');
+            filterSel.innerHTML = '<option value="">Toutes les catégories</option>' + opts;
+            formSel.innerHTML   = '<option value="">— Sélectionner —</option>'      + opts;
+
+            document.getElementById('categoriesTable').innerHTML = allCategories.length
+                ? allCategories.map(c => `
+                    <tr>
+                        <td><strong style="color:#1e2d5a">${c.name}</strong></td>
+                        <td style="color:#6b7db3;font-size:13px">${c.description || '—'}</td>
+                        <td style="text-align:center">
+                            <span class="badge badge-cyan">${c.articleCount}</span>
+                        </td>
+                        <td>
+                            <span class="badge ${c.isActive ? 'badge-success' : 'badge-danger'}">
+                                ${c.isActive ? 'Active' : 'Inactive'}
+                            </span>
+                        </td>
+                        <td>
+                            <div style="display:flex;gap:6px;flex-wrap:wrap">
+                                <button class="btn btn-outline btn-sm"
+                                    onclick="openEditCategory(${c.id})">Modifier</button>
+                                <button class="btn btn-danger btn-sm"
+                                    onclick="openDelete('category',${c.id},'${c.name.replace(/'/g,"\\'")}')">
+                                    Supprimer
+                                </button>
+                            </div>
+                        </td>
+                    </tr>`).join('')
+                : '<tr class="empty-row"><td colspan="5">Aucune catégorie.</td></tr>';
+        } catch(e) { console.error(e); }
+    }
+
+    /* ── ARTICLES ───────────────────────────────────────────────────────── */
+    async function loadArticles() {
+        const catId  = document.getElementById('filterCategory').value;
+        const sector = document.getElementById('filterSector').value;
+        const status = document.getElementById('filterStatus').value;
+        let url = '/api/blog-articles';
+        const params = [];
+        if (catId)  params.push('categoryId=' + catId);
+        if (sector) params.push('sector='     + encodeURIComponent(sector));
+        if (status) params.push('isActive='   + status);
+        if (params.length) url += '?' + params.join('&');
+
+        try {
+            const res  = await fetch(url, { headers: authHeaders() });
+            const list = await res.json();
+            const arts = Array.isArray(list) ? list : [];
+
+            document.getElementById('articleCount').textContent = arts.length;
+
+            document.getElementById('articlesTable').innerHTML = arts.length
+                ? arts.map(a => {
+                    const ytId = extractYoutubeId(a.youtubeUrl);
+                    const pubDate = a.publishedAt
+                        ? `<span class="pub-date">📅 ${new Date(a.publishedAt)
+                            .toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'})}</span>`
+                        : `<span class="pub-draft">Brouillon</span>`;
+
+                    return `<tr>
+                        <td>
+                            <div style="display:flex;align-items:center;gap:10px">
+                                ${a.coverImageUrl
+                                    ? `<img src="${a.coverImageUrl}" class="cover-thumb"
+                                           onerror="this.style.display='none'" />`
+                                    : `<div class="cover-placeholder">📄</div>`}
+                                <div>
+                                    <div style="font-weight:600;color:#1e2d5a;max-width:230px;
+                                                white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+                                        ${a.title}
+                                    </div>
+                                    ${a.summary
+                                        ? `<div style="font-size:11px;color:#6b7db3;max-width:230px;
+                                                       white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+                                               ${a.summary}
+                                           </div>`
+                                        : ''}
+                                </div>
+                            </div>
+                        </td>
+                        <td><span class="badge badge-navy">${a.categoryName || '—'}</span></td>
+                        <td>${a.sector
+                                ? `<span class="badge-sector">${esc(a.sector)}</span>`
+                                : '<span style="color:#b0bdd8;font-size:12px">—</span>'}</td>
+                        <td style="color:#6b7db3;font-size:13px">${a.createdByName || '—'}</td>
+                        <td>${pubDate}</td>
+                        <td>${ytId
+                                ? `<a href="https://youtu.be/${ytId}" target="_blank"
+                                      class="badge-yt">▶ YouTube</a>`
+                                : '<span style="color:#b0bdd8;font-size:12px">—</span>'}</td>
+                        <td>
+                            <span class="badge ${a.isActive ? 'badge-success' : 'badge-danger'}">
+                                ${a.isActive ? 'Actif' : 'Inactif'}
+                            </span>
+                        </td>
+                        <td>
+                            <div style="display:flex;gap:6px;flex-wrap:wrap">
+                                <button class="btn btn-outline btn-sm"
+                                    onclick="openEditArticle(${a.id})">Modifier</button>
+                                <button class="btn btn-outline btn-sm"
+                                    style="${a.isActive
+                                        ? 'border-color:#ffc107;color:#856404'
+                                        : 'border-color:#00b894;color:#00704a'}"
+                                    onclick="toggleArticle(${a.id})">
+                                    ${a.isActive ? 'Désactiver' : 'Activer'}
+                                </button>
+                                <button class="btn btn-danger btn-sm"
+                                    onclick="openDelete('article',${a.id},'${a.title.replace(/'/g,"\\'")}')">
+                                    Supprimer
+                                </button>
+                            </div>
+                        </td>
+                    </tr>`;
+                }).join('')
+                : '<tr class="empty-row"><td colspan="8">Aucun article trouvé.</td></tr>';
+        } catch(e) {
+            console.error(e);
+            document.getElementById('articlesTable').innerHTML =
+                '<tr class="empty-row"><td colspan="8">Erreur de chargement.</td></tr>';
+        }
+    }
+
+    /* ── MODAL ARTICLE — OUVRIR (ajout) ─────────────────────────────────── */
+    function openAddArticle() {
+        editingArticleId = null;
+        document.getElementById('articleModalTitle').textContent = 'Ajouter un article';
+        document.getElementById('btnSaveArticle').textContent   = 'Enregistrer';
+        ['aTitle','aSummary','aContent','aCoverImageUrl','aYoutubeUrl','aPublishedAt'].forEach(id =>
+            document.getElementById(id).value = '');
+        document.getElementById('aSectorSelect').value = '';
+        document.getElementById('aCategoryId').value = '';
+        document.getElementById('aIsActiveField').style.display   = 'none';
+        document.getElementById('articleFormError').style.display = 'none';
+        document.getElementById('youtubePreview').style.display   = 'none';
+        document.getElementById('youtubeFrame').src = '';
+        document.getElementById('modalArticle').classList.add('show');
+    }
+
+    /* ── MODAL ARTICLE — OUVRIR (modification) ───────────────────────────── */
+    async function openEditArticle(id) {
+        editingArticleId = id;
+        document.getElementById('articleFormError').style.display = 'none';
+        document.getElementById('articleModalTitle').textContent  = 'Modifier un article';
+        document.getElementById('btnSaveArticle').textContent     = 'Mettre à jour';
+
+        try {
+            const res = await fetch('/api/blog-articles/' + id, { headers: authHeaders() });
+            const a   = await res.json();
+            document.getElementById('aTitle').value         = a.title         || '';
+            document.getElementById('aSummary').value       = a.summary       || '';
+            document.getElementById('aContent').value       = a.content       || '';
+            document.getElementById('aCoverImageUrl').value = a.coverImageUrl || '';
+            document.getElementById('aYoutubeUrl').value    = a.youtubeUrl    || '';
+            document.getElementById('aSectorSelect').value  = a.sector        || '';
+            document.getElementById('aCategoryId').value    = a.categoryId    || '';
+            document.getElementById('aIsActive').value      = a.isActive ? 'true' : 'false';
+            document.getElementById('aIsActiveField').style.display = 'block';
+
+            if (a.publishedAt) {
+                const d   = new Date(a.publishedAt);
+                const pad = n => String(n).padStart(2,'0');
+                document.getElementById('aPublishedAt').value =
+                    `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+            } else {
+                document.getElementById('aPublishedAt').value = '';
+            }
+
+            previewYoutube(a.youtubeUrl);
+            document.getElementById('modalArticle').classList.add('show');
+        } catch(e) { alert("Erreur lors du chargement de l'article."); }
+    }
+
+    function closeArticleForm() {
+        document.getElementById('modalArticle').classList.remove('show');
+        document.getElementById('youtubePreview').style.display = 'none';
+        document.getElementById('youtubeFrame').src = '';
+        editingArticleId = null;
+    }
+
+    /* ── SAUVEGARDER ARTICLE ────────────────────────────────────────────── */
+    async function saveArticle() {
+        const btn = document.getElementById('btnSaveArticle');
+        document.getElementById('articleFormError').style.display = 'none';
+
+        const title         = document.getElementById('aTitle').value.trim();
+        const summary       = document.getElementById('aSummary').value.trim();
+        const content       = document.getElementById('aContent').value.trim();
+        const coverImageUrl = document.getElementById('aCoverImageUrl').value.trim();
+        const youtubeUrl    = document.getElementById('aYoutubeUrl').value.trim();
+        const sector        = document.getElementById('aSectorSelect').value || null;
+        const publishedAtRaw = document.getElementById('aPublishedAt').value;
+        const categoryId    = parseInt(document.getElementById('aCategoryId').value);
+
+        if (!title)      { showArticleErr('Le titre est obligatoire.');     return; }
+        if (!content)    { showArticleErr('Le contenu est obligatoire.');   return; }
+        if (!categoryId) { showArticleErr('La catégorie est obligatoire.'); return; }
+
+        const publishedAt = publishedAtRaw ? new Date(publishedAtRaw).toISOString() : null;
+
+        btn.disabled = true;
+        btn.textContent = 'Enregistrement...';
+
+        try {
+            let url, method, body;
+            if (editingArticleId) {
+                const isActive = document.getElementById('aIsActive').value === 'true';
+                url    = '/api/blog-articles/' + editingArticleId;
+                method = 'PUT';
+                body   = { title, summary: summary||null, content,
+                           coverImageUrl: coverImageUrl||null, youtubeUrl: youtubeUrl||null,
+                           sector, publishedAt, categoryId, isActive };
+            } else {
+                const u = JSON.parse(localStorage.getItem('tunav_user') || '{}');
+                url     = '/api/blog-articles?userId=' + (u.userId || 1);
+                method  = 'POST';
+                body    = { title, summary: summary||null, content,
+                            coverImageUrl: coverImageUrl||null, youtubeUrl: youtubeUrl||null,
+                            sector, publishedAt, categoryId };
+            }
+
+            const res  = await fetch(url, { method, headers: authHeaders(), body: JSON.stringify(body) });
+            const data = await res.json();
+            if (res.ok) { closeArticleForm(); loadArticles(); }
+            else showArticleErr(data.message || "Erreur lors de l'enregistrement.");
+        } catch(e) {
+            showArticleErr('Erreur réseau.');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = editingArticleId ? 'Mettre à jour' : 'Enregistrer';
+        }
+    }
+
+    function showArticleErr(msg) {
+        const el = document.getElementById('articleFormError');
+        el.textContent = msg; el.style.display = 'block';
+    }
+
+    async function toggleArticle(id) {
+        try {
+            const res = await fetch('/api/blog-articles/' + id + '/toggle',
+                { method: 'PATCH', headers: authHeaders() });
+            if (res.ok) loadArticles();
+        } catch(e) { alert('Erreur réseau.'); }
+    }
+
+    /* ── MODAL CATÉGORIE ────────────────────────────────────────────────── */
+    function openAddCategory() {
+        editingCategoryId = null;
+        document.getElementById('categoryModalTitle').textContent = 'Ajouter une catégorie';
+        document.getElementById('btnSaveCategory').textContent   = 'Enregistrer';
+        document.getElementById('cName').value        = '';
+        document.getElementById('cDescription').value = '';
+        document.getElementById('cIsActiveField').style.display   = 'none';
+        document.getElementById('categoryFormError').style.display = 'none';
+        document.getElementById('modalCategory').classList.add('show');
+    }
+
+    async function openEditCategory(id) {
+        editingCategoryId = id;
+        document.getElementById('categoryFormError').style.display = 'none';
+        document.getElementById('categoryModalTitle').textContent  = 'Modifier une catégorie';
+        document.getElementById('btnSaveCategory').textContent     = 'Mettre à jour';
+        try {
+            const res = await fetch('/api/blog-categories/' + id, { headers: authHeaders() });
+            const c   = await res.json();
+            document.getElementById('cName').value        = c.name        || '';
+            document.getElementById('cDescription').value = c.description || '';
+            document.getElementById('cIsActive').value    = c.isActive ? 'true' : 'false';
+            document.getElementById('cIsActiveField').style.display = 'block';
+            document.getElementById('modalCategory').classList.add('show');
+        } catch(e) { alert('Erreur lors du chargement.'); }
+    }
+
+    function closeCategoryForm() {
+        document.getElementById('modalCategory').classList.remove('show');
+        editingCategoryId = null;
+    }
+
+    async function saveCategory() {
+        const btn = document.getElementById('btnSaveCategory');
+        document.getElementById('categoryFormError').style.display = 'none';
+
+        const name        = document.getElementById('cName').value.trim();
+        const description = document.getElementById('cDescription').value.trim();
+
+        if (!name) { showCategoryErr('Le nom est obligatoire.'); return; }
+
+        btn.disabled = true; btn.textContent = 'Enregistrement...';
+        try {
+            let url, method, body;
+            if (editingCategoryId) {
+                const isActive = document.getElementById('cIsActive').value === 'true';
+                url    = '/api/blog-categories/' + editingCategoryId;
+                method = 'PUT';
+                body   = { name, description: description||null, isActive };
+            } else {
+                url    = '/api/blog-categories';
+                method = 'POST';
+                body   = { name, description: description||null };
+            }
+            const res  = await fetch(url, { method, headers: authHeaders(), body: JSON.stringify(body) });
+            const data = await res.json();
+            if (res.ok) { closeCategoryForm(); loadCategories(); loadArticles(); }
+            else showCategoryErr(data.message || "Erreur lors de l'enregistrement.");
+        } catch(e) {
+            showCategoryErr('Erreur réseau.');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = editingCategoryId ? 'Mettre à jour' : 'Enregistrer';
+        }
+    }
+
+    function showCategoryErr(msg) {
+        const el = document.getElementById('categoryFormError');
+        el.textContent = msg; el.style.display = 'block';
+    }
+
+    /* ── MODAL SUPPRESSION ──────────────────────────────────────────────── */
+    function openDelete(type, id, label) {
+        deleteType = type; deletingId = id;
+        document.getElementById('deleteMsg').textContent =
+            'Voulez-vous vraiment supprimer "' + label + '" ? Cette action est irréversible.';
+        document.getElementById('modalDelete').classList.add('show');
+    }
+
+    function closeDelete() {
+        document.getElementById('modalDelete').classList.remove('show');
+        deletingId = null; deleteType = null;
+    }
+
+    async function confirmDelete() {
+        if (deleteType === 'sector') {
+            // Suppression locale (localStorage)
+            const sectors = loadSectors();
+            sectors.splice(deletingId, 1);
+            saveSectors(sectors);
+            closeDelete();
+            populateSectorDropdowns();
+            renderSectorsTable();
+            return;
+        }
+
+        if (!deletingId || !deleteType) return;
+        const btn = document.getElementById('btnConfirmDelete');
+        btn.disabled = true; btn.textContent = 'Suppression...';
+        try {
+            const url = deleteType === 'article'
+                ? '/api/blog-articles/'   + deletingId
+                : '/api/blog-categories/' + deletingId;
+            const res = await fetch(url, { method: 'DELETE', headers: authHeaders() });
+            if (res.ok || res.status === 204) {
+                closeDelete();
+                if (deleteType === 'article') loadArticles();
+                else { loadCategories(); loadArticles(); }
+            } else { alert('Erreur lors de la suppression.'); }
+        } catch(e) { alert('Erreur réseau.'); }
+        finally { btn.disabled = false; btn.textContent = 'Supprimer'; }
+    }
+
+    /* ── XSS escape ─────────────────────────────────────────────────────── */
+    function esc(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+            .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+
+    /* ── INIT ───────────────────────────────────────────────────────────── */
+    (async function init() {
+        populateSectorDropdowns();
+        await loadCategories();
+        await loadArticles();
+    })();
+</script>
+}

@@ -1,0 +1,22 @@
+.main-content {
+  min-height: calc(100vh - 160px);
+  // Pas de padding latéral ici — chaque composant gère son propre conteneur
+  // Le padding: 2rem 3rem causait le débordement horizontal (scrollbar)
+  // et cassait position:sticky dans les sidebars enfants
+  padding: 0;
+  width: 100%;
+  box-sizing: border-box;
+  // PAS de overflow ici — sinon position:sticky ne fonctionne plus
+}
+
+@media (max-width: 1024px) {
+  .main-content {
+    padding: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .main-content {
+    padding: 0;
+  }
+}

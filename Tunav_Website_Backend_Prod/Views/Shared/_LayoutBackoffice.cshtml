@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] — Tunav Backoffice</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --navy:   #0d1b4b; --navy2:  #1a2a6c; --cyan:   #00c8d4;
+            --cyan2:  #17d5e8; --bg:     #f0f4ff; --text:   #1e2d5a;
+            --muted:  #6b7db3; --border: #dce4f5; --sw:     260px;
+        }
+        html, body { height: 100%; overflow: hidden; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); display: flex; height: 100vh; }
+
+        .sidebar { width: var(--sw); height: 100vh; background: var(--navy); position: fixed; left: 0; top: 0; display: flex; flex-direction: column; z-index: 200; overflow: hidden; }
+        .sidebar-brand { padding: 16px 20px; border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; gap: 12px; }
+        .brand-logo { width: 48px; height: 48px; border-radius: 10px; overflow: hidden; flex-shrink: 0; background: white; display: flex; align-items: center; justify-content: center; }
+        .brand-logo img { width: 100%; height: 100%; object-fit: contain; }
+        .brand-name { font-size: 15px; font-weight: 700; color: white; }
+        .brand-sub  { font-size: 10px; color: rgba(255,255,255,0.4); letter-spacing: 0.8px; text-transform: uppercase; margin-top: 2px; }
+        .sidebar-role { padding: 8px 20px; display: flex; align-items: center; gap: 8px; font-size: 12px; color: rgba(255,255,255,0.5); border-bottom: 1px solid rgba(255,255,255,0.06); }
+        .role-badge { background: var(--cyan); color: var(--navy); font-size: 11px; font-weight: 700; padding: 2px 10px; border-radius: 20px; }
+        .sidebar-nav { flex: 1; min-height: 0; padding: 10px 0; overflow-y: auto; scrollbar-width: none; }
+        .sidebar-nav::-webkit-scrollbar { display: none; }
+        .nav-group { padding: 10px 20px 3px; font-size: 10px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: rgba(255,255,255,0.28); }
+        .nav-link { display: block; padding: 10px 20px; font-size: 13.5px; font-weight: 500; color: rgba(255,255,255,0.62); text-decoration: none; transition: all 0.15s; border-left: 3px solid transparent; }
+        .nav-link:hover { background: rgba(255,255,255,0.05); color: white; }
+        .nav-link.active { background: rgba(0,200,212,0.14); color: var(--cyan); border-left-color: var(--cyan); }
+        .sidebar-footer { flex-shrink: 0; padding: 12px 16px; border-top: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; gap: 10px; }
+        .u-avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--cyan2); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: var(--navy); flex-shrink: 0; }
+        .u-name  { font-size: 13px; font-weight: 600; color: white; }
+        .u-email { font-size: 11px; color: rgba(255,255,255,0.38); }
+        .btn-logout { margin-left: auto; background: none; border: 1px solid rgba(255,255,255,0.12); color: rgba(255,255,255,0.35); padding: 5px 8px; border-radius: 6px; cursor: pointer; font-size: 11px; transition: all 0.15s; font-family: 'Inter',sans-serif; }
+        .btn-logout:hover { border-color: #ff6b6b; color: #ff6b6b; }
+
+        .topbar { position: fixed; top: 0; left: var(--sw); right: 0; height: 60px; background: white; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 28px; gap: 16px; z-index: 100; box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
+        .topbar-title { font-size: 20px; font-weight: 700; color: var(--text); flex: 1; }
+
+        .profile-wrap { position: relative; }
+        .profile-btn { display: flex; align-items: center; gap: 10px; padding: 6px 12px; border-radius: 8px; background: var(--bg); border: 1px solid var(--border); cursor: pointer; transition: all 0.15s; user-select: none; }
+        .profile-btn:hover { border-color: var(--cyan); }
+        .profile-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--cyan); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: var(--navy); }
+        .p-name  { font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.2; }
+        .p-role  { font-size: 11px; color: var(--muted); }
+        .p-arrow { color: var(--muted); font-size: 10px; transition: transform 0.2s; margin-left: 4px; }
+        .profile-wrap.open .p-arrow { transform: rotate(180deg); }
+
+        .dropdown { display: none; position: absolute; top: calc(100% + 8px); right: 0; width: 270px; background: white; border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 8px 32px rgba(26,42,108,0.12); z-index: 999; overflow: hidden; }
+        .profile-wrap.open .dropdown { display: block; }
+        .dd-head { padding: 14px 16px; background: #f8faff; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
+        .dd-av { width: 42px; height: 42px; border-radius: 50%; background: var(--cyan); display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; color: var(--navy); flex-shrink: 0; }
+        .dd-fullname  { font-size: 14px; font-weight: 700; color: var(--text); }
+        .dd-rolebadge { display: inline-block; background: #e0f7f8; color: #007a82; font-size: 11px; font-weight: 600; padding: 2px 9px; border-radius: 20px; margin-top: 3px; }
+        .dd-mail { font-size: 11px; color: var(--muted); margin-top: 2px; }
+        .dd-section { border-bottom: 1px solid var(--border); padding: 4px 0; }
+        .dd-section:last-child { border-bottom: none; }
+        .dd-section-title { padding: 7px 16px 2px; font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); }
+        .dd-item { display: flex; align-items: center; gap: 12px; padding: 10px 16px; text-decoration: none; transition: background 0.12s; cursor: pointer; }
+        .dd-item:hover { background: #f0f4ff; }
+        .dd-item-label { font-size: 13px; font-weight: 500; color: var(--text); line-height: 1.2; }
+        .dd-item-sub   { font-size: 11px; color: var(--muted); margin-top: 1px; }
+        .dd-item.danger .dd-item-label { color: #d63031; }
+        .dd-item.danger:hover { background: #fff5f5; }
+
+        .main-content { margin-left: var(--sw); margin-top: 60px; flex: 1; padding: 28px; height: calc(100vh - 60px); overflow-y: auto; }
+
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 999; align-items: center; justify-content: center; }
+        .modal-overlay.show { display: flex; }
+        .modal-box { background: white; border-radius: 14px; padding: 28px; width: 440px; max-width: 95vw; }
+        .modal-box h3 { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 20px; }
+        .modal-field { margin-bottom: 14px; }
+        .modal-field label { display: block; font-size: 12px; font-weight: 500; color: var(--muted); margin-bottom: 5px; }
+        .modal-field input { width: 100%; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 14px; font-family: 'Inter',sans-serif; outline: none; color: var(--text); transition: border-color 0.2s; }
+        .modal-field input:focus { border-color: var(--cyan); }
+        .modal-field input[readonly] { background: #f8faff; color: var(--muted); cursor: default; }
+        .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+
+        .page-header { margin-bottom: 24px; }
+        .page-header h1 { font-size: 26px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+        .page-header p  { font-size: 14px; color: var(--muted); }
+        .card { background: white; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+        .card-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+        .card-header h2 { font-size: 15px; font-weight: 600; color: var(--text); }
+
+        .btn { padding: 8px 16px; border-radius: 8px; font-family: 'Inter',sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.15s; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; border: none; }
+        .btn-primary { background: var(--navy2); color: white; }
+        .btn-primary:hover { background: var(--navy); color: white; }
+        .btn-outline { background: none; border: 1px solid var(--border); color: var(--muted); }
+        .btn-outline:hover { border-color: var(--cyan); color: var(--cyan); }
+        .btn-danger { background: none; border: 1px solid #ffc5c5; color: #d63031; }
+        .btn-danger:hover { background: #fff0f0; }
+        .btn-sm { padding: 5px 10px; font-size: 12px; }
+
+        table { width: 100%; border-collapse: collapse; }
+        thead th { padding: 11px 16px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); background: #f8faff; border-bottom: 1px solid var(--border); text-align: left; }
+        tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; }
+        tbody tr:last-child { border-bottom: none; }
+        tbody tr:hover { background: #f8faff; }
+        tbody td { padding: 12px 16px; font-size: 13px; color: var(--text); vertical-align: middle; }
+
+        .badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+        .badge-success { background: #e6faf0; color: #00b894; }
+        .badge-danger  { background: #fff0f0; color: #d63031; }
+        .badge-cyan    { background: rgba(0,200,212,0.12); color: #008a91; }
+        .badge-navy    { background: rgba(26,42,108,0.1);  color: var(--navy2); }
+        .badge-draft   { background: #f0f4ff; color: var(--muted); }
+        .badge-published { background: #e6faf0; color: #00b894; }
+        .badge-archived  { background: #f5f5f5; color: #999; }
+
+        .empty-row td, .loading-row td { text-align: center; padding: 32px; color: var(--muted); font-size: 13px; }
+        .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
+        .stat-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 20px; transition: box-shadow 0.2s; }
+        .stat-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.06); }
+        .stat-label { font-size: 12px; color: var(--muted); font-weight: 500; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .stat-value { font-size: 34px; font-weight: 700; color: var(--text); line-height: 1; margin-bottom: 4px; }
+        .stat-sub   { font-size: 12px; color: var(--muted); }
+
+        @@media (max-width: 1200px) { .stat-grid { grid-template-columns: repeat(2, 1fr); } }
+
+        /* Partner portal nav extras */
+        .nav-link-btn { background: none; border: none; width: 100%; text-align: left; cursor: pointer; font-family: 'Inter', sans-serif; display: flex; align-items: center; }
+        .nav-link-danger { color: rgba(255,120,120,0.75) !important; }
+        .nav-link-danger:hover { color: #ff8080 !important; background: rgba(255,100,100,0.07) !important; }
+        .nav-badge { margin-left: auto; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 20px; background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.7); }
+        .nav-badge-red { background: rgba(220,38,38,0.25); color: #fca5a5; }
+        .pp-nav-stats { margin: 0 12px 6px; background: rgba(255,255,255,0.05); border-radius: 10px; overflow: hidden; border: 1px solid rgba(255,255,255,0.07); }
+        .pp-nav-stat-row { display: flex; align-items: center; justify-content: space-between; padding: 7px 13px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .pp-nav-stat-row:last-child { border-bottom: none; }
+        .pp-nav-stat-label { font-size: 11.5px; color: rgba(255,255,255,0.45); font-weight: 500; }
+        .pp-nav-stat-val { font-size: 13px; font-weight: 800; color: white; }
+    </style>
+    <script>
+        function getStoredUser() {
+            try { return JSON.parse(localStorage.getItem('tunav_user') || '{}'); }
+            catch { return {}; }
+        }
+
+        function clearSession() {
+            localStorage.removeItem('tunav_token');
+            localStorage.removeItem('tunav_user');
+        }
+
+        function redirectToLogin() {
+            window.location.href = '/auth/login';
+        }
+
+        function isSessionExpired() {
+            const user = getStoredUser();
+            if (!user.expiresAt) return false;
+            const expiresAtMs = Date.parse(user.expiresAt);
+            return Number.isFinite(expiresAtMs) && Date.now() >= expiresAtMs;
+        }
+
+        function ensureSession() {
+            const token = localStorage.getItem('tunav_token');
+            if (!token || isSessionExpired()) {
+                clearSession();
+                redirectToLogin();
+                return false;
+            }
+
+            return true;
+        }
+
+        async function authFetch(url, options = {}) {
+            if (!ensureSession()) {
+                throw new Error('AUTH_REDIRECT');
+            }
+
+            const headers = { ...(options.headers || {}) };
+            if (!headers.Authorization) {
+                headers.Authorization = 'Bearer ' + localStorage.getItem('tunav_token');
+            }
+
+            const isFormData = options.body instanceof FormData;
+            if (!isFormData && !headers['Content-Type']) {
+                headers['Content-Type'] = 'application/json';
+            }
+
+            const response = await fetch(url, { ...options, headers });
+
+            if (response.status === 401) {
+                clearSession();
+                redirectToLogin();
+                throw new Error('AUTH_REDIRECT');
+            }
+
+            return response;
+        }
+
+        (function() { ensureSession(); })();
+
+        function initUser() {
+            const u = getStoredUser();
+            if (!u.firstName) return;
+            const initials = (u.firstName[0] + (u.lastName?.[0] || '')).toUpperCase();
+            const fullName = u.firstName + ' ' + u.lastName;
+            document.querySelectorAll('.js-initials').forEach(el => el.textContent = initials);
+            document.querySelectorAll('.js-name').forEach(el => el.textContent = fullName);
+            document.querySelectorAll('.js-email').forEach(el => el.textContent = u.email || '');
+            document.querySelectorAll('.js-role').forEach(el => el.textContent = u.role || 'Admin');
+            const fn = document.getElementById('mFirstName');
+            const ln = document.getElementById('mLastName');
+            const em = document.getElementById('mEmail');
+            const rl = document.getElementById('mRole');
+            if (fn) fn.value = u.firstName || '';
+            if (ln) ln.value = u.lastName  || '';
+            if (em) em.value = u.email     || '';
+            if (rl) rl.value = u.role      || '';
+            applyAccessControl(u.role || '', u.permissions);
+        }
+
+        /** Menus pour les rôles système (inchangé). Les rôles personnalisés utilisent les codes permission (JWT / localStorage). */
+        function navFlagsFromPermissions(permissionCodes) {
+            const codes = Array.isArray(permissionCodes) ? permissionCodes : [];
+            const hasP = (prefix) => codes.some(c => c.startsWith(prefix));
+
+            const admin = hasP('system.');
+            const contenu = hasP('solution.') || hasP('team.') || hasP('blog.');
+
+            const hasEventCrud = codes.some(c => c.startsWith('event.') && !c.startsWith('event.collaboration'));
+            const evenements = hasEventCrud || hasP('training.');
+
+            const collabs = hasP('event.collaboration.') || hasP('training.');
+            const rh = hasP('job.');
+            const newsletters = hasP('newsletter.');
+            const contact = hasP('contact.');
+
+            const commercial = hasP('client.') || hasP('partner.');
+            const sectors = hasP('sector.');
+
+            // Ces 3 flags sont réservés aux rôles builtIn uniquement
+            // Pour les rôles personnalisés, ils restent false par défaut
+            return { admin, contenu, evenements, collabs, rh, newsletters, contact, commercial, sectors,
+                     partnerPortal: false, savClaims: false, commercialDemands: false };
+        }
+
+        /** Première page « maison » après connexion ou depuis l'écran Accès refusé (Dashboard réservé au rôle Admin). */
+        function defaultBackofficeHome(role, permissionCodes) {
+            if (role === 'Admin') return '/dashboard';
+
+            const builtIn = {
+                'Marketing': '/backoffice/solutions',
+                'Ressources Humaines': '/backoffice/jobs',
+                'Commercial': '/backoffice/contacts',
+                'SAV': '/backoffice/sav-claims',
+                'Partenaire': '/backoffice/partner-portal'
+            };
+            if (builtIn[role]) return builtIn[role];
+
+            const f = navFlagsFromPermissions(permissionCodes);
+            if (f.admin) return '/backoffice/users';
+            if (f.contenu) return '/backoffice/solutions';
+            if (f.evenements) return '/backoffice/events';
+            if (f.newsletters) return '/backoffice/newsletters';
+            if (f.collabs) return '/backoffice/collaborations';
+            if (f.rh) return '/backoffice/jobs';
+            if (f.contact) return '/backoffice/contacts';
+            if (f.commercial) return '/backoffice/clients';
+            if (f.sectors) return '/backoffice/sectors';
+            return '/backoffice/solutions';
+        }
+
+        function applyAccessControl(role, permissionCodes) {
+            const builtIn = {
+                'Admin':               { admin: true,  contenu: true,  evenements: true,  collabs: true,  rh: true,  newsletters: true,  contact: true,  commercial: true,  sectors: true,  partnerPortal: false, savClaims: true,  commercialDemands: true  },
+                'Marketing':           { admin: false, contenu: true,  evenements: true,  collabs: true,  rh: false, newsletters: true,  contact: false, commercial: true,  sectors: true,  partnerPortal: false, savClaims: false, commercialDemands: false },
+                'Ressources Humaines': { admin: false, contenu: false, evenements: false, collabs: true,  rh: true,  newsletters: false, contact: true,  commercial: false, sectors: false, partnerPortal: false, savClaims: false, commercialDemands: false },
+                // Commercial already defined above with portal flags
+                'SAV':                 { admin: false, contenu: false, evenements: false, collabs: false, rh: false, newsletters: false, contact: false, commercial: false, sectors: false, partnerPortal: false, savClaims: true,  commercialDemands: false },
+                'Partenaire':          { admin: false, contenu: false, evenements: false, collabs: false, rh: false, newsletters: false, contact: false, commercial: false, sectors: false, partnerPortal: true,  savClaims: false, commercialDemands: false },
+                'Commercial':          { admin: false, contenu: false, evenements: false, collabs: false, rh: false, newsletters: false, contact: true,  commercial: true,  sectors: false, partnerPortal: false, savClaims: false, commercialDemands: true  }
+            };
+
+            let perms;
+            if (Object.prototype.hasOwnProperty.call(builtIn, role))
+                perms = builtIn[role];
+            else
+                perms = navFlagsFromPermissions(permissionCodes);
+
+            const s1 = document.getElementById('nav-admin-section');
+            const s2 = document.getElementById('nav-contenu-section');
+            const s3 = document.getElementById('nav-evenements-section');
+            const s4 = document.getElementById('nav-rh-section');
+            const s5 = document.getElementById('nav-collabs-section');
+            const s6 = document.getElementById('nav-newsletters-section');
+            const s7 = document.getElementById('nav-contact-section');
+            const sDash = document.getElementById('nav-dashboard-section');
+            if (sDash) sDash.style.display = (role === 'Admin') ? '' : 'none';
+            const s8 = document.getElementById('nav-commercial-section');
+
+            if (s1) s1.style.display = perms.admin       ? '' : 'none';
+            if (s2) s2.style.display = perms.contenu     ? '' : 'none';
+            if (s3) s3.style.display = perms.evenements  ? '' : 'none';
+            if (s4) s4.style.display = perms.rh          ? '' : 'none';
+            if (s5) s5.style.display = perms.collabs     ? '' : 'none';
+            if (s6) s6.style.display = perms.newsletters ? '' : 'none';
+            if (s7) s7.style.display = perms.contact     ? '' : 'none';
+            if (s8) s8.style.display = perms.commercial  ? '' : 'none';
+            const s9 = document.getElementById('nav-sectors-section');
+            if (s9) s9.style.display = perms.sectors    ? '' : 'none';
+            const s10 = document.getElementById('nav-partner-portal-section');
+            if (s10) s10.style.display = perms.partnerPortal ? '' : 'none';
+            const s11 = document.getElementById('nav-sav-section');
+            if (s11) s11.style.display = perms.savClaims ? '' : 'none';
+            const s12 = document.getElementById('nav-commercial-demands-section');
+            if (s12) s12.style.display = perms.commercialDemands ? '' : 'none';
+
+            const path = window.location.pathname;
+            const adminPages        = ['/backoffice/users', '/backoffice/roles', '/backoffice/permissions'];
+            const contenuPages      = ['/backoffice/solutions', '/backoffice/packs', '/backoffice/team', '/backoffice/blogs'];
+            const evenementsPages   = ['/backoffice/events'];
+            const collabsPages      = ['/backoffice/collaborations', '/backoffice/partner-requests', '/backoffice/demo-requests', '/backoffice/custom-pack-requests', '/backoffice/formation'];
+            const rhPages           = ['/backoffice/jobs'];
+            const newslettersPages  = ['/backoffice/newsletters'];
+            const contactPages      = ['/backoffice/contacts'];
+            const commercialPages   = ['/backoffice/clients', '/backoffice/partners'];
+            const sectorsPages      = ['/backoffice/sectors'];
+            const partnerPortalPages  = ['/backoffice/partner-portal'];
+            const savClaimsPages      = ['/backoffice/sav-claims'];
+            const commercialDemandsPages = ['/backoffice/commercial-demands'];
+
+            let forbidden = false;
+            const isDashboardPath = path === '/dashboard' || path === '/dashboard/';
+            if (isDashboardPath && role !== 'Admin') forbidden = true;
+            if (adminPages.includes(path)       && !perms.admin)       forbidden = true;
+            if (contenuPages.includes(path)     && !perms.contenu)     forbidden = true;
+            if (evenementsPages.includes(path)  && !perms.evenements)  forbidden = true;
+            if (collabsPages.includes(path)     && !perms.collabs)     forbidden = true;
+            if (rhPages.includes(path)          && !perms.rh)          forbidden = true;
+            if (newslettersPages.includes(path) && !perms.newsletters) forbidden = true;
+            if (contactPages.includes(path)     && !perms.contact)     forbidden = true;
+            if (commercialPages.includes(path)  && !perms.commercial)  forbidden = true;
+            if (sectorsPages.includes(path)     && !perms.sectors)     forbidden = true;
+            if (partnerPortalPages.includes(path)  && !perms.partnerPortal)  forbidden = true;
+            if (savClaimsPages.includes(path)      && !perms.savClaims)      forbidden = true;
+            if (commercialDemandsPages.includes(path) && !perms.commercialDemands) forbidden = true;
+
+            if (forbidden) {
+                const homeHref = defaultBackofficeHome(role, permissionCodes);
+                const backLabel = (role === 'Admin') ? '← Retour au Dashboard' : "← Retour à l'accueil";
+                document.body.innerHTML += `<div style="
+                    position:fixed;inset:0;background:rgba(13,27,75,0.95);
+                    display:flex;align-items:center;justify-content:center;
+                    z-index:9999;flex-direction:column;gap:16px;text-align:center;padding:24px">
+                    <div style="font-size:64px">🔒</div>
+                    <h2 style="color:white;font-size:24px;font-weight:800;margin:0">Accès refusé</h2>
+                    <p style="color:rgba(255,255,255,0.7);font-size:15px;max-width:400px;margin:0">
+                        Vous n'avez pas les permissions nécessaires pour accéder à cette page.
+                    </p>
+                    <a href="${homeHref}" style="background:#00c8d4;color:#0d1b4b;font-weight:700;
+                        padding:12px 28px;border-radius:8px;text-decoration:none;font-size:15px;margin-top:8px">
+                        ${backLabel}
+                    </a>
+                </div>`;
+            }
+        }
+
+        function logout() {
+            clearSession();
+            redirectToLogin();
+        }
+
+        function authHeaders() {
+            if (!ensureSession()) {
+                return { 'Content-Type': 'application/json' };
+            }
+
+            return {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + localStorage.getItem('tunav_token')
+            };
+        }
+
+        function toggleDropdown() { document.getElementById('profileWrap').classList.toggle('open'); }
+
+        document.addEventListener('click', function(e) {
+            const wrap = document.getElementById('profileWrap');
+            if (wrap && !wrap.contains(e.target)) wrap.classList.remove('open');
+        });
+
+        function openModal(id) { document.getElementById(id).classList.add('show'); document.getElementById('profileWrap').classList.remove('open'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+        window.addEventListener('DOMContentLoaded', initUser);
+
+        // Afficher les éléments partner portal uniquement pour le rôle Partenaire
+        window.addEventListener('DOMContentLoaded', function() {
+            const u = getStoredUser();
+            if (u.role === 'Partenaire') {
+                const ids = ['ppActionsLabel','ppBtnClaim','ppBtnDemand'];
+                ids.forEach(id => { const el = document.getElementById(id); if(el) el.style.display = ''; });
+            }
+        });
+
+        // Exposer ppSwitchView globalement pour que PartnerPortal.cshtml puisse le brancher
+        function ppSwitchView(view) {
+            if (typeof switchView === 'function') switchView(view);
+            const dash = document.getElementById('ppNavDashboard');
+            const hist = document.getElementById('ppNavHistory');
+            if (dash && hist) {
+                dash.classList.toggle('active', view === 'dashboard');
+                hist.classList.toggle('active', view === 'history');
+            }
+        }
+    </script>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <div class="brand-logo"><img src="/images/tunav.jpg" alt="Tunav" /></div>
+            <div>
+                <div class="brand-name">TUNAV IT Group</div>
+                <div class="brand-sub">Backoffice</div>
+            </div>
+        </div>
+        <div class="sidebar-role">Role: <span class="role-badge js-role">Admin</span></div>
+        <nav class="sidebar-nav">
+            <div id="nav-dashboard-section">
+                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Dashboard" ? "active" : "")" href="/dashboard">Dashboard</a>
+            </div>
+
+            <div id="nav-admin-section">
+                
+                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Users" ? "active" : "")" href="/backoffice/users"> Utilisateurs</a>
+                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Roles" ? "active" : "")" href="/backoffice/roles"> Roles</a>
+                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Permissions" ? "active" : "")" href="/backoffice/permissions">Permissions</a>
+            </div>
+
+            <div id="nav-contenu-section">
+               
+                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Solutions" ? "active" : "")" href="/backoffice/solutions"> Solutions</a>
+                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Packs" ? "active" : "")" href="/backoffice/packs">Packs</a>
+                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Team" ? "active" : "")" href="/backoffice/team"> Equipe</a>
+                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Blog" ? "active" : "")" href="/backoffice/blogs">Blog</a>
+            </div>
+
+            <div id="nav-sectors-section">
+                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Sectors" ? "active" : "")" href="/backoffice/sectors">Secteurs d'Activité</a>
+            </div>
+
+            <div id="nav-evenements-section">
+                
+                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Events" ? "active" : "")" href="/backoffice/events"> Événements</a>
+            </div>
+
+            <div id="nav-newsletters-section">
+                
+                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Newsletters" ? "active" : "")" href="/backoffice/newsletters">Newsletters</a>
+            </div>
+
+            <div id="nav-collabs-section">
+               
+                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Collaborations" ? "active" : "")" href="/backoffice/collaborations"> Collaborations</a>
+                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "PartnerRequests" ? "active" : "")" href="/backoffice/partner-requests">Demandes Partenaires</a>
+                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "DemoRequests" ? "active" : "")" href="/backoffice/demo-requests">Demandes de Demo</a>
+                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "CustomPackRequests" ? "active" : "")" href="/backoffice/custom-pack-requests">Demandes de Packs</a>
+                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Formation" ? "active" : "")" href="/backoffice/formation">Pôle Formation</a>
+            </div>
+
+            <div id="nav-rh-section">
+                
+                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Jobs" ? "active" : "")" href="/backoffice/jobs"> Offres d'emploi</a>
+            </div>
+
+            <div id="nav-contact-section">
+                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Contacts" ? "active" : "")" href="/backoffice/contacts">Contacts & Rendez-vous</a>
+            </div>
+
+            <div id="nav-commercial-section">
+                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Clients" ? "active" : "")" href="/backoffice/clients">Clients</a>
+                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Partners" ? "active" : "")" href="/backoffice/partners">Partenaires</a>
+            </div>
+
+            <div id="nav-partner-portal-section">
+              
+                <button class="nav-link nav-link-btn @(ViewData["ActivePage"]?.ToString() == "PartnerPortal" ? "active" : "")"
+                    id="ppNavDashboard" onclick="ppSwitchView('dashboard')">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                    Tableau de bord
+                </button>
+                <button class="nav-link nav-link-btn" id="ppNavHistory" onclick="ppSwitchView('history')">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>
+                    Historique
+                </button>
+
+               
+                <button class="nav-link nav-link-btn nav-link-danger" id="ppBtnClaim" style="display:none" onclick="openClaimModal ? openClaimModal() : null">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    Nouvelle réclamation
+                </button>
+                <button class="nav-link nav-link-btn" id="ppBtnDemand" style="display:none" onclick="openDemandModal ? openDemandModal() : null">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+                    Nouvelle demande
+                </button>
+            </div>
+
+            <div id="nav-sav-section">
+
+                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "SavClaims" ? "active" : "")" href="/backoffice/sav-claims">Réclamations</a>
+            </div>
+
+            <div id="nav-commercial-demands-section">
+
+                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "CommercialDemands" ? "active" : "")" href="/backoffice/commercial-demands">Demandes Partenaires-Backoffice</a>
+            </div>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="u-avatar js-initials">AD</div>
+            <div>
+                <div class="u-name js-name">Admin User</div>
+                <div class="u-email js-email"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="650401080c0b2511100b04134b110b">[email&#160;protected]</a></div>
+            </div>
+            <button class="btn-logout" onclick="logout()">Sortir</button>
+        </div>
+    </aside>
+
+    <div class="topbar">
+        <div class="topbar-title">@ViewData["Title"]</div>
+        <div class="profile-wrap" id="profileWrap">
+            <div class="profile-btn" onclick="toggleDropdown()">
+                <div class="profile-avatar js-initials">AD</div>
+                <div>
+                    <div class="p-name js-name">Admin User</div>
+                    <div class="p-role js-role">Admin</div>
+                </div>
+                <span class="p-arrow">▾</span>
+            </div>
+            <div class="dropdown">
+                <div class="dd-head">
+                    <div class="dd-av js-initials">AD</div>
+                    <div>
+                        <div class="dd-fullname js-name">Admin User</div>
+                        <div class="dd-rolebadge js-role">Admin</div>
+                        <div class="dd-mail js-email"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="442520292d2a0430312a25326a302a">[email&#160;protected]</a></div>
+                    </div>
+                </div>
+                <div class="dd-section">
+                    <div class="dd-section-title">Mon Profil</div>
+                    <div class="dd-item" onclick="openModal('modalProfil')">
+                        <div><div class="dd-item-label">Informations personnelles</div><div class="dd-item-sub">Voir votre profil</div></div>
+                    </div>
+                    <div class="dd-item" onclick="openModal('modalPassword')">
+                        <div><div class="dd-item-label">Changer mot de passe</div><div class="dd-item-sub">Securite du compte</div></div>
+                    </div>
+                </div>
+                <div class="dd-section">
+                    <div class="dd-section-title">Gestion Systeme</div>
+                    <a class="dd-item" href="/backoffice/users">
+                        <div><div class="dd-item-label">Utilisateurs</div><div class="dd-item-sub">Gestion des acces</div></div>
+                    </a>
+                    <a class="dd-item" href="/backoffice/roles">
+                        <div><div class="dd-item-label">Roles et Permissions</div><div class="dd-item-sub">Configuration avancee</div></div>
+                    </a>
+                </div>
+                <div class="dd-section">
+                    <div class="dd-item danger" onclick="logout()">
+                        <div><div class="dd-item-label">Se deconnecter</div><div class="dd-item-sub">Fermer votre session</div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        @RenderBody()
+    </div>
+
+    <div class="modal-overlay" id="modalProfil" onclick="if(event.target===this)closeModal('modalProfil')">
+        <div class="modal-box">
+            <h3>Informations personnelles</h3>
+            <div class="modal-field"><label>Prenom</label><input type="text" id="mFirstName" readonly /></div>
+            <div class="modal-field"><label>Nom</label><input type="text" id="mLastName" readonly /></div>
+            <div class="modal-field"><label>Email</label><input type="email" id="mEmail" readonly /></div>
+            <div class="modal-field"><label>Role</label><input type="text" id="mRole" readonly /></div>
+            <div class="modal-actions">
+                <button class="btn btn-outline" onclick="closeModal('modalProfil')">Fermer</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modalPassword" onclick="if(event.target===this)closeModal('modalPassword')">
+        <div class="modal-box">
+            <h3>Changer mot de passe</h3>
+            <div id="pwMsg" style="display:none;padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:14px"></div>
+            <div class="modal-field"><label>Nouveau mot de passe</label><input type="password" id="pwNew" placeholder="Minimum 6 caracteres" /></div>
+            <div class="modal-field"><label>Confirmer</label><input type="password" id="pwConfirm" placeholder="Repetez le mot de passe" /></div>
+            <div class="modal-actions">
+                <button class="btn btn-outline" onclick="closeModal('modalPassword')">Annuler</button>
+                <button class="btn btn-primary" onclick="changePassword()">Enregistrer</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function changePassword() {
+            const newPw   = document.getElementById('pwNew').value;
+            const confirm = document.getElementById('pwConfirm').value;
+            if (!newPw || newPw.length < 6) { showPwMsg('Minimum 6 caracteres.', false); return; }
+            if (newPw !== confirm)           { showPwMsg('Les mots de passe ne correspondent pas.', false); return; }
+            const u = getStoredUser();
+            try {
+                const res  = await fetch('/api/users/' + u.userId + '/reset-password', {
+                    method: 'PATCH', headers: authHeaders(), body: JSON.stringify({ newPassword: newPw })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    showPwMsg('Mot de passe modifie avec succes !', true);
+                    document.getElementById('pwNew').value = '';
+                    document.getElementById('pwConfirm').value = '';
+                } else {
+                    showPwMsg(data.message || 'Erreur.', false);
+                }
+            } catch { showPwMsg('Erreur reseau.', false); }
+        }
+
+        function showPwMsg(text, ok) {
+            const el = document.getElementById('pwMsg');
+            el.textContent = text;
+            el.style.display = 'block';
+            el.style.background = ok ? '#e6faf0' : '#fff0f0';
+            el.style.border     = ok ? '1px solid #b2dfdb' : '1px solid #ffc5c5';
+            el.style.color      = ok ? '#00b894' : '#d63031';
+        }
+    </script>
+    @RenderSection("Scripts", required: false)
+</body>
+</html>

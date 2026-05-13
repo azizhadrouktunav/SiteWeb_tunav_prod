@@ -1,0 +1,578 @@
+@{
+    ViewData["Title"] = "Gestion des Packs";
+    ViewData["ActivePage"] = "Packs";
+    Layout = "~/Views/Shared/_LayoutBackoffice.cshtml";
+}
+
+<div class="page-header">
+    <h1>Gestion des Packs</h1>
+    <p>Administrez les catalogues de packs affichés sur la page publique Nos Packs.</p>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <div class="packs-toolbar">
+            <h2>Packs (<span id="packCount">0</span>)</h2>
+            <select id="filterSolution" onchange="loadPacks()">
+                <option value="">Toutes les solutions</option>
+            </select>
+            <select id="filterStatus" onchange="loadPacks()">
+                <option value="">Tous les statuts</option>
+                <option value="true">Actifs</option>
+                <option value="false">Inactifs</option>
+            </select>
+            <input id="filterSearch" type="text" placeholder="Rechercher un pack..." />
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="openAddModal()">+ Ajouter un pack</button>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Solution</th>
+                <th>Pack</th>
+                <th>Theme / Priorite</th>
+                <th>Fonctionnalites</th>
+                <th>Statut</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="packsTable">
+            <tr class="loading-row"><td colspan="6">Chargement...</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="modal-overlay" id="packFormModal" onclick="if(event.target===this)closeForm()">
+    <div class="modal-box pack-modal-box">
+        <h3 id="packModalTitle">Ajouter un pack</h3>
+        <div id="formError" class="form-error" style="display:none"></div>
+
+        <div class="form-grid form-grid-2">
+            <div class="mfield">
+                <label>Solution generale *</label>
+                <select id="fSolutionId"></select>
+            </div>
+            <div class="mfield">
+                <label>Nom *</label>
+                <input type="text" id="fName" placeholder="Ex: Pack Entreprise" />
+            </div>
+        </div>
+
+        <div class="mfield" style="margin-bottom:14px">
+            <label>Description *</label>
+            <textarea id="fDescription" rows="4" placeholder="Description du pack..."></textarea>
+        </div>
+
+        <div class="form-grid form-grid-2" style="margin-bottom:14px">
+            <div class="mfield">
+                <label>Theme *</label>
+                <select id="fThemeKey">
+                    <option value="green">Green</option>
+                    <option value="orange">Orange</option>
+                    <option value="rose">Rose</option>
+                </select>
+            </div>
+            <div class="mfield">
+                <label>Ordre d'affichage</label>
+                <input type="number" id="fDisplayOrder" min="0" step="1" placeholder="1" />
+            </div>
+        </div>
+
+        <div class="form-grid form-grid-2" style="margin-bottom:14px">
+            <div class="mfield">
+                <label>Pack populaire</label>
+                <select id="fIsPopular">
+                    <option value="false">Non</option>
+                    <option value="true">Oui</option>
+                </select>
+            </div>
+            <div class="mfield" id="statusField" style="display:none">
+                <label>Statut</label>
+                <select id="fIsActive">
+                    <option value="true">Actif</option>
+                    <option value="false">Inactif</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="mfield" style="margin-bottom:14px">
+            <label>URL video (optionnelle)</label>
+            <input type="text" id="fVideoUrl" placeholder="https://www.youtube.com/embed/..." />
+        </div>
+
+        <div class="mfield" style="margin-bottom:12px">
+            <label>Fonctionnalites (une ligne = une fonctionnalite)</label>
+            <textarea id="fFeatures" rows="8" placeholder="Tracking GPS en temps reel&#10;Alertes de vitesse&#10;Support prioritaire"></textarea>
+        </div>
+
+        <div class="modal-actions">
+            <button class="btn btn-outline" onclick="closeForm()">Annuler</button>
+            <button class="btn btn-primary" id="btnSave" onclick="savePack()">Enregistrer</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="deleteModal" onclick="if(event.target===this)closeDelete()">
+    <div class="modal-box" style="max-width:420px;text-align:center">
+        <h3 style="margin-bottom:8px">Supprimer ce pack ?</h3>
+        <p id="deleteMessage" style="font-size:14px;color:#6b7db3;margin-bottom:24px"></p>
+        <div style="display:flex;gap:10px;justify-content:center">
+            <button class="btn btn-outline" onclick="closeDelete()">Annuler</button>
+            <button class="btn btn-danger" id="btnConfirmDelete" onclick="confirmDelete()">Supprimer</button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<style>
+    .packs-toolbar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .packs-toolbar input,
+    .packs-toolbar select {
+        padding: 7px 12px;
+        border: 1.5px solid #dce4f5;
+        border-radius: 8px;
+        font-size: 13px;
+        color: #1e2d5a;
+        outline: none;
+        background: #fff;
+    }
+
+    .packs-toolbar input {
+        min-width: 260px;
+    }
+
+    .pack-modal-box {
+        width: min(900px, 95vw);
+        max-height: calc(100vh - 48px);
+        overflow-y: auto;
+    }
+
+    .form-grid {
+        display: grid;
+        gap: 14px;
+    }
+
+    .form-grid-2 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .mfield label {
+        display: block;
+        font-size: 12px;
+        font-weight: 600;
+        color: #6b7db3;
+        margin-bottom: 6px;
+    }
+
+    .mfield input,
+    .mfield textarea,
+    .mfield select {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1.5px solid #dce4f5;
+        border-radius: 8px;
+        font-size: 13px;
+        font-family: 'Inter', sans-serif;
+        color: #1e2d5a;
+        outline: none;
+        background: #fff;
+    }
+
+    .form-error {
+        background: #fff0f0;
+        border: 1px solid #ffc5c5;
+        color: #d63031;
+        padding: 10px 14px;
+        border-radius: 8px;
+        font-size: 13px;
+        margin-bottom: 14px;
+    }
+
+    .pack-name {
+        font-weight: 700;
+        color: #1e2d5a;
+    }
+
+    .pack-desc {
+        font-size: 11px;
+        color: #6b7db3;
+        margin-top: 4px;
+        max-width: 320px;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .theme-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 3px 10px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 700;
+        color: white;
+        text-transform: uppercase;
+    }
+
+    .theme-badge--green { background: linear-gradient(135deg, #22c55e, #059669); }
+    .theme-badge--orange { background: linear-gradient(135deg, #f97316, #f59e0b); }
+    .theme-badge--rose { background: linear-gradient(135deg, #f43f5e, #e11d48); }
+
+    .popular-badge {
+        margin-top: 8px;
+        display: inline-flex;
+        padding: 3px 9px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 600;
+        color: #1a2a6c;
+        background: rgba(26,42,108,0.08);
+    }
+
+    @@media (max-width: 900px) {
+        .form-grid-2 {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<script>
+    let editingId = null;
+    let deletingId = null;
+    let generalSolutions = [];
+    let searchTimer = null;
+
+    function esc(value) {
+        if (value === null || value === undefined) return '';
+        return String(value)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    function parseLines(text) {
+        return Array.from(new Set((text || '')
+            .split(/\r?\n/)
+            .map(value => value.trim())
+            .filter(Boolean)));
+    }
+
+    function themeBadge(themeKey) {
+        const safeTheme = ['green', 'orange', 'rose'].includes(themeKey) ? themeKey : 'green';
+        return `<span class="theme-badge theme-badge--${safeTheme}">${safeTheme}</span>`;
+    }
+
+    function statusBadge(isActive) {
+        return `<span class="badge ${isActive ? 'badge-success' : 'badge-danger'}">${isActive ? 'Actif' : 'Inactif'}</span>`;
+    }
+
+    function buildUrl() {
+        const params = new URLSearchParams();
+        const solutionId = document.getElementById('filterSolution').value;
+        const status = document.getElementById('filterStatus').value;
+        const search = document.getElementById('filterSearch').value.trim();
+
+        if (solutionId) params.set('solutionId', solutionId);
+        if (status !== '') params.set('isActive', status);
+        if (search) params.set('search', search);
+
+        const query = params.toString();
+        return query ? `/api/packs?${query}` : '/api/packs';
+    }
+
+    function renderSolutionOptions() {
+        const filter = document.getElementById('filterSolution');
+        const formSelect = document.getElementById('fSolutionId');
+        const currentFilter = filter.value;
+        const currentFormValue = formSelect.value;
+        const options = generalSolutions
+            .map(solution => `<option value="${solution.id}">${esc(solution.title)}${solution.isActive ? '' : ' (inactive)'}</option>`)
+            .join('');
+
+        filter.innerHTML = '<option value="">Toutes les solutions</option>' + options;
+        formSelect.innerHTML = '<option value="">Choisir une solution</option>' + options;
+
+        if (generalSolutions.some(solution => String(solution.id) === currentFilter)) {
+            filter.value = currentFilter;
+        }
+
+        if (generalSolutions.some(solution => String(solution.id) === currentFormValue)) {
+            formSelect.value = currentFormValue;
+        }
+    }
+
+    async function loadGeneralSolutions() {
+        try {
+            const res = await authFetch('/api/packs/general-solutions');
+            if (!res.ok) throw new Error(`status ${res.status}`);
+            const data = await res.json();
+            generalSolutions = Array.isArray(data) ? data : [];
+        } catch (error) {
+            console.error(error);
+            generalSolutions = [];
+        }
+
+        renderSolutionOptions();
+    }
+
+    function renderTable(list) {
+        const table = document.getElementById('packsTable');
+        document.getElementById('packCount').textContent = list.length;
+
+        if (!list.length) {
+            table.innerHTML = '<tr class="empty-row"><td colspan="6">Aucun pack trouve.</td></tr>';
+            return;
+        }
+
+        table.innerHTML = list.map(pack => `
+            <tr>
+                <td style="font-weight:600">${esc(pack.solutionTitle)}</td>
+                <td>
+                    <div class="pack-name">${esc(pack.name)}</div>
+                    <div class="pack-desc">${esc(pack.description)}</div>
+                </td>
+                <td>
+                    ${themeBadge(pack.themeKey)}
+                    <div style="font-size:11px;color:#6b7db3;margin-top:8px">Ordre: <strong>${pack.displayOrder}</strong></div>
+                    ${pack.isPopular ? '<div class="popular-badge">Populaire</div>' : ''}
+                </td>
+                <td><strong>${Array.isArray(pack.features) ? pack.features.length : 0}</strong> fonctionnalites</td>
+                <td>${statusBadge(!!pack.isActive)}</td>
+                <td>
+                    <div style="display:flex;gap:6px;flex-wrap:wrap">
+                        <button class="btn btn-outline btn-sm" onclick="openEditModal(${pack.id})">Modifier</button>
+                        <button class="btn ${pack.isActive ? 'btn-outline' : 'btn-primary'} btn-sm" onclick="toggleStatus(${pack.id})">${pack.isActive ? 'Desactiver' : 'Activer'}</button>
+                        <button
+                            class="btn btn-danger btn-sm"
+                            data-pack-id="${pack.id}"
+                            data-pack-name="${esc(pack.name)}"
+                            data-solution-title="${esc(pack.solutionTitle)}"
+                            onclick="openDeleteFromButton(this)">
+                            Supprimer
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    async function loadPacks() {
+        document.getElementById('packsTable').innerHTML = '<tr class="loading-row"><td colspan="6">Chargement...</td></tr>';
+
+        try {
+            const res = await authFetch(buildUrl());
+            if (!res.ok) {
+                document.getElementById('packsTable').innerHTML = '<tr class="empty-row"><td colspan="6">Erreur de chargement.</td></tr>';
+                return;
+            }
+
+            const data = await res.json();
+            renderTable(Array.isArray(data) ? data : []);
+        } catch (error) {
+            console.error(error);
+            document.getElementById('packsTable').innerHTML = '<tr class="empty-row"><td colspan="6">Erreur reseau.</td></tr>';
+        }
+    }
+
+    function resetFormState() {
+        document.getElementById('fSolutionId').value = '';
+        document.getElementById('fName').value = '';
+        document.getElementById('fDescription').value = '';
+        document.getElementById('fThemeKey').value = 'green';
+        document.getElementById('fDisplayOrder').value = '0';
+        document.getElementById('fIsPopular').value = 'false';
+        document.getElementById('fVideoUrl').value = '';
+        document.getElementById('fFeatures').value = '';
+        document.getElementById('fIsActive').value = 'true';
+        document.getElementById('formError').style.display = 'none';
+        document.getElementById('formError').textContent = '';
+    }
+
+    function openAddModal() {
+        editingId = null;
+        resetFormState();
+        document.getElementById('packModalTitle').textContent = 'Ajouter un pack';
+        document.getElementById('btnSave').textContent = 'Enregistrer';
+        document.getElementById('statusField').style.display = 'none';
+        document.getElementById('packFormModal').classList.add('show');
+    }
+
+    async function openEditModal(id) {
+        editingId = id;
+        resetFormState();
+        document.getElementById('packModalTitle').textContent = 'Modifier le pack';
+        document.getElementById('btnSave').textContent = 'Mettre a jour';
+        document.getElementById('statusField').style.display = 'block';
+
+        try {
+            const res = await authFetch('/api/packs/' + id);
+            if (!res.ok) {
+                showError('Erreur lors du chargement du pack.');
+                return;
+            }
+
+            const pack = await res.json();
+            document.getElementById('fSolutionId').value = pack.solutionId ? String(pack.solutionId) : '';
+            document.getElementById('fName').value = pack.name || '';
+            document.getElementById('fDescription').value = pack.description || '';
+            document.getElementById('fThemeKey').value = pack.themeKey || 'green';
+            document.getElementById('fDisplayOrder').value = String(pack.displayOrder ?? 0);
+            document.getElementById('fIsPopular').value = pack.isPopular ? 'true' : 'false';
+            document.getElementById('fVideoUrl').value = pack.videoUrl || '';
+            document.getElementById('fFeatures').value = Array.isArray(pack.features) ? pack.features.join('\n') : '';
+            document.getElementById('fIsActive').value = pack.isActive ? 'true' : 'false';
+            document.getElementById('packFormModal').classList.add('show');
+        } catch (error) {
+            console.error(error);
+            showError('Erreur reseau lors du chargement.');
+        }
+    }
+
+    function closeForm() {
+        document.getElementById('packFormModal').classList.remove('show');
+        editingId = null;
+    }
+
+    function showError(message) {
+        const el = document.getElementById('formError');
+        el.textContent = message;
+        el.style.display = 'block';
+    }
+
+    async function savePack() {
+        const solutionId = Number(document.getElementById('fSolutionId').value);
+        const name = document.getElementById('fName').value.trim();
+        const description = document.getElementById('fDescription').value.trim();
+        const themeKey = document.getElementById('fThemeKey').value;
+        const displayOrder = Number(document.getElementById('fDisplayOrder').value || '0');
+        const isPopular = document.getElementById('fIsPopular').value === 'true';
+        const videoUrl = document.getElementById('fVideoUrl').value.trim();
+        const features = parseLines(document.getElementById('fFeatures').value);
+        const isActive = document.getElementById('fIsActive').value === 'true';
+
+        if (!solutionId) {
+            showError('Veuillez choisir une solution generale.');
+            return;
+        }
+
+        if (name.length < 2) {
+            showError('Le nom du pack est obligatoire.');
+            return;
+        }
+
+        if (features.length === 0) {
+            showError('Veuillez saisir au moins une fonctionnalite.');
+            return;
+        }
+
+        const payload = {
+            solutionId,
+            name,
+            description,
+            themeKey,
+            displayOrder,
+            isPopular,
+            videoUrl: videoUrl || null,
+            features,
+            isActive,
+        };
+
+        const btn = document.getElementById('btnSave');
+        btn.disabled = true;
+        btn.textContent = 'Traitement...';
+
+        try {
+            const res = await authFetch(editingId ? `/api/packs/${editingId}` : '/api/packs', {
+                method: editingId ? 'PUT' : 'POST',
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+                closeForm();
+                await loadPacks();
+                return;
+            }
+
+            const data = await res.json().catch(() => ({}));
+            showError(data.message || 'Erreur lors de la sauvegarde.');
+        } catch (error) {
+            console.error(error);
+            showError('Erreur reseau lors de la sauvegarde.');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = editingId ? 'Mettre a jour' : 'Enregistrer';
+        }
+    }
+
+    async function toggleStatus(id) {
+        try {
+            const res = await authFetch(`/api/packs/${id}/toggle`, { method: 'PATCH' });
+            if (res.ok) {
+                await loadPacks();
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    function openDeleteFromButton(button) {
+        openDelete(
+            Number(button.dataset.packId),
+            button.dataset.packName || '',
+            button.dataset.solutionTitle || '');
+    }
+
+    function openDelete(id, packName, solutionTitle) {
+        deletingId = id;
+        document.getElementById('deleteMessage').innerHTML =
+            `Voulez-vous vraiment supprimer <strong>${esc(packName)}</strong> de <strong>${esc(solutionTitle)}</strong> ?`;
+        document.getElementById('deleteModal').classList.add('show');
+    }
+
+    function closeDelete() {
+        deletingId = null;
+        document.getElementById('deleteModal').classList.remove('show');
+    }
+
+    async function confirmDelete() {
+        if (!deletingId) return;
+
+        const btn = document.getElementById('btnConfirmDelete');
+        btn.disabled = true;
+        btn.textContent = 'Suppression...';
+
+        try {
+            const res = await authFetch('/api/packs/' + deletingId, { method: 'DELETE' });
+            if (res.ok || res.status === 204) {
+                closeDelete();
+                await loadPacks();
+            }
+        } catch (error) {
+            console.error(error);
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Supprimer';
+        }
+    }
+
+    document.getElementById('filterSearch')?.addEventListener('input', () => {
+        if (searchTimer) clearTimeout(searchTimer);
+        searchTimer = setTimeout(loadPacks, 300);
+    });
+
+    (async function init() {
+        await loadGeneralSolutions();
+        await loadPacks();
+    })();
+</script>
+}

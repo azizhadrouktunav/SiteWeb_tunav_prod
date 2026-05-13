@@ -1,0 +1,726 @@
+@{
+    ViewData["Title"] = "Mon Espace Partenaire";
+    Layout = "~/Views/Shared/_LayoutBackoffice.cshtml";
+    ViewData["ActivePage"] = "PartnerPortal";
+}
+
+<style>
+/* ═══════════════════════════════════════════════════════
+   PARTNER PORTAL — Design professionnel
+═══════════════════════════════════════════════════════ */
+
+/* ── Layout 1 colonne (sidebar supprimée, intégrée au layout) ── */
+.pp-wrap {
+    display: block;
+}
+
+/* ════════════════════════════
+   CONTENU PRINCIPAL
+════════════════════════════ */
+.pp-main { min-width:0; }
+
+/* ── Bannière bienvenue ── */
+.pp-welcome {
+    background:linear-gradient(130deg, #0f1c42 0%, #163172 50%, #0a6e96 100%);
+    border-radius:16px;
+    padding:34px 38px;
+    margin-bottom:22px;
+    position:relative; overflow:hidden;
+    box-shadow:0 10px 40px rgba(15,28,66,.22);
+}
+.pp-welcome::before {
+    content:'';
+    position:absolute; top:-80px; right:-60px;
+    width:300px; height:300px;
+    background:radial-gradient(circle,rgba(0,200,212,.16),transparent 65%);
+}
+.pp-welcome::after {
+    content:'';
+    position:absolute; bottom:-60px; right:160px;
+    width:220px; height:220px;
+    background:radial-gradient(circle,rgba(255,255,255,.05),transparent 65%);
+}
+.pp-welcome-geo {
+    position:absolute; top:20px; right:36px;
+    opacity:.08; z-index:0;
+}
+.pp-welcome-pill {
+    display:inline-flex; align-items:center; gap:6px;
+    background:rgba(0,200,212,.18);
+    border:1px solid rgba(0,200,212,.3);
+    color:#00c8d4;
+    font-size:10.5px; font-weight:700;
+    text-transform:uppercase; letter-spacing:.9px;
+    padding:4px 12px; border-radius:20px;
+    margin-bottom:14px;
+    position:relative; z-index:1;
+}
+.pp-welcome h2 {
+    font-size:24px; font-weight:800; color:#fff;
+    margin:0 0 6px; line-height:1.25;
+    position:relative; z-index:1;
+}
+.pp-welcome h2 em { color:#00c8d4; font-style:normal; }
+.pp-welcome p {
+    font-size:13.5px; color:rgba(255,255,255,.6);
+    margin:0 0 26px; max-width:500px;
+    line-height:1.65; position:relative; z-index:1;
+}
+.pp-welcome-btns {
+    display:flex; gap:12px; flex-wrap:wrap;
+    position:relative; z-index:1;
+}
+.pp-wbtn {
+    display:inline-flex; align-items:center; gap:8px;
+    padding:11px 22px; border-radius:10px; border:none;
+    font-family:inherit; font-size:13.5px; font-weight:600;
+    cursor:pointer; transition:all .18s; white-space:nowrap;
+}
+.pp-wbtn.primary {
+    background:#00c8d4; color:#fff;
+    box-shadow:0 4px 16px rgba(0,200,212,.35);
+}
+.pp-wbtn.primary:hover { background:#00b3be; transform:translateY(-1px); box-shadow:0 6px 22px rgba(0,200,212,.45); }
+.pp-wbtn.outline {
+    background:rgba(255,255,255,.1);
+    border:1.5px solid rgba(255,255,255,.22);
+    color:#fff;
+}
+.pp-wbtn.outline:hover { background:rgba(255,255,255,.18); transform:translateY(-1px); }
+
+/* ── Carte tableau ── */
+.pp-card {
+    background:#fff;
+    border:1.5px solid #e4eaf6;
+    border-radius:14px; overflow:hidden;
+    box-shadow:0 2px 14px rgba(20,36,80,.055);
+}
+.pp-card-head {
+    padding:16px 22px;
+    border-bottom:1.5px solid #f0f3fa;
+    display:flex; align-items:center; justify-content:space-between; gap:14px;
+    flex-wrap:wrap;
+}
+.pp-card-title { font-size:14.5px; font-weight:700; color:#1e2d5a; }
+
+/* Tabs */
+.pp-tabs { display:flex; gap:0; }
+.pp-tab {
+    background:none; border:none;
+    border-bottom:2.5px solid transparent; margin-bottom:-1.5px;
+    padding:8px 16px;
+    font-family:inherit; font-size:12.5px; font-weight:500; color:#9aabbf;
+    cursor:pointer; transition:color .16s,border-color .16s; white-space:nowrap;
+}
+.pp-tab:hover { color:#1e2d5a; }
+.pp-tab.active { color:#00c8d4; border-bottom-color:#00c8d4; font-weight:700; }
+
+/* Table */
+.pp-table { width:100%; border-collapse:collapse; }
+.pp-table thead tr { background:#f8faff; }
+.pp-table thead th {
+    font-size:10px; font-weight:700; text-transform:uppercase;
+    letter-spacing:.7px; color:#9aabbf;
+    padding:11px 20px; text-align:left;
+    border-bottom:1.5px solid #eef1fa;
+}
+.pp-table tbody tr { border-bottom:1px solid #f4f6fc; transition:background .14s; }
+.pp-table tbody tr:last-child { border-bottom:none; }
+.pp-table tbody tr:hover { background:#fafbff; }
+.pp-table td { padding:13px 20px; vertical-align:middle; }
+.pp-table .empty-row td {
+    text-align:center; color:#aab8d4;
+    padding:44px; font-size:13px;
+}
+
+/* Pills & badges */
+.type-pill {
+    display:inline-flex; align-items:center; gap:4px;
+    padding:2px 10px; border-radius:6px;
+    font-size:10.5px; font-weight:700;
+    text-transform:uppercase; letter-spacing:.4px;
+}
+.tp-claim  { background:#fde8e8; color:#991b1b; }
+.tp-demand { background:#e8f0fe; color:#1a56cc; }
+
+.status-badge {
+    display:inline-flex; padding:3px 10px; border-radius:6px;
+    font-size:10.5px; font-weight:700;
+    text-transform:uppercase; letter-spacing:.4px;
+}
+.s-nouvelle     { background:#e8f0fe; color:#1a56cc; }
+.s-encours      { background:#fef3cd; color:#a05a00; }
+.s-entraitement { background:#fef3cd; color:#a05a00; }
+.s-resolue      { background:#d4edda; color:#1a5c33; }
+.s-acceptee     { background:#d4edda; color:#1a5c33; }
+.s-fermee,
+.s-cloturee     { background:#f0f0f0; color:#555; }
+.s-refusee      { background:#fde8e8; color:#991b1b; }
+
+.internal-note {
+    margin-top:5px; padding:5px 10px;
+    background:#f5f7ff; border-left:3px solid #93a8e8;
+    border-radius:0 4px 4px 0; font-size:11px; color:#1e2d5a;
+}
+
+/* ── Session warning ── */
+.pid-warning {
+    display:none; background:#fff3cd;
+    border:1px solid #ffc107; border-radius:10px;
+    padding:12px 16px; margin-bottom:18px;
+    font-size:13px; color:#856404;
+}
+
+/* ════════════════════════════
+   MODALS
+════════════════════════════ */
+.modal-overlay {
+    display:none; position:fixed; inset:0; z-index:1000;
+    background:rgba(10,18,50,.58);
+    backdrop-filter:blur(5px);
+    align-items:center; justify-content:center; padding:20px;
+}
+.modal-overlay.show { display:flex; }
+.modal-box {
+    background:#fff; border-radius:18px;
+    padding:32px; width:100%; max-width:540px;
+    position:relative;
+    box-shadow:0 24px 70px rgba(10,18,50,.28);
+    animation:ppModalIn .22s cubic-bezier(.34,1.56,.64,1);
+}
+@@keyframes ppModalIn {
+    from { opacity:0; transform:scale(.94) translateY(12px); }
+    to   { opacity:1; transform:scale(1)   translateY(0); }
+}
+.modal-close-btn {
+    position:absolute; top:16px; right:16px;
+    width:32px; height:32px; border-radius:8px;
+    background:#f5f7fd; border:none; cursor:pointer;
+    color:#6b7db3; font-size:15px;
+    display:flex; align-items:center; justify-content:center;
+    transition:background .16s, color .16s;
+}
+.modal-close-btn:hover { background:#fde8e8; color:#dc2626; }
+
+.modal-icon {
+    width:48px; height:48px; border-radius:13px;
+    display:flex; align-items:center; justify-content:center;
+    margin-bottom:14px;
+}
+.modal-icon.red  { background:#fde8e8; color:#dc2626; }
+.modal-icon.blue { background:#eff6ff; color:#2563eb; }
+
+.modal-h3 { font-size:18px; font-weight:800; color:#1e2d5a; margin:0 0 3px; }
+.modal-sub { font-size:13px; color:#9aabbf; margin:0 0 22px; }
+
+.modal-field { margin-bottom:15px; }
+.modal-field label {
+    display:block; font-size:11.5px; font-weight:700;
+    color:#4a5568; text-transform:uppercase; letter-spacing:.5px;
+    margin-bottom:7px;
+}
+.modal-field input,
+.modal-field select,
+.modal-field textarea {
+    width:100%; padding:11px 14px;
+    border:1.5px solid #dce4f5; border-radius:10px;
+    font-size:13.5px; font-family:inherit; color:#1e2d5a;
+    outline:none; background:#fff;
+    transition:border-color .16s, box-shadow .16s;
+}
+.modal-field input:focus,
+.modal-field select:focus,
+.modal-field textarea:focus {
+    border-color:#00c8d4;
+    box-shadow:0 0 0 3px rgba(0,200,212,.11);
+}
+.modal-field textarea { resize:vertical; }
+
+.modal-error {
+    display:none; padding:10px 14px;
+    background:#fde8e8; border-radius:8px;
+    color:#991b1b; font-size:13px; margin-bottom:14px;
+    border-left:3px solid #dc2626;
+}
+.modal-actions {
+    display:flex; gap:10px;
+    justify-content:flex-end; margin-top:6px;
+}
+
+/* Boutons globaux */
+.btn {
+    display:inline-flex; align-items:center; gap:7px;
+    padding:10px 20px; border-radius:10px;
+    font-family:inherit; font-size:13.5px; font-weight:600;
+    cursor:pointer; border:none; transition:all .16s;
+}
+.btn:disabled { opacity:.6; cursor:not-allowed; }
+.btn-primary { background:#2563eb; color:#fff; box-shadow:0 2px 10px rgba(37,99,235,.24); }
+.btn-primary:hover:not(:disabled) { background:#1d4ed8; box-shadow:0 4px 16px rgba(37,99,235,.34); }
+.btn-danger  { background:#dc2626; color:#fff; box-shadow:0 2px 10px rgba(220,38,38,.24); }
+.btn-danger:hover:not(:disabled)  { background:#b91c1c; box-shadow:0 4px 16px rgba(220,38,38,.34); }
+.btn-outline { background:#fff; color:#4a5568; border:1.5px solid #dce4f5; }
+.btn-outline:hover { background:#f7f9ff; border-color:#c4d0ea; }
+
+/* Modal détail */
+.detail-section {
+    background:#f8faff; border:1px solid #dce4f5;
+    border-radius:10px; padding:13px 16px; margin-bottom:16px;
+    display:flex; flex-direction:column; gap:7px;
+}
+.detail-row { display:flex; gap:10px; align-items:baseline; }
+.detail-label { font-size:10.5px; font-weight:700; color:#9aabbf; text-transform:uppercase; letter-spacing:.4px; min-width:120px; flex-shrink:0; }
+.detail-value { font-size:13px; color:#1e2d5a; font-weight:500; }
+.detail-desc-label { font-size:10.5px; font-weight:700; color:#9aabbf; text-transform:uppercase; letter-spacing:.4px; margin-bottom:6px; }
+.detail-desc { font-size:13px; color:#1e2d5a; line-height:1.65; background:#f8faff; border:1px solid #dce4f5; border-radius:10px; padding:13px 16px; white-space:pre-wrap; margin-bottom:12px; max-height:180px; overflow-y:auto; }
+.detail-note { padding:10px 13px; background:#f5f7ff; border-left:3px solid #93a8e8; border-radius:0 8px 8px 0; }
+.detail-note-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:#6b7db3; display:block; margin-bottom:4px; }
+.detail-note p { margin:0; font-size:13px; color:#1e2d5a; line-height:1.55; }
+
+/* Responsive */
+@@media (max-width:920px) {
+    .pp-wrap { display: block; }
+}
+@@media (max-width:540px) {
+    .pp-welcome { padding:22px 20px; }
+    .pp-welcome h2 { font-size:19px; }
+}
+</style>
+
+<!-- Session warning -->
+<div class="pid-warning" id="pidWarning">
+    <strong>⚠️ Session invalide</strong> —
+    Votre session est expirée ou corrompue. Déconnectez-vous et reconnectez-vous.
+    Si le problème persiste, contactez l'administrateur.
+</div>
+
+<div class="pp-wrap">
+
+    <!-- ══════════════════════════════════
+         CONTENU PRINCIPAL
+    ══════════════════════════════════ -->
+    <main class="pp-main">
+
+        <!-- ─── VUE TABLEAU DE BORD ─── -->
+        <div id="viewDashboard">
+
+            <!-- Bannière bienvenue -->
+            <div class="pp-welcome">
+                <svg class="pp-welcome-geo" width="220" height="200" viewBox="0 0 220 200" fill="none">
+                    <circle cx="160" cy="60" r="80" stroke="white" stroke-width="1.2"/>
+                    <circle cx="160" cy="60" r="52" stroke="white" stroke-width="1"/>
+                    <circle cx="160" cy="60" r="28" stroke="white" stroke-width=".8"/>
+                    <line x1="80" y1="60" x2="240" y2="60" stroke="white" stroke-width=".8"/>
+                    <line x1="160" y1="-20" x2="160" y2="140" stroke="white" stroke-width=".8"/>
+                </svg>
+
+                <div class="pp-welcome-pill">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    Espace sécurisé
+                </div>
+                <h2>Bienvenue dans votre espace <em>TUNAV</em></h2>
+                <p>Gérez vos réclamations et demandes en toute simplicité. Vous pouvez soumettre une réclamation SAV ou ajouter une nouvelle demande commerciale depuis cet espace dédié.</p>
+                <div class="pp-welcome-btns">
+                    <button class="pp-wbtn primary" onclick="openClaimModal()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                        Faire une réclamation
+                    </button>
+                    <button class="pp-wbtn outline" onclick="openDemandModal()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+                        Ajouter une demande
+                    </button>
+                </div>
+            </div>
+
+            <!-- Activité récente -->
+            <div class="pp-card">
+                <div class="pp-card-head">
+                    <div class="pp-card-title">Activité récente</div>
+                    <button class="btn btn-outline" style="padding:7px 14px;font-size:12px" onclick="switchView('history')">
+                        Voir tout &rarr;
+                    </button>
+                </div>
+                <table class="pp-table">
+                    <thead>
+                        <tr>
+                            <th style="width:110px">Type</th>
+                            <th>Sujet</th>
+                            <th style="width:120px">Statut</th>
+                            <th style="width:100px">Date</th>
+                            <th style="width:56px;text-align:center">Détail</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recentTbody">
+                        <tr class="empty-row"><td colspan="5">Chargement…</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ─── VUE HISTORIQUE ─── -->
+        <div id="viewHistory" style="display:none">
+            <div class="pp-card">
+                <div class="pp-card-head">
+                    <div class="pp-card-title">Historique complet</div>
+                    <div class="pp-tabs">
+                        <button class="pp-tab active" id="tabAll"     onclick="filterHistory('all')">Tout&nbsp;(<span id="cntAll">0</span>)</button>
+                        <button class="pp-tab"         id="tabClaims"  onclick="filterHistory('claims')">Réclamations&nbsp;(<span id="cntClaims">0</span>)</button>
+                        <button class="pp-tab"         id="tabDemands" onclick="filterHistory('demands')">Demandes&nbsp;(<span id="cntDemands">0</span>)</button>
+                    </div>
+                </div>
+                <table class="pp-table">
+                    <thead>
+                        <tr>
+                            <th style="width:110px">Type</th>
+                            <th>Sujet</th>
+                            <th style="width:150px">Priorité / Type</th>
+                            <th style="width:120px">Statut</th>
+                            <th style="width:100px">Date</th>
+                            <th style="width:56px;text-align:center">Détail</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyTbody">
+                        <tr class="empty-row"><td colspan="6">Chargement…</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<!-- ══════════════════════════════════
+     MODAL RÉCLAMATION
+══════════════════════════════════ -->
+<div class="modal-overlay" id="modalClaim">
+    <div class="modal-box" style="max-width:540px">
+        <button class="modal-close-btn" onclick="closeModal('modalClaim')" title="Fermer">&#x2715;</button>
+        <div class="modal-icon red">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        </div>
+        <div class="modal-h3">Nouvelle réclamation</div>
+        <div class="modal-sub">Signalez un problème à notre équipe SAV</div>
+        <div class="modal-field">
+            <label>Objet <span style="color:#dc2626">*</span></label>
+            <input type="text" id="claimSubject" placeholder="Ex : Problème de livraison, facturation incorrecte…" maxlength="300" />
+        </div>
+        <div class="modal-field">
+            <label>Priorité</label>
+            <select id="claimPriority">
+                <option value="Basse">Basse</option>
+                <option value="Normale" selected>Normale</option>
+                <option value="Haute">Haute</option>
+                <option value="Urgente">Urgente</option>
+            </select>
+        </div>
+        <div class="modal-field">
+            <label>Description <span style="color:#dc2626">*</span></label>
+            <textarea id="claimDesc" rows="5" maxlength="3000" placeholder="Décrivez votre problème en détail…"></textarea>
+        </div>
+        <div class="modal-error" id="claimError"></div>
+        <div class="modal-actions">
+            <button class="btn btn-outline" onclick="closeModal('modalClaim')">Annuler</button>
+            <button class="btn btn-danger" id="savClaimBtn" onclick="submitClaim()">Soumettre</button>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════
+     MODAL DEMANDE
+══════════════════════════════════ -->
+<div class="modal-overlay" id="modalDemand">
+    <div class="modal-box" style="max-width:540px">
+        <button class="modal-close-btn" onclick="closeModal('modalDemand')" title="Fermer">&#x2715;</button>
+        <div class="modal-icon blue">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+        </div>
+        <div class="modal-h3">Nouvelle demande commerciale</div>
+        <div class="modal-sub">Soumettez une opportunité à notre équipe commerciale</div>
+        <div class="modal-field">
+            <label>Type de demande <span style="color:#dc2626">*</span></label>
+            <select id="demandType">
+                <option value="">— Sélectionnez —</option>
+                <option value="Nouveau client">Nouveau client</option>
+                <option value="Démonstration">Demande de démonstration</option>
+                <option value="Support commercial">Support commercial</option>
+                <option value="Proposition commerciale">Proposition commerciale</option>
+                <option value="Autre">Autre</option>
+            </select>
+        </div>
+        <div class="modal-field">
+            <label>Sujet <span style="color:#dc2626">*</span></label>
+            <input type="text" id="demandSubject" placeholder="Ex : Opportunité client secteur transport…" maxlength="300" />
+        </div>
+        <div class="modal-field">
+            <label>Description <span style="color:#dc2626">*</span></label>
+            <textarea id="demandDesc" rows="5" maxlength="3000" placeholder="Décrivez votre demande en détail…"></textarea>
+        </div>
+        <div class="modal-error" id="demandError"></div>
+        <div class="modal-actions">
+            <button class="btn btn-outline" onclick="closeModal('modalDemand')">Annuler</button>
+            <button class="btn btn-primary" id="savDemandBtn" onclick="submitDemand()">Envoyer</button>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════
+     MODAL DÉTAILS
+══════════════════════════════════ -->
+<div class="modal-overlay" id="modalDetail">
+    <div class="modal-box" style="max-width:580px">
+        <button class="modal-close-btn" onclick="closeModal('modalDetail')" title="Fermer">&#x2715;</button>
+        <div id="modalDetailContent"></div>
+    </div>
+</div>
+
+<script>
+// ── Garde d'accès ─────────────────────────────────────────────────────────────
+(function() {
+    const u = (() => { try { return JSON.parse(localStorage.getItem('tunav_user') || '{}'); } catch { return {}; } })();
+    if (u.role && u.role !== 'Partenaire') {
+        window.location.replace(typeof defaultBackofficeHome === 'function'
+            ? defaultBackofficeHome(u.role, u.permissions) : '/dashboard');
+    }
+})();
+
+const API_CLAIMS  = '/api/partner-portal/claims/by-user';
+const API_DEMANDS = '/api/partner-portal/demands/by-user';
+let allHistory = [];
+let curFilter  = 'all';
+
+// ── Navigation vues ───────────────────────────────────────────────────────────
+function switchView(view) {
+    document.getElementById('viewDashboard').style.display = view === 'dashboard' ? '' : 'none';
+    document.getElementById('viewHistory').style.display   = view === 'history'   ? '' : 'none';
+    if (view === 'history') renderHistory();
+}
+
+// ── PartnerId ─────────────────────────────────────────────────────────────────
+function getPartnerId() {
+    const u = getStoredUser();
+    if (u && u.userId && u.userId > 0) return u.userId;
+    console.warn('[PartnerPortal] userId introuvable :', u);
+    document.getElementById('pidWarning').style.display = 'block';
+    return null;
+}
+
+// ── Chargement stats ──────────────────────────────────────────────────────────
+async function loadStats() {
+    const pid = getPartnerId();
+    if (!pid) {
+        ['recentTbody','historyTbody'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.innerHTML = '<tr class="empty-row"><td colspan="6">Identifiant partenaire manquant.</td></tr>';
+        });
+        return;
+    }
+    try {
+        const [cr, dr] = await Promise.all([
+            authFetch(`${API_CLAIMS}/${pid}`),
+            authFetch(`${API_DEMANDS}/${pid}`)
+        ]);
+        const claims  = cr.ok ? await cr.json() : [];
+        const demands = dr.ok ? await dr.json() : [];
+
+        const openClaims = claims.filter(c => c.status !== 'Résolue' && c.status !== 'Fermée').length;
+        const accepted   = demands.filter(d => d.status === 'Acceptée').length;
+
+
+
+        allHistory = [
+            ...claims.map(c  => ({ ...c, kind: 'claim'  })),
+            ...demands.map(d => ({ ...d, kind: 'demand' }))
+        ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+        document.getElementById('cntAll').textContent      = allHistory.length;
+        document.getElementById('cntClaims').textContent   = claims.length;
+        document.getElementById('cntDemands').textContent  = demands.length;
+
+
+        renderRecent();
+    } catch(e) { if (e.message !== 'AUTH_REDIRECT') console.error(e); }
+}
+
+// ── Activité récente (5 derniers) ─────────────────────────────────────────────
+function renderRecent() {
+    const tbody = document.getElementById('recentTbody');
+    const list  = allHistory.slice(0, 5);
+    if (!list.length) {
+        tbody.innerHTML = '<tr class="empty-row"><td colspan="5">Aucune soumission pour le moment.</td></tr>';
+        return;
+    }
+    tbody.innerHTML = list.map(item => {
+        const isClaim = item.kind === 'claim';
+        const sKey = statusKey(item.status);
+        const date = new Date(item.createdAt).toLocaleDateString('fr-FR');
+        return `<tr>
+            <td><span class="type-pill ${isClaim?'tp-claim':'tp-demand'}">${isClaim?'Réclamation':'Demande'}</span></td>
+            <td><div style="font-weight:600;font-size:13px;color:#1e2d5a">${escHtml(item.subject)}</div></td>
+            <td><span class="status-badge s-${sKey}">${item.status}</span></td>
+            <td style="font-size:12px;color:#9aabbf;white-space:nowrap">${date}</td>
+            <td style="text-align:center">${detailBtn(item)}</td>
+        </tr>`;
+    }).join('');
+}
+
+// ── Historique complet ────────────────────────────────────────────────────────
+function filterHistory(type) {
+    curFilter = type;
+    document.querySelectorAll('.pp-tab').forEach(t => t.classList.remove('active'));
+    ({ all:'tabAll', claims:'tabClaims', demands:'tabDemands' });
+    const map = { all:'tabAll', claims:'tabClaims', demands:'tabDemands' };
+    document.getElementById(map[type])?.classList.add('active');
+    renderHistory();
+}
+
+function renderHistory() {
+    const list = curFilter === 'all'
+        ? allHistory
+        : allHistory.filter(h => h.kind === (curFilter === 'claims' ? 'claim' : 'demand'));
+    const tbody = document.getElementById('historyTbody');
+    if (!list.length) {
+        tbody.innerHTML = '<tr class="empty-row"><td colspan="6">Aucune soumission pour le moment.</td></tr>';
+        return;
+    }
+    tbody.innerHTML = list.map(item => {
+        const isClaim = item.kind === 'claim';
+        const sKey = statusKey(item.status);
+        const date = new Date(item.createdAt).toLocaleDateString('fr-FR');
+        const noteHtml = isClaim && item.savNote
+            ? `<div class="internal-note">SAV : ${escHtml(item.savNote.substring(0,80))}${item.savNote.length>80?'…':''}</div>`
+            : (!isClaim && item.commercialNote
+                ? `<div class="internal-note">Commercial : ${escHtml(item.commercialNote.substring(0,80))}${item.commercialNote.length>80?'…':''}</div>`
+                : '');
+        const col3 = isClaim
+            ? `<span style="font-size:12px;color:#6b7db3">${item.priority||'Normale'}</span>`
+            : `<span style="font-size:12px;color:#6b7db3">${escHtml(item.demandType||'')}</span>`;
+        return `<tr>
+            <td><span class="type-pill ${isClaim?'tp-claim':'tp-demand'}">${isClaim?'Réclamation':'Demande'}</span></td>
+            <td><div style="font-weight:600;font-size:13px;color:#1e2d5a">${escHtml(item.subject)}</div>${noteHtml}</td>
+            <td>${col3}</td>
+            <td><span class="status-badge s-${sKey}">${item.status}</span></td>
+            <td style="font-size:12px;color:#9aabbf;white-space:nowrap">${date}</td>
+            <td style="text-align:center">${detailBtn(item)}</td>
+        </tr>`;
+    }).join('');
+}
+
+function statusKey(s) {
+    return (s||'Nouvelle').toLowerCase().replace(/\s+/g,'').normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+}
+
+function detailBtn(item) {
+    const kind = item.kind === 'claim' ? 'claim' : 'demand';
+    return `<button onclick="openDetailModal(${item.id},'${kind}')" title="Voir"
+        style="background:none;border:none;cursor:pointer;padding:5px 6px;border-radius:7px;color:#9aabbf;transition:color .14s,background .14s"
+        onmouseover="this.style.color='#00c8d4';this.style.background='#f0fdfe'"
+        onmouseout="this.style.color='#9aabbf';this.style.background='none'">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+    </button>`;
+}
+
+function escHtml(str) {
+    return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ── Modals ────────────────────────────────────────────────────────────────────
+function openClaimModal() {
+    if (!getPartnerId()) { alert("Session invalide. Reconnectez-vous."); return; }
+    document.getElementById('modalClaim').classList.add('show');
+}
+function openDemandModal() {
+    if (!getPartnerId()) { alert("Session invalide. Reconnectez-vous."); return; }
+    document.getElementById('modalDemand').classList.add('show');
+}
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+document.querySelectorAll('.modal-overlay').forEach(o => {
+    o.addEventListener('click', e => { if (e.target === o) o.classList.remove('show'); });
+});
+
+// ── Soumission réclamation ────────────────────────────────────────────────────
+async function submitClaim() {
+    const subject  = document.getElementById('claimSubject').value.trim();
+    const desc     = document.getElementById('claimDesc').value.trim();
+    const priority = document.getElementById('claimPriority').value;
+    const err      = document.getElementById('claimError');
+    if (!subject || !desc) { err.textContent="L'objet et la description sont obligatoires."; err.style.display='block'; return; }
+    const userId = getPartnerId();
+    if (!userId) { err.textContent="Session invalide. Reconnectez-vous."; err.style.display='block'; return; }
+    const btn = document.getElementById('savClaimBtn');
+    btn.disabled=true; btn.textContent='Envoi…'; err.style.display='none';
+    try {
+        const res = await authFetch('/api/partner-portal/claims', { method:'POST', body:JSON.stringify({ userId, subject, description:desc, priority }) });
+        if (!res.ok) throw new Error((await res.text())||`Erreur ${res.status}`);
+        closeModal('modalClaim');
+        document.getElementById('claimSubject').value='';
+        document.getElementById('claimDesc').value='';
+        document.getElementById('claimPriority').value='Normale';
+        await loadStats();
+    } catch(e) {
+        if (e.message!=='AUTH_REDIRECT') { err.textContent=e.message||'Erreur.'; err.style.display='block'; }
+    } finally { btn.disabled=false; btn.textContent='Soumettre'; }
+}
+
+// ── Soumission demande ────────────────────────────────────────────────────────
+async function submitDemand() {
+    const type    = document.getElementById('demandType').value;
+    const subject = document.getElementById('demandSubject').value.trim();
+    const desc    = document.getElementById('demandDesc').value.trim();
+    const err     = document.getElementById('demandError');
+    if (!type||!subject||!desc) { err.textContent='Tous les champs sont obligatoires.'; err.style.display='block'; return; }
+    const userId = getPartnerId();
+    if (!userId) { err.textContent="Session invalide. Reconnectez-vous."; err.style.display='block'; return; }
+    const btn = document.getElementById('savDemandBtn');
+    btn.disabled=true; btn.textContent='Envoi…'; err.style.display='none';
+    try {
+        const res = await authFetch('/api/partner-portal/demands', { method:'POST', body:JSON.stringify({ userId, demandType:type, subject, description:desc }) });
+        if (!res.ok) throw new Error((await res.text())||`Erreur ${res.status}`);
+        closeModal('modalDemand');
+        document.getElementById('demandType').value='';
+        document.getElementById('demandSubject').value='';
+        document.getElementById('demandDesc').value='';
+        await loadStats();
+    } catch(e) {
+        if (e.message!=='AUTH_REDIRECT') { err.textContent=e.message||'Erreur.'; err.style.display='block'; }
+    } finally { btn.disabled=false; btn.textContent='Envoyer'; }
+}
+
+// ── Modal détails ─────────────────────────────────────────────────────────────
+function openDetailModal(id, kind) {
+    const item = allHistory.find(h => h.id === id && h.kind === kind);
+    if (!item) return;
+    const isClaim = kind === 'claim';
+    const fmt = d => d ? new Date(d).toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '—';
+    const sKey = statusKey(item.status);
+    const noteBlock = isClaim
+        ? (item.savNote ? `<div class="detail-note"><span class="detail-note-label">Note SAV</span><p>${escHtml(item.savNote)}</p></div>` : '')
+        : (item.commercialNote ? `<div class="detail-note"><span class="detail-note-label">Note Commercial</span><p>${escHtml(item.commercialNote)}</p></div>` : '');
+    const extraRow = isClaim
+        ? `<div class="detail-row"><span class="detail-label">Priorité</span><span class="detail-value">${escHtml(item.priority||'Normale')}</span></div>`
+        : `<div class="detail-row"><span class="detail-label">Type de demande</span><span class="detail-value">${escHtml(item.demandType||'')}</span></div>`;
+    const resolvedRow = isClaim && item.resolvedAt
+        ? `<div class="detail-row"><span class="detail-label">Résolue le</span><span class="detail-value">${fmt(item.resolvedAt)}</span></div>`
+        : (!isClaim && item.closedAt ? `<div class="detail-row"><span class="detail-label">Clôturée le</span><span class="detail-value">${fmt(item.closedAt)}</span></div>` : '');
+    const attachRow = !isClaim && item.attachmentUrl
+        ? `<div class="detail-row"><span class="detail-label">Pièce jointe</span><a href="${escHtml(item.attachmentUrl)}" target="_blank" style="color:#00c8d4;font-size:13px">Télécharger ↗</a></div>` : '';
+    document.getElementById('modalDetailContent').innerHTML = `
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
+            <span class="type-pill ${isClaim?'tp-claim':'tp-demand'}">${isClaim?'Réclamation':'Demande'}</span>
+            <h3 style="margin:0;font-size:16px;font-weight:800;color:#1e2d5a;flex:1">${escHtml(item.subject)}</h3>
+            <span class="status-badge s-${sKey}">${item.status}</span>
+        </div>
+        <div class="detail-section">
+            ${extraRow}
+            <div class="detail-row"><span class="detail-label">Soumis le</span><span class="detail-value">${fmt(item.createdAt)}</span></div>
+            ${item.updatedAt?`<div class="detail-row"><span class="detail-label">Mis à jour le</span><span class="detail-value">${fmt(item.updatedAt)}</span></div>`:''}
+            ${resolvedRow}${attachRow}
+        </div>
+        <div class="detail-desc-label">Description</div>
+        <div class="detail-desc">${escHtml(item.description||'').replace(/\n/g,'<br>')}</div>
+        ${noteBlock}
+    `;
+    document.getElementById('modalDetail').classList.add('show');
+}
+
+loadStats();
+</script>

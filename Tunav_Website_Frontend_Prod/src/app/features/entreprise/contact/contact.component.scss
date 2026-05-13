@@ -1,0 +1,1809 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+$navy: #0d1b4b;
+$navy2: #1a2a6c;
+$cyan: #00c8d4;
+$cyan2: #17d5e8;
+$white: #ffffff;
+$off: #f7f8fc;
+$bg: #f0f4ff;
+$text: #1e2d5a;
+$muted: #6b7db3;
+$border: #dce4f5;
+$red: #e53e3e;
+$green: #25d366;
+
+:host {
+  font-family: 'Inter', sans-serif;
+  display: block;
+  width: 100%;
+}
+
+:host, :host * {
+  font-family: 'Inter', sans-serif !important;
+}
+
+.ev-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 40px;
+
+  @media (max-width: 768px) {
+    padding: 0 20px;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  HERO — Ken Burns + grid animé (même style qu'About)
+// ═══════════════════════════════════════════════════════════════
+.ct-hero {
+  position: relative;
+  min-height: 440px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  text-align: center;
+  color: $white;
+  padding: 0 24px;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: -6%;
+    background-image: url('https://images.unsplash.com/photo-1497366216548-37526070297c?w=1800&h=700&fit=crop&q=85');
+    background-size: cover;
+    background-position: center 30%;
+    z-index: 0;
+    animation: ctKenBurns 18s ease-out forwards;
+    will-change: transform;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(110deg, rgba($navy, 0.96) 0%, rgba($navy2, 0.88) 50%, rgba($cyan, 0.5) 100%);
+    z-index: 1;
+    box-shadow: inset 0 -2px 0 0 rgba($cyan, 0.3);
+  }
+
+  .ct-hero-grid {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    background-image: linear-gradient(rgba($cyan, 0.045) 1px, transparent 1px), linear-gradient(90deg, rgba($cyan, 0.045) 1px, transparent 1px);
+    background-size: 60px 60px;
+    animation: ctGridDrift 28s linear infinite;
+    pointer-events: none;
+  }
+
+  .ct-hero-eyebrow {
+    position: relative;
+    z-index: 3;
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 3.5px;
+    text-transform: uppercase;
+    color: $cyan;
+    margin-bottom: 20px;
+    animation: ctFadeSlideUp 0.8s 0.08s cubic-bezier(0.16,1,0.3,1) both;
+
+    &::before, &::after {
+      content: '';
+      width: 32px;
+      height: 2px;
+      background: linear-gradient(to right, $cyan, $cyan2);
+    }
+  }
+
+  h1 {
+    position: relative;
+    z-index: 3;
+    font-size: clamp(38px, 5.5vw, 72px);
+    font-weight: 800;
+    letter-spacing: -2px;
+    margin-bottom: 16px;
+    line-height: 1.05;
+    animation: ctFadeSlideUp 0.9s 0.14s cubic-bezier(0.16,1,0.3,1) both;
+    background: linear-gradient(135deg, $white 50%, rgba($cyan, 0.85) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  p {
+    position: relative;
+    z-index: 3;
+    font-size: clamp(14px, 1.6vw, 18px);
+    color: rgba($white, .75);
+    max-width: 580px;
+    margin: 0 auto 28px;
+    font-weight: 300;
+    line-height: 1.8;
+    animation: ctFadeSlideUp 0.9s 0.24s cubic-bezier(0.16,1,0.3,1) both;
+  }
+}
+
+.ct-hero-badges {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  justify-content: center;
+  animation: ctFadeSlideUp 0.9s 0.34s cubic-bezier(0.16,1,0.3,1) both;
+
+  span {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 13px;
+    color: rgba($white, .65);
+    font-weight: 400;
+  }
+}
+
+.ct-dot-green {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #4ade80;
+  flex-shrink: 0;
+  display: inline-block;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.6;
+    transform: scale(1.4);
+  }
+}
+
+@keyframes ctKenBurns {
+  from {
+    transform: scale(1.1) translateY(0);
+  }
+
+  to {
+    transform: scale(1.0) translateY(-10px);
+  }
+}
+
+@keyframes ctGridDrift {
+  from {
+    background-position: 0 0;
+  }
+
+  to {
+    background-position: 60px 60px;
+  }
+}
+
+@keyframes ctFadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  CONTACT ROW — icône + valeur sans carte
+// ═══════════════════════════════════════════════════════════════
+.ct-contact-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba($border, .6);
+  text-decoration: none;
+
+  &:last-of-type {
+    border-bottom: none;
+  }
+
+  &--link {
+    cursor: pointer;
+    transition: opacity .2s;
+
+    &:hover {
+      opacity: .75;
+
+      .ct-contact-row__arrow {
+        transform: translateX(2px) translateY(-2px);
+      }
+    }
+  }
+
+  &__icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    &--blue {
+      background: rgba(#0ea5e9, .1);
+      color: #0369a1;
+    }
+
+    &--cyan {
+      background: rgba($cyan, .12);
+      color: darken($cyan, 20%);
+    }
+
+    &--green {
+      background: rgba(#16a34a, .1);
+      color: #15803d;
+    }
+  }
+
+  &__body {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__value {
+    font-size: 14px;
+    font-weight: 600;
+    color: $navy;
+    text-decoration: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: color .2s;
+
+    &:hover {
+      color: $cyan;
+    }
+  }
+
+  &__meta {
+    font-size: 12px;
+    color: $muted;
+    font-weight: 400;
+  }
+
+  &__arrow {
+    color: $muted;
+    flex-shrink: 0;
+    transition: transform .2s;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  HOURS BLOCK — liste propre sans carte
+// ═══════════════════════════════════════════════════════════════
+.ct-hours-block {
+  padding-top: 4px;
+
+  &__title {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    color: $muted;
+    margin-bottom: 12px;
+  }
+
+  &__row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba($border, .5);
+    font-size: 13px;
+    color: $text;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    span {
+      color: $muted;
+      font-weight: 400;
+    }
+  }
+}
+
+.ct-hours-open {
+  color: #16a34a;
+  font-weight: 600;
+}
+
+.ct-hours-partial {
+  color: #d97706;
+  font-weight: 600;
+}
+
+.ct-hours-closed {
+  color: #dc2626;
+  font-weight: 500;
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  BODY LAYOUT
+// ═══════════════════════════════════════════════════════════════
+.ct-body {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 36px;
+  padding-top: 52px;
+  padding-bottom: 96px;
+  align-items: start;
+
+  @media (max-width: 960px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  INFO SIDEBAR — Innovative redesign
+// ═══════════════════════════════════════════════════════════════
+.ct-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  position: sticky;
+  top: 24px;
+  background: linear-gradient(160deg, rgba($white, 0.97) 0%, rgba($bg, 0.99) 100%);
+  border: 1.5px solid rgba($cyan, .18);
+  border-radius: 24px;
+  padding: 28px 22px;
+  box-shadow: 0 4px 40px rgba($navy, .07), 0 0 0 1px rgba($white, .8) inset;
+  overflow: hidden;
+
+  @media (max-width: 960px) {
+    position: static;
+  }
+}
+
+// Orbes décoratifs
+.ct-info-orb {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+
+  &--1 {
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba($cyan, .10) 0%, transparent 70%);
+    top: -70px;
+    right: -70px;
+  }
+
+  &--2 {
+    width: 130px;
+    height: 130px;
+    background: radial-gradient(circle, rgba($navy2, .07) 0%, transparent 70%);
+    bottom: 30px;
+    left: -50px;
+  }
+}
+
+.ct-info > * {
+  position: relative;
+  z-index: 1;
+}
+
+.ct-info-header {
+  margin-bottom: 18px;
+
+  &__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+
+  &__brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  &__logo {
+    width: 38px;
+    height: 38px;
+    background: linear-gradient(135deg, $navy, $navy2);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: $cyan;
+    font-size: 17px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba($navy, .2);
+  }
+
+  &__name {
+    font-size: 15px;
+    font-weight: 800;
+    color: $navy;
+    letter-spacing: 1px;
+    line-height: 1;
+  }
+
+  &__sub {
+    font-size: 11px;
+    color: $muted;
+    font-weight: 400;
+    margin-top: 2px;
+  }
+
+  &__desc {
+    font-size: 13px;
+    color: $muted;
+    font-weight: 400;
+    margin: 0;
+    line-height: 1.5;
+  }
+}
+
+.ct-status-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #16a34a;
+  background: rgba(#16a34a, .08);
+  border: 1px solid rgba(#16a34a, .2);
+  border-radius: 20px;
+  padding: 4px 10px;
+  flex-shrink: 0;
+}
+
+.ct-status-pulse {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #22c55e;
+  display: inline-block;
+  flex-shrink: 0;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.ct-info-sep {
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba($border, .9), transparent);
+  margin: 14px 0;
+}
+
+// Items de contact compacts
+.ct-contact-item {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 11px 13px;
+  border-radius: 14px;
+  border: 1px solid rgba($border, .7);
+  background: rgba($white, .65);
+  margin-bottom: 8px;
+  transition: all .25s cubic-bezier(.16,1,.3,1);
+  cursor: default;
+
+  &:last-of-type {
+    margin-bottom: 0;
+  }
+
+  &:hover {
+    border-color: rgba($cyan, .3);
+    background: rgba($white, .95);
+    box-shadow: 0 4px 18px rgba($navy, .06);
+    transform: translateX(3px);
+  }
+
+  &__icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: $white;
+    flex-shrink: 0;
+
+    &--blue {
+      background: linear-gradient(135deg, #1a56db, #3b82f6);
+    }
+
+    &--cyan {
+      background: linear-gradient(135deg, $navy2, $cyan);
+    }
+  }
+
+  &__body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  &__label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: $muted;
+    display: block;
+  }
+
+  &__value {
+    font-size: 13px;
+    font-weight: 600;
+    color: $navy;
+    text-decoration: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: color .2s;
+
+    &:hover {
+      color: $cyan;
+    }
+  }
+
+  &__tag {
+    flex-shrink: 0;
+    font-size: 10px;
+    font-weight: 600;
+    color: $muted;
+    background: $bg;
+    border: 1px solid $border;
+    border-radius: 6px;
+    padding: 3px 7px;
+    white-space: nowrap;
+
+    &--cyan {
+      color: darken($cyan, 22%);
+      background: rgba($cyan, .06);
+      border-color: rgba($cyan, .2);
+    }
+  }
+}
+
+// Bloc carte + adresse avec iframe
+.ct-map-block {
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1.5px solid rgba($border, .8);
+  background: $white;
+  margin-top: 4px;
+  transition: box-shadow .25s, border-color .25s;
+
+  &:hover {
+    box-shadow: 0 6px 24px rgba($navy, .08);
+    border-color: rgba($cyan, .3);
+  }
+}
+
+.ct-map-preview {
+  position: relative;
+  height: 128px;
+  overflow: hidden;
+
+  iframe {
+    display: block;
+    filter: saturate(0.65) contrast(1.05);
+    transition: filter .35s;
+  }
+
+  &:hover iframe {
+    filter: saturate(1) contrast(1);
+  }
+}
+
+.ct-map-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ct-map-pin {
+  width: 30px;
+  height: 30px;
+  background: $navy;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 14px rgba($navy, .4);
+
+  svg {
+    transform: rotate(45deg);
+    color: $cyan;
+    width: 14px;
+    height: 14px;
+  }
+}
+
+.ct-map-info {
+  padding: 11px 13px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+
+  &__address {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    font-size: 11.5px;
+    color: $text;
+    font-weight: 500;
+    line-height: 1.5;
+
+    svg {
+      margin-top: 2px;
+      flex-shrink: 0;
+      color: $cyan;
+    }
+  }
+}
+
+.ct-maps-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: $cyan;
+  text-decoration: none;
+  padding: 5px 9px;
+  border-radius: 8px;
+  border: 1.5px solid rgba($cyan, .25);
+  background: rgba($cyan, .05);
+  white-space: nowrap;
+  transition: all .2s;
+  flex-shrink: 0;
+
+  &:hover {
+    background: rgba($cyan, .12);
+    border-color: $cyan;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba($cyan, .15);
+  }
+}
+
+// Horaires — style timeline avec dots colorés
+.ct-schedule {
+  &__title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: $muted;
+    margin-bottom: 10px;
+
+    svg {
+      color: $muted;
+    }
+  }
+
+  &__row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 10px;
+    transition: background .2s;
+
+    &:hover {
+      background: rgba($bg, .7);
+    }
+  }
+
+  &__dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+
+    &--open {
+      background: #22c55e;
+      box-shadow: 0 0 0 3px rgba(#22c55e, .15);
+    }
+
+    &--partial {
+      background: #f59e0b;
+      box-shadow: 0 0 0 3px rgba(#f59e0b, .15);
+    }
+
+    &--closed {
+      background: #94a3b8;
+      box-shadow: 0 0 0 3px rgba(#94a3b8, .15);
+    }
+  }
+
+  &__day {
+    font-size: 12.5px;
+    color: $text;
+    font-weight: 500;
+    flex: 1;
+  }
+
+  &__time {
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: 6px;
+    padding: 2px 8px;
+
+    &--open {
+      color: #166534;
+      background: rgba(#22c55e, .1);
+    }
+
+    &--partial {
+      color: #92400e;
+      background: rgba(#f59e0b, .1);
+    }
+
+    &--closed {
+      color: #475569;
+      background: rgba(#94a3b8, .1);
+    }
+  }
+}
+
+// Anciens styles conservés pour compatibilité
+.ct-info-card {
+  background: $white;
+  border: 1.5px solid $border;
+  border-radius: 16px;
+  padding: 18px;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  transition: box-shadow .25s, border-color .25s, transform .25s;
+
+  &:hover {
+    box-shadow: 0 8px 28px rgba($navy, .07);
+    border-color: rgba($cyan, .3);
+    transform: translateY(-1px);
+  }
+}
+
+.ct-info-content {
+  flex: 1;
+  min-width: 0;
+
+  h4 {
+    font-size: 13px;
+    font-weight: 700;
+    color: $muted;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin: 0 0 6px;
+  }
+}
+
+.ct-info-link {
+  display: inline-block;
+  font-size: 14.5px;
+  font-weight: 600;
+  color: $navy;
+  text-decoration: none;
+  margin-bottom: 4px;
+  transition: color .2s;
+
+  &:hover {
+    color: $cyan;
+  }
+}
+
+.ct-info-address-text {
+  font-size: 14px;
+  font-weight: 500;
+  color: $text;
+  margin: 0 0 8px;
+  line-height: 1.6;
+}
+
+.ct-info-card span {
+  font-size: 12px;
+  color: $muted;
+  font-weight: 400;
+  display: block;
+  margin-top: 4px;
+}
+
+.ct-info-meta {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px !important;
+  color: $muted;
+  font-weight: 500 !important;
+  margin-top: 6px !important;
+  background: $off;
+  border: 1px solid $border;
+  border-radius: 6px;
+  padding: 3px 8px;
+
+  svg {
+    flex-shrink: 0;
+    opacity: 0.6;
+  }
+}
+
+.ct-hours-divider {
+  height: 1px;
+  background: $border;
+  margin: 4px 0;
+  opacity: 0.6;
+}
+
+.ct-hours-open {
+  color: #059669 !important;
+  background: rgba(#059669, .08);
+  border: 1px solid rgba(#059669, .15);
+  border-radius: 5px;
+  padding: 1px 8px;
+  font-size: 12px !important;
+}
+
+.ct-hours-partial {
+  color: #d97706 !important;
+  background: rgba(#d97706, .08);
+  border: 1px solid rgba(#d97706, .15);
+  border-radius: 5px;
+  padding: 1px 8px;
+  font-size: 12px !important;
+}
+
+.ct-hours {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.ct-hours-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+
+  span {
+    color: $muted;
+    font-weight: 400;
+    font-size: 13px;
+    margin: 0;
+  }
+
+  strong {
+    font-size: 13px;
+    font-weight: 600;
+    color: $text;
+  }
+
+  &--closed strong {
+    color: $red;
+  }
+}
+
+.ct-info-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $white;
+  flex-shrink: 0;
+
+  &--blue {
+    background: linear-gradient(135deg, #1a56db, #3b82f6);
+  }
+
+  &--cyan {
+    background: linear-gradient(135deg, $navy2, $cyan);
+  }
+
+  &--green {
+    background: linear-gradient(135deg, #059669, #34d399);
+  }
+
+  &--orange {
+    background: linear-gradient(135deg, #d97706, #fbbf24);
+  }
+}
+
+
+// ═══════════════════════════════════════════════════════════════
+//  FORM CARD
+// ═══════════════════════════════════════════════════════════════
+.ct-form-card {
+  background: $white;
+  border: 1.5px solid $border;
+  border-radius: 24px;
+  padding: 40px 40px;
+  box-shadow: 0 4px 32px rgba($navy, .04);
+
+  @media (max-width: 600px) {
+    padding: 24px 20px;
+    border-radius: 18px;
+  }
+}
+
+.ct-form-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 0;
+}
+
+.ct-form-header-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, $navy, $navy2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $cyan;
+  flex-shrink: 0;
+}
+
+.ct-form-header h2 {
+  font-size: 20px;
+  font-weight: 800;
+  color: $navy;
+  margin: 0 0 3px;
+}
+
+.ct-form-sub {
+  font-size: 13px;
+  color: $muted;
+  font-weight: 300;
+  margin: 0;
+}
+
+.ct-form-divider {
+  height: 1px;
+  background: $border;
+  margin: 24px 0 20px;
+}
+
+.ct-section-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: $muted;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  &::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: $border;
+  }
+}
+
+// ── Grid & Fields ──────────────────────────────────────────────
+.ct-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+
+  @media (max-width: 560px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.ct-field {
+  margin-bottom: 16px;
+
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: $text;
+    margin-bottom: 7px;
+  }
+
+  textarea {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1.5px solid $border;
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: 'Inter', sans-serif;
+    color: $text;
+    background: $white;
+    outline: none;
+    transition: border-color .2s, box-shadow .2s;
+    box-sizing: border-box;
+    resize: vertical;
+    min-height: 130px;
+
+    &:focus {
+      border-color: $cyan;
+      box-shadow: 0 0 0 3px rgba($cyan, .12);
+    }
+
+    &::placeholder {
+      color: #a0afd4;
+    }
+  }
+}
+
+.ct-optional {
+  font-size: 11px;
+  font-weight: 400;
+  color: $muted;
+  margin-left: 4px;
+}
+
+// ── Input avec icône ───────────────────────────────────────────
+.ct-input-wrap {
+  position: relative;
+
+  .ct-input-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: $muted;
+    pointer-events: none;
+    transition: color .2s;
+  }
+
+  input {
+    width: 100%;
+    padding: 11px 14px 11px 36px;
+    border: 1.5px solid $border;
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: 'Inter', sans-serif;
+    color: $text;
+    background: $white;
+    outline: none;
+    transition: border-color .2s, box-shadow .2s;
+    box-sizing: border-box;
+
+    &:focus {
+      border-color: $cyan;
+      box-shadow: 0 0 0 3px rgba($cyan, .12);
+
+      & ~ .ct-input-icon,
+      + .ct-input-icon {
+        color: $cyan;
+      }
+    }
+
+    &:focus ~ .ct-input-icon {
+      color: $cyan;
+    }
+
+    &::placeholder {
+      color: #a0afd4;
+    }
+  }
+
+  &:focus-within .ct-input-icon {
+    color: $cyan;
+  }
+}
+
+// ── Select avec icône ──────────────────────────────────────────
+.ct-select-wrap {
+  position: relative;
+
+  .ct-input-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: $muted;
+    pointer-events: none;
+    transition: color .2s;
+    z-index: 1;
+  }
+
+  .ct-select-arrow {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: $muted;
+    pointer-events: none;
+    transition: color .2s, transform .2s;
+  }
+
+  select {
+    width: 100%;
+    padding: 11px 36px 11px 36px;
+    border: 1.5px solid $border;
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: 'Inter', sans-serif;
+    color: $text;
+    background: $white;
+    outline: none;
+    appearance: none;
+    -webkit-appearance: none;
+    transition: border-color .2s, box-shadow .2s;
+    box-sizing: border-box;
+    cursor: pointer;
+
+    &:focus {
+      border-color: $cyan;
+      box-shadow: 0 0 0 3px rgba($cyan, .12);
+    }
+  }
+
+  &:focus-within {
+    .ct-input-icon {
+      color: $cyan;
+    }
+
+    .ct-select-arrow {
+      color: $cyan;
+      transform: translateY(-50%) rotate(180deg);
+    }
+  }
+}
+
+// ── Checkbox ───────────────────────────────────────────────────
+.ct-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+  margin-bottom: 20px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  border: 1.5px solid $border;
+  background: $off;
+  transition: border-color .2s, background .2s;
+
+  &:hover {
+    border-color: rgba($cyan, .4);
+    background: rgba($cyan, .03);
+  }
+
+  &:has(input[type="checkbox"]:checked) {
+    border-color: rgba($cyan, .4);
+    background: rgba($cyan, .05);
+  }
+
+  input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+  }
+
+  &__box {
+    width: 18px;
+    height: 18px;
+    border: 2px solid $border;
+    border-radius: 5px;
+    background: $white;
+    flex-shrink: 0;
+    margin-top: 1px;
+    position: relative;
+    transition: border-color .2s, background .2s;
+
+    &::after {
+      content: '';
+      position: absolute;
+      left: 4px;
+      top: 1px;
+      width: 6px;
+      height: 10px;
+      border: 2px solid $white;
+      border-top: none;
+      border-left: none;
+      transform: rotate(45deg) scale(0);
+      transition: transform .2s;
+    }
+  }
+
+  &:has(input[type="checkbox"]:checked) .ct-checkbox__box {
+    background: $cyan;
+    border-color: $cyan;
+
+    &::after {
+      transform: rotate(45deg) scale(1);
+    }
+  }
+
+  span:last-child {
+    font-size: 13px;
+    color: $muted;
+    line-height: 1.6;
+  }
+}
+
+// ── Submit button ──────────────────────────────────────────────
+.ct-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: none;
+  border-radius: 10px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .25s cubic-bezier(.16,1,.3,1);
+
+  &--submit {
+    width: 100%;
+    padding: 15px;
+    font-size: 15px;
+    background: linear-gradient(135deg, $navy, $navy2 40%, $cyan);
+    color: $white;
+    margin-bottom: 0;
+    letter-spacing: 0.2px;
+    box-shadow: 0 4px 20px rgba($navy, .18);
+    position: relative;
+    overflow: hidden;
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -60%;
+      width: 35%;
+      height: 200%;
+      background: rgba($white, .1);
+      transform: skewX(-20deg);
+      transition: left .5s cubic-bezier(.16,1,.3,1);
+      pointer-events: none;
+    }
+
+    &:hover:not(:disabled)::after {
+      left: 115%;
+    }
+
+    &:hover:not(:disabled) {
+      box-shadow: 0 8px 32px rgba($navy, .25);
+      transform: translateY(-2px);
+    }
+
+    &:disabled {
+      opacity: .6;
+      cursor: not-allowed;
+    }
+  }
+
+  &--primary {
+    padding: 12px 28px;
+    font-size: 14px;
+    background: linear-gradient(135deg, $navy, $cyan);
+    color: $white;
+    box-shadow: 0 3px 14px rgba($navy, .15);
+
+    &:hover {
+      opacity: .9;
+      transform: translateY(-1px);
+    }
+  }
+
+  &--outline {
+    padding: 12px 24px;
+    font-size: 14px;
+    background: transparent;
+    border: 1.5px solid $border;
+    color: $text;
+
+    &:hover {
+      border-color: $cyan;
+      color: $cyan;
+    }
+  }
+
+  &--whatsapp {
+    flex: 1;
+    padding: 13px;
+    font-size: 14px;
+    background: $green;
+    color: $white;
+    opacity: .5;
+    cursor: not-allowed;
+  }
+
+  &--demo {
+    flex: 1;
+    padding: 13px;
+    font-size: 14px;
+    background: linear-gradient(135deg, $navy2, $cyan);
+    color: $white;
+    box-shadow: 0 3px 14px rgba($navy2, .2);
+
+    &:hover {
+      opacity: .92;
+      transform: translateY(-1px);
+    }
+  }
+}
+
+// Spinner animation
+.ct-spin {
+  animation: spin .8s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// ── Actions divider ────────────────────────────────────────────
+.ct-actions-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 0 16px;
+
+  &::before, &::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: $border;
+  }
+
+  span {
+    font-size: 12px;
+    color: $muted;
+    white-space: nowrap;
+    font-weight: 400;
+  }
+}
+
+.ct-actions {
+  display: flex;
+  gap: 12px;
+
+  @media (max-width: 560px) {
+    flex-direction: column;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  SUCCESS STATE
+// ═══════════════════════════════════════════════════════════════
+.ct-success {
+  background: $white;
+  border: 1.5px solid rgba($cyan, .2);
+  border-radius: 24px;
+  padding: 64px 40px;
+  text-align: center;
+  box-shadow: 0 4px 48px rgba($navy, .06);
+  animation: ctFadeSlideUp .5s cubic-bezier(.16,1,.3,1) both;
+
+  h3 {
+    font-size: 24px;
+    font-weight: 800;
+    color: $navy;
+    margin-bottom: 10px;
+  }
+
+  p {
+    font-size: 14px;
+    color: $muted;
+    line-height: 1.75;
+    margin-bottom: 24px;
+    font-weight: 300;
+    max-width: 380px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  &__meta {
+    display: flex;
+    gap: 24px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 32px;
+
+    span {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 12.5px;
+      font-weight: 500;
+      color: $muted;
+      padding: 7px 14px;
+      background: $off;
+      border: 1px solid $border;
+      border-radius: 20px;
+    }
+  }
+
+  &__checkmark {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 24px;
+
+    &--sm {
+      width: 60px;
+      height: 60px;
+      margin-bottom: 16px;
+    }
+  }
+}
+
+// ── Checkmark SVG animé ────────────────────────────────────────
+.ct-checkmark-svg {
+  width: 100%;
+  height: 100%;
+}
+
+.ct-checkmark-circle {
+  stroke: $cyan;
+  stroke-width: 2.5;
+  stroke-dasharray: 166;
+  stroke-dashoffset: 166;
+  animation: ctCheckCircle .6s cubic-bezier(.65,0,.45,1) .2s forwards;
+}
+
+.ct-checkmark-check {
+  stroke: $cyan;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 48;
+  stroke-dashoffset: 48;
+  animation: ctCheckDraw .4s cubic-bezier(.65,0,.45,1) .75s forwards;
+}
+
+@keyframes ctCheckCircle {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes ctCheckDraw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  ERROR BANNER
+// ═══════════════════════════════════════════════════════════════
+.ct-error-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 14px;
+  background: rgba($red, .06);
+  border: 1px solid rgba($red, .2);
+  border-radius: 8px;
+  font-size: 13px;
+  color: $red;
+  margin-bottom: 16px;
+}
+
+.req {
+  color: $red;
+  font-weight: 700;
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  MODAL
+// ═══════════════════════════════════════════════════════════════
+.ct-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba($navy, .55);
+  backdrop-filter: blur(12px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: fadeIn .25s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.ct-modal {
+  background: $white;
+  border-radius: 24px;
+  width: 100%;
+  max-width: 500px;
+  animation: slideUp .35s cubic-bezier(.16,1,.3,1);
+  box-shadow: 0 40px 100px rgba($navy, .28);
+  border: 1.5px solid $border;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 24px 26px 20px;
+    border-bottom: 1px solid $border;
+
+    h3 {
+      font-size: 17px;
+      font-weight: 800;
+      color: $navy;
+      margin: 0 0 3px;
+    }
+
+    p {
+      font-size: 12.5px;
+      color: $muted;
+      margin: 0;
+      font-weight: 300;
+    }
+  }
+
+  &__header-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, $navy, $navy2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: $cyan;
+    flex-shrink: 0;
+  }
+
+  &__body {
+    padding: 24px 26px;
+
+    .ct-field input {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1.5px solid $border;
+      border-radius: 10px;
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      color: $text;
+      background: $white;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+      box-sizing: border-box;
+
+      &:focus {
+        border-color: $cyan;
+        box-shadow: 0 0 0 3px rgba($cyan, .12);
+      }
+
+      &::placeholder {
+        color: #a0afd4;
+      }
+    }
+  }
+
+  &__footer {
+    padding: 16px 26px 24px;
+    border-top: 1px solid $border;
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+  }
+
+  &__close {
+    background: transparent;
+    border: 1.5px solid $border;
+    border-radius: 8px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: $muted;
+    transition: all .2s;
+    flex-shrink: 0;
+    margin-left: auto;
+
+    &:hover {
+      background: $bg;
+      color: $navy;
+      transform: rotate(90deg);
+    }
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: scale(.95) translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.ct-modal-success {
+  text-align: center;
+  padding: 24px 0;
+
+  div {
+    font-size: 52px;
+    margin-bottom: 14px;
+  }
+
+  h4 {
+    font-size: 19px;
+    font-weight: 800;
+    color: $navy;
+    margin-bottom: 8px;
+  }
+
+  p {
+    font-size: 14px;
+    color: $muted;
+    line-height: 1.7;
+    margin-bottom: 24px;
+    font-weight: 300;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  RADIO — style pill buttons
+// ═══════════════════════════════════════════════════════════════
+.ct-radio-group {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.ct-radio {
+  position: relative;
+  cursor: pointer;
+
+  input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+  }
+
+  &__dot {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 22px;
+    border-radius: 10px;
+    border: 2px solid $border;
+    background: $off;
+    font-size: 14px;
+    font-weight: 600;
+    color: $muted;
+    transition: all .2s cubic-bezier(.16,1,.3,1);
+    user-select: none;
+    white-space: nowrap;
+
+    &::before {
+      content: '';
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 2px solid $border;
+      background: $white;
+      flex-shrink: 0;
+      transition: all .2s cubic-bezier(.34,1.56,.64,1);
+    }
+  }
+
+  &:hover .ct-radio__dot {
+    border-color: rgba($cyan, .5);
+    color: $navy;
+    background: rgba($cyan, .04);
+
+    &::before {
+      border-color: rgba($cyan, .6);
+    }
+  }
+
+  input[type="radio"]:checked ~ .ct-radio__dot {
+    border-color: $cyan;
+    background: rgba($cyan, .08);
+    color: $navy;
+    box-shadow: 0 0 0 3px rgba($cyan, .12);
+
+    &::before {
+      border-color: $cyan;
+      background: $cyan;
+      box-shadow: inset 0 0 0 3px $white;
+    }
+  }
+
+  &:has(input[type="radio"]:checked) .ct-radio__dot {
+    border-color: $cyan;
+    background: rgba($cyan, .08);
+    color: $navy;
+    box-shadow: 0 0 0 3px rgba($cyan, .12);
+
+    &::before {
+      border-color: $cyan;
+      background: $cyan;
+      box-shadow: inset 0 0 0 3px $white;
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  RESPONSIVE
+// ═══════════════════════════════════════════════════════════════
+@media (max-width: 768px) {
+  .ct-hero {
+    min-height: 360px;
+  }
+
+  .ct-body {
+    padding-top: 36px;
+    padding-bottom: 64px;
+  }
+}
+
+// ── Champ "Autre" — apparition animée ────────────────────────────────────────
+.ct-field--fade-in {
+  animation: ct-fade-slide 0.22s ease;
+}
+
+@keyframes ct-fade-slide {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

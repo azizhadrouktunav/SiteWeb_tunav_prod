@@ -1,0 +1,292 @@
+@{
+    ViewData["Title"] = "Connexion";
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tunav Backoffice — Connexion</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --navy:  #0d1b4b; --navy2: #1a2a6c; --cyan: #00c8d4;
+            --bg:    #f0f4ff; --text:  #1e2d5a; --muted: #6b7db3; --border: #dce4f5;
+        }
+        body { min-height: 100vh; font-family: 'Inter', sans-serif; display: grid; grid-template-columns: 1fr 1fr; }
+
+        /* LEFT */
+        .left { background: var(--navy); display: flex; flex-direction: column; justify-content: center; padding: 60px; position: relative; overflow: hidden; }
+        .left::before { content:''; position:absolute; width:400px; height:400px; border-radius:50%; background:rgba(0,200,212,0.07); top:-80px; right:-80px; }
+        .left::after  { content:''; position:absolute; width:250px; height:250px; border-radius:50%; background:rgba(0,200,212,0.05); bottom:40px; left:-40px; }
+
+        .brand { display:flex; align-items:center; gap:16px; margin-bottom:56px; position:relative; z-index:1; }
+        .brand-logo-img { width:60px; height:60px; border-radius:12px; background:white; padding:6px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+        .brand-logo-img img { width:100%; height:100%; object-fit:contain; }
+        .brand-name { font-size:20px; font-weight:700; color:white; line-height:1.2; }
+        .brand-tagline { font-size:11px; color:rgba(255,255,255,0.45); letter-spacing:0.5px; margin-top:2px; }
+
+        .hero { position:relative; z-index:1; }
+        .hero h1 { font-size:36px; font-weight:700; color:white; line-height:1.2; margin-bottom:16px; }
+        .hero h1 span { color:var(--cyan); }
+        .hero p { font-size:14px; color:rgba(255,255,255,0.55); line-height:1.7; max-width:360px; }
+
+        .modules { position:relative; z-index:1; margin-top:44px; display:flex; flex-direction:column; gap:10px; }
+        .mod-item { display:flex; align-items:center; gap:10px; font-size:13px; color:rgba(255,255,255,0.65); }
+        .mod-dot  { width:6px; height:6px; border-radius:50%; background:var(--cyan); flex-shrink:0; }
+
+        /* RIGHT */
+        .right { display:flex; align-items:center; justify-content:center; padding:60px 80px; background:white; }
+        .box { width:100%; max-width:380px; }
+
+        .right-logo { display:flex; align-items:center; gap:12px; margin-bottom:32px; }
+        .right-logo img { width:44px; height:44px; object-fit:contain; }
+        .right-logo-name { font-size:16px; font-weight:700; color:var(--text); }
+        .right-logo-sub  { font-size:11px; color:var(--muted); }
+
+        .box h2  { font-size:22px; font-weight:700; color:var(--text); margin-bottom:4px; }
+        .box .sub { font-size:14px; color:var(--muted); margin-bottom:28px; }
+
+        .form-group { margin-bottom:16px; }
+        .form-group label { display:block; font-size:12px; font-weight:500; color:var(--text); margin-bottom:6px; }
+        .form-group input {
+            width:100%; padding:11px 13px; border:1.5px solid var(--border); border-radius:8px;
+            font-family:'Inter',sans-serif; font-size:14px; color:var(--text);
+            outline:none; transition:border-color 0.2s, box-shadow 0.2s; background:#fafbff;
+        }
+        .form-group input:focus { border-color:var(--cyan); box-shadow:0 0 0 3px rgba(0,200,212,0.1); background:white; }
+        .form-group input::placeholder { color:#b0bdd8; }
+
+        .forgot-link { display:block; text-align:right; font-size:12px; color:var(--cyan); text-decoration:none; margin-top:-8px; margin-bottom:16px; cursor:pointer; }
+        .forgot-link:hover { text-decoration:underline; }
+
+        .btn-submit {
+            width:100%; padding:12px; background:var(--navy2); color:white; border:none;
+            border-radius:8px; font-family:'Inter',sans-serif; font-size:15px; font-weight:600;
+            cursor:pointer; transition:background 0.2s;
+        }
+        .btn-submit:hover { background:var(--navy); }
+        .btn-submit:active { transform:scale(0.98); }
+
+        .error-msg { background:#fff0f0; border:1px solid #ffc5c5; color:#d63031; padding:10px 14px; border-radius:8px; font-size:13px; margin-bottom:14px; display:none; }
+        .error-msg.show { display:block; }
+
+        .footer-note { text-align:center; font-size:12px; color:var(--muted); margin-top:24px; }
+
+        /* FORGOT OVERLAY */
+        .forgot-overlay {
+            display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4);
+            z-index:999; align-items:center; justify-content:center;
+        }
+        .forgot-overlay.show { display:flex; }
+
+        .forgot-box {
+            background:white; border-radius:14px; padding:32px;
+            width:400px; max-width:95vw;
+        }
+
+        .forgot-box h3 { font-size:18px; font-weight:700; color:var(--text); margin-bottom:8px; }
+        .forgot-box p  { font-size:13px; color:var(--muted); line-height:1.6; margin-bottom:24px; }
+
+        .success-msg { background:#e6faf0; border:1px solid #b2eed4; color:#00704a; padding:10px 14px; border-radius:8px; font-size:13px; margin-bottom:14px; display:none; }
+        .success-msg.show { display:block; }
+
+        .btn-back { background:none; border:none; color:var(--cyan); font-size:13px; cursor:pointer; font-family:'Inter',sans-serif; margin-top:16px; display:block; width:100%; text-align:center; }
+        .btn-back:hover { text-decoration:underline; }
+
+        @@media (max-width:768px) {
+            body { grid-template-columns:1fr; }
+            .left { display:none; }
+            .right { padding:40px 24px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- LEFT -->
+    <div class="left">
+        <div class="brand">
+            <div class="brand-logo-img"><img src="/images/tunav.jpg" alt="Tunav Logo" /></div>
+            <div>
+                <div class="brand-name">TUNAV IT Group</div>
+                <div class="brand-tagline">GPS leaders, IT experts</div>
+            </div>
+        </div>
+        <div class="hero">
+            <h1>Plateforme de<br>gestion <span>centralisee</span></h1>
+            <p>Gerez vos equipes, contenus, solutions et opportunites commerciales depuis un espace unique et securise.</p>
+        </div>
+        <div class="modules">
+            <div class="mod-item"><div class="mod-dot"></div>Gestion des utilisateurs et roles</div>
+            <div class="mod-item"><div class="mod-dot"></div>Solutions GPS et IoT</div>
+            <div class="mod-item"><div class="mod-dot"></div>Blogs, evenements et offres d'emploi</div>
+            <div class="mod-item"><div class="mod-dot"></div>Suivi commercial et partenaires</div>
+        </div>
+    </div>
+
+    <!-- RIGHT -->
+    <div class="right">
+        <div class="box">
+           
+            <h2>Connexion</h2>
+            <p class="sub">Connectez-vous pour acceder au backoffice</p>
+
+            <div class="error-msg" id="loginError"></div>
+
+            <div class="form-group">
+                <label>Adresse email</label>
+                <input type="email" id="loginEmail" placeholder="votre@tunav.tn" autocomplete="email" />
+            </div>
+
+            <div class="form-group">
+                <label>Mot de passe</label>
+                <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password" />
+            </div>
+
+            <a class="forgot-link" onclick="openForgot()">Mot de passe oublie ?</a>
+
+            <button class="btn-submit" id="btnLogin" onclick="handleLogin()">Se connecter</button>
+
+            <div class="footer-note">© 2026 TUNAV IT Group — Espace securise</div>
+        </div>
+    </div>
+
+    <!-- FORGOT PASSWORD OVERLAY -->
+    <div class="forgot-overlay" id="forgotOverlay" onclick="if(event.target===this)closeForgot()">
+        <div class="forgot-box">
+            <h3>Mot de passe oublie ?</h3>
+            <p>Entrez votre adresse email et nous vous enverrons les instructions pour reinitialiser votre mot de passe.</p>
+
+            <div class="error-msg"   id="forgotError"></div>
+            <div class="success-msg" id="forgotSuccess"></div>
+
+            <div class="form-group">
+                <label>Adresse email</label>
+                <input type="email" id="forgotEmail" placeholder="votre@tunav.tn" />
+            </div>
+
+            <button class="btn-submit" id="btnForgot" onclick="handleForgot()">Envoyer les instructions</button>
+
+            <button class="btn-back" onclick="closeForgot()">Retour a la connexion</button>
+        </div>
+    </div>
+
+    <script>
+        function navFlagsFromPermissions(permissionCodes) {
+            const codes = Array.isArray(permissionCodes) ? permissionCodes : [];
+            const hasP = (prefix) => codes.some(c => c.startsWith(prefix));
+            const admin = hasP('system.');
+            const contenu = hasP('solution.') || hasP('team.') || hasP('blog.');
+            const hasEventCrud = codes.some(c =>
+                c.startsWith('event.') && !c.startsWith('event.collaboration'));
+            const evenements = hasEventCrud || hasP('training.');
+            const collabs = hasP('event.collaboration.') || hasP('training.');
+            const rh = hasP('job.');
+            const newsletters = hasP('newsletter.');
+            const contact = hasP('contact.');
+            return { admin, contenu, evenements, collabs, rh, newsletters, contact };
+        }
+
+        function postLoginLanding(role, permissionCodes) {
+            if (role === 'Admin') return '/dashboard';
+            const builtIn = {
+                'Marketing':           '/backoffice/solutions',
+                'Ressources Humaines': '/backoffice/jobs',
+                'Commercial':          '/backoffice/contacts',
+                'Partenaire':          '/backoffice/partner-portal',
+                'SAV':                 '/backoffice/sav-claims'
+            };
+            if (builtIn[role]) return builtIn[role];
+            const f = navFlagsFromPermissions(permissionCodes);
+            if (f.admin) return '/backoffice/users';
+            if (f.contenu) return '/backoffice/solutions';
+            if (f.evenements) return '/backoffice/events';
+            if (f.newsletters) return '/backoffice/newsletters';
+            if (f.collabs) return '/backoffice/collaborations';
+            if (f.rh) return '/backoffice/jobs';
+            if (f.contact) return '/backoffice/contacts';
+            return '/backoffice/solutions';
+        }
+
+        document.addEventListener('keypress', function(e) {
+            if (e.key !== 'Enter') return;
+            if (document.getElementById('forgotOverlay').classList.contains('show')) handleForgot();
+            else handleLogin();
+        });
+
+        async function handleLogin() {
+            const email    = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            const btn      = document.getElementById('btnLogin');
+            document.getElementById('loginError').classList.remove('show');
+
+            if (!email || !password) { showErr('loginError', 'Veuillez remplir tous les champs.'); return; }
+
+            btn.textContent = 'Connexion...'; btn.disabled = true;
+
+            try {
+                const res  = await fetch('/api/auth/login', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await res.json();
+
+                if (res.ok) {
+                    localStorage.setItem('tunav_token', data.token);
+                    localStorage.setItem('tunav_user', JSON.stringify({
+                        userId:      data.userId,
+                        firstName:   data.firstName,
+                        lastName:    data.lastName,
+                        email:       data.email,
+                        role:        data.role,
+                        expiresAt:   data.expiresAt,
+                        permissions: Array.isArray(data.permissions) ? data.permissions : [],
+                        partnerId:   data.partnerId ?? null
+                    }));
+                    window.location.href = postLoginLanding(data.role, data.permissions || []);
+                } else {
+                    showErr('loginError', data.message || 'Email ou mot de passe incorrect.');
+                }
+            } catch { showErr('loginError', 'Erreur de connexion. Verifiez votre reseau.'); }
+            finally { btn.textContent = 'Se connecter'; btn.disabled = false; }
+        }
+
+        function openForgot() {
+            document.getElementById('forgotEmail').value = '';
+            document.getElementById('forgotError').classList.remove('show');
+            document.getElementById('forgotSuccess').classList.remove('show');
+            document.getElementById('forgotOverlay').classList.add('show');
+            setTimeout(() => document.getElementById('forgotEmail').focus(), 100);
+        }
+
+        function closeForgot() {
+            document.getElementById('forgotOverlay').classList.remove('show');
+        }
+
+        async function handleForgot() {
+            const email = document.getElementById('forgotEmail').value.trim();
+            const btn   = document.getElementById('btnForgot');
+            document.getElementById('forgotError').classList.remove('show');
+            document.getElementById('forgotSuccess').classList.remove('show');
+
+            if (!email) { showErr('forgotError', 'Veuillez entrer votre adresse email.'); return; }
+
+            btn.textContent = 'Envoi en cours...'; btn.disabled = true;
+
+            setTimeout(() => {
+                document.getElementById('forgotSuccess').textContent =
+                    'Si cet email existe, vous recevrez les instructions sous peu.';
+                document.getElementById('forgotSuccess').classList.add('show');
+                btn.textContent = 'Envoyer les instructions'; btn.disabled = false;
+            }, 1200);
+        }
+
+        function showErr(id, msg) {
+            const el = document.getElementById(id);
+            el.textContent = msg; el.classList.add('show');
+        }
+    </script>
+</body>
+</html>

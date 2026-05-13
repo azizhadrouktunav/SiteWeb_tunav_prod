@@ -1,0 +1,769 @@
+@{
+    ViewData["Title"] = "Offres d'Emploi & Candidatures";
+    ViewData["ActivePage"] = "Jobs";
+    Layout = "~/Views/Shared/_LayoutBackoffice.cshtml";
+}
+
+<div class="page-header">
+    <h1>Offres d'Emploi &amp; Stage</h1>
+    <p>Gérez les offres publiées et les candidatures reçues</p>
+</div>
+
+<!-- ONGLETS ──────────────────────────────────────────────────────────────────── -->
+<div class="tab-bar">
+    <button class="tab-btn tab-btn--active" id="tabOffers"       onclick="switchTab('offers')">
+        Offres (<span id="countOffers">0</span>)
+    </button>
+    <button class="tab-btn" id="tabApplications" onclick="switchTab('applications')">
+        Candidatures (<span id="countApplications">0</span>)
+    </button>
+    <button class="tab-btn" id="tabArchived"     onclick="switchTab('archived')">
+        Archivées (<span id="countArchived">0</span>)
+    </button>
+</div>
+
+<!-- OFFRES ──────────────────────────────────────────────────────────────────── -->
+<div id="panelOffers">
+    <div class="card">
+        <div class="card-header">
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex:1">
+                <h2>Liste des offres (<span id="offerCount">0</span>)</h2>
+                <select id="filterContract" onchange="loadOffers()"
+                    style="padding:7px 12px;border:1.5px solid #dce4f5;border-radius:8px;font-size:13px;color:#1e2d5a;outline:none">
+                    <option value="">Tous les contrats</option>
+                    <option value="CDI">CDI</option>
+                    <option value="CDD">CDD</option>
+                    <option value="Stage">Stage</option>
+                    <option value="Freelance">Freelance</option>
+                    <option value="Alternance">Alternance</option>
+                </select>
+                <select id="filterPostType" onchange="loadOffers()"
+                    style="padding:7px 12px;border:1.5px solid #dce4f5;border-radius:8px;font-size:13px;color:#1e2d5a;outline:none">
+                    <option value="">Tous les types</option>
+                    <option value="Emploi">Emploi</option>
+                    <option value="Stage">Stage</option>
+                    <option value="StageEte">Stage d'été</option>
+                    <option value="PFE">PFE</option>
+                </select>
+            </div>
+            <button class="btn btn-primary" onclick="openOfferModal()">+ Nouvelle offre</button>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Titre</th>
+                    <th>Type de contrat</th>
+                    <th>Type de poste</th>
+                    <th>Niveau</th>
+                    <th>Localisation</th>
+                    <th>Date limite</th>
+                    <th>Candidatures</th>
+                    <th>Statut</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="offersTable">
+                <tr class="loading-row"><td colspan="9">Chargement...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- CANDIDATURES ────────────────────────────────────────────────────────────── -->
+<div id="panelApplications" style="display:none">
+    <div class="card">
+        <div class="card-header">
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex:1">
+                <h2>Candidatures (<span id="appCount">0</span>)</h2>
+                <select id="filterAppOffer" onchange="loadApplications()"
+                    style="padding:7px 12px;border:1.5px solid #dce4f5;border-radius:8px;font-size:13px;color:#1e2d5a;outline:none;max-width:240px">
+                    <option value="">Toutes les offres</option>
+                </select>
+                <select id="filterAppStatus" onchange="loadApplications()"
+                    style="padding:7px 12px;border:1.5px solid #dce4f5;border-radius:8px;font-size:13px;color:#1e2d5a;outline:none">
+                    <option value="">Tous les statuts</option>
+                    <option value="Nouvelle">Nouvelle</option>
+                    <option value="EnCoursEtude">En cours d'étude</option>
+                    <option value="Entretien">Entretien</option>
+                    <option value="Acceptee">Acceptée</option>
+                    <option value="Refusee">Refusée</option>
+                </select>
+                <input type="text" id="searchApp" placeholder="🔍 Rechercher candidat..."
+                    oninput="applyAppSearch()"
+                    style="padding:7px 12px;border:1.5px solid #dce4f5;border-radius:8px;font-size:13px;color:#1e2d5a;outline:none;width:220px" />
+            </div>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Candidat</th>
+                    <th>Email</th>
+                    <th>Téléphone</th>
+                    <th>Offre</th>
+                    <th>CV</th>
+                    <th>Lettre motivation</th>
+                    <th>Date</th>
+                    <th>Statut</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="applicationsTable">
+                <tr class="loading-row"><td colspan="9">Chargement...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- ARCHIVÉES ───────────────────────────────────────────────────────────────── -->
+<div id="panelArchived" style="display:none">
+    <div class="card">
+        <div class="card-header" style="justify-content:space-between">
+            <h2>Offres archivées (<span id="archivedCount">0</span>)</h2>
+            <button class="btn btn-outline" onclick="archiveExpired()">⏱ Archiver les expirées</button>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Titre</th><th>Type</th><th>Date limite</th><th>Archivée le</th><th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="archivedTable">
+                <tr class="loading-row"><td colspan="5">Chargement...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- ─────────────────────────────────────────────────────────────────────────── -->
+<!-- MODAL OFFRE -->
+<!-- ─────────────────────────────────────────────────────────────────────────── -->
+<div class="modal-overlay" id="modalOffer">
+    <div class="modal-box" style="max-width:640px;max-height:90vh;overflow-y:auto;display:flex;flex-direction:column">
+        <button class="modal-close-btn" onclick="closeOfferModal()" title="Fermer">✕</button>
+        <h3 id="offerModalTitle">Nouvelle offre</h3>
+        <div id="offerMsg" style="display:none;padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:14px"></div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+            <div class="modal-field" style="grid-column:1/-1">
+                <label>Titre <span style="color:#e53e3e">*</span></label>
+                <input type="text" id="offerTitle" placeholder="Ex: Développeur Full Stack" />
+            </div>
+            <div class="modal-field">
+                <label>Type de contrat <span style="color:#e53e3e">*</span></label>
+                <select id="offerContractType">
+                    <option value="CDI">CDI</option>
+                    <option value="CDD">CDD</option>
+                    <option value="Stage">Stage</option>
+                    <option value="Freelance">Freelance</option>
+                    <option value="Alternance">Alternance</option>
+                </select>
+            </div>
+            <div class="modal-field">
+                <label>Type de poste <span style="color:#e53e3e">*</span></label>
+                <select id="offerPostType">
+                    <option value="Emploi">Emploi</option>
+                    <option value="Stage">Stage</option>
+                    <option value="StageEte">Stage d'été</option>
+                    <option value="PFE">PFE</option>
+                </select>
+            </div>
+            <div class="modal-field">
+                <label>Niveau académique</label>
+                <select id="offerAcademicLevel">
+                    <option value="Tous">Tous niveaux</option>
+                    <option value="Bac">Bac</option>
+                    <option value="Licence">Licence</option>
+                    <option value="Ingenieur">Ingénieur</option>
+                    <option value="Master">Master</option>
+                    <option value="Doctorat">Doctorat</option>
+                </select>
+            </div>
+            <div class="modal-field">
+                <label>Localisation</label>
+                <input type="text" id="offerLocation" placeholder="Ex: Tunis, Tunisie" />
+            </div>
+            <div class="modal-field">
+                <label>Durée / Expérience</label>
+                <input type="text" id="offerDuration" placeholder="Ex: 3-5 ans / 2-3 mois" />
+            </div>
+            <div class="modal-field">
+                <label>Rémunération</label>
+                <input type="text" id="offerSalary" placeholder="Ex: Compétitif selon expérience" />
+            </div>
+            <div class="modal-field">
+                <label>Date limite</label>
+                <input type="date" id="offerDeadline" />
+            </div>
+            <div class="modal-field" style="grid-column:1/-1">
+                <label>Compétences <span style="color:#e53e3e">*séparées par virgule obligatoire*</span></label>
+                <input type="text" id="offerSkills" placeholder="Ex: React.js, Node.js, PostgreSQL"
+                    oninput="previewSkills(this.value)" />
+                <div id="skillsPreview" style="display:none;margin-top:8px;display:flex;flex-wrap:wrap;gap:6px"></div>
+            </div>
+            <div class="modal-field" style="grid-column:1/-1">
+                <label>Description du poste</label>
+                <textarea id="offerDescription" rows="4" placeholder="Décrivez le poste, le contexte..."></textarea>
+            </div>
+            <div class="modal-field" style="grid-column:1/-1">
+                <label>
+                    Missions principales
+                    <span style="font-size:11px;color:#9aa5b4;font-weight:400;margin-left:6px">(une mission par ligne)</span>
+                </label>
+                <textarea id="offerMissions" rows="5" placeholder="Développer et maintenir les applications web&#10;Concevoir des API RESTful robustes&#10;Intégrer les solutions IoT&#10;..."></textarea>
+            </div>
+            <div class="modal-field" style="grid-column:1/-1">
+                <label>
+                    Ce que nous offrons
+                    <span style="font-size:11px;color:#9aa5b4;font-weight:400;margin-left:6px">(un avantage par ligne)</span>
+                </label>
+                <textarea id="offerBenefits" rows="5" placeholder="Salaire compétitif avec révisions annuelles&#10;Assurance santé complète&#10;Formation continue et certifications&#10;Télétravail partiel possible&#10;..."></textarea>
+            </div>
+            <div class="modal-field" style="grid-column:1/-1">
+                <label>
+                    Processus de recrutement
+                    <span style="font-size:11px;color:#9aa5b4;font-weight:400;margin-left:6px">(une étape par ligne)</span>
+                </label>
+                <textarea id="offerProcess" rows="4" placeholder="Soumission de candidature&#10;Entretien téléphonique (30 min)&#10;Test technique&#10;Entretien final avec la direction&#10;..."></textarea>
+            </div>
+            <div class="modal-field" style="grid-column:1/-1">
+                <label>Profil recherché / Exigences</label>
+                <textarea id="offerRequirements" rows="3" placeholder="Formation, compétences techniques, soft skills..."></textarea>
+            </div>
+        </div>
+
+        <div class="modal-actions">
+            <button class="btn btn-outline" onclick="closeOfferModal()">Annuler</button>
+            <button class="btn btn-primary" id="btnSaveOffer" onclick="saveOffer()">Enregistrer</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL STATUT CANDIDATURE -->
+<div class="modal-overlay" id="modalAppStatus">
+    <div class="modal-box" style="max-width:460px">
+        <button class="modal-close-btn" onclick="closeAppStatus()" title="Fermer">✕</button>
+        <h3>Mise à jour de la candidature</h3>
+        <p id="appStatusInfo" style="font-size:13px;color:#6b7db3;margin-bottom:18px;padding:10px 14px;background:#f8faff;border-radius:8px;border-left:3px solid #00c8d4"></p>
+        <div class="modal-field" style="margin-bottom:14px">
+            <label>Nouveau statut</label>
+            <select id="newAppStatus">
+                <option value="Nouvelle">Nouvelle</option>
+                <option value="EnCoursEtude">En cours d'étude</option>
+                <option value="Entretien">Entretien planifié</option>
+                <option value="Acceptee">Acceptée</option>
+                <option value="Refusee">Refusée</option>
+            </select>
+        </div>
+        <div class="modal-field" style="margin-bottom:20px">
+            <label>Note interne</label>
+            <textarea id="appNote" rows="3" placeholder="Ex: Profil intéressant, planifier un entretien..."></textarea>
+        </div>
+        <div class="modal-actions">
+            <button class="btn btn-outline" onclick="closeAppStatus()">Annuler</button>
+            <button class="btn btn-primary" id="btnSaveAppStatus" onclick="saveAppStatus()">Enregistrer</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL SUPPRESSION -->
+<div class="modal-overlay" id="modalDelete">
+    <div class="modal-box" style="max-width:400px;text-align:center">
+        <button class="modal-close-btn" onclick="closeDelete()" title="Fermer">✕</button>
+        <h3 style="margin-bottom:8px">Confirmer la suppression</h3>
+        <p id="deleteMsg" style="font-size:14px;color:#6b7db3;margin-bottom:24px"></p>
+        <div style="display:flex;gap:10px;justify-content:center">
+            <button class="btn btn-outline" onclick="closeDelete()">Annuler</button>
+            <button class="btn btn-danger" id="btnConfirmDelete" onclick="confirmDelete()">Supprimer</button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<style>
+    .modal-close-btn { position:absolute; top:16px; right:16px; background:none; border:none; font-size:20px; cursor:pointer; color:#6b7db3; line-height:1; padding:4px 8px; border-radius:6px; transition:background 0.2s; }
+    .modal-close-btn:hover { background:#f0f4ff; color:#1e2d5a; }
+    .modal-box { position:relative; }
+    .tab-bar { display:flex;gap:8px;margin-bottom:20px;border-bottom:2px solid #e8edf8;padding-bottom:0; }
+    .tab-btn { background:none;border:none;padding:10px 20px;font-size:14px;font-weight:500;color:#6b7db3;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:color .2s,border-color .2s; }
+    .tab-btn--active { color:#00c8d4;border-bottom-color:#00c8d4; }
+    .tab-btn:hover:not(.tab-btn--active) { color:#1e2d5a; }
+    .modal-field { margin-bottom:0; }
+    .modal-field label { display:block;font-size:12px;font-weight:500;color:#6b7db3;margin-bottom:5px; }
+    .modal-field input,.modal-field select,.modal-field textarea {
+        width:100%;padding:10px 12px;border:1.5px solid #dce4f5;border-radius:8px;
+        font-size:14px;font-family:'Inter',sans-serif;outline:none;color:#1e2d5a;
+        transition:border-color .2s;resize:vertical;
+    }
+    .modal-field input:focus,.modal-field select:focus,.modal-field textarea:focus { border-color:#00c8d4; }
+    /* ✅ FIX : file-btn est maintenant un <button>, on retire text-decoration et on aligne le style */
+    .file-btn {
+        display:inline-flex;align-items:center;gap:5px;padding:4px 10px;
+        background:#e8f0fe;color:#1a2a6c;font-size:11px;font-weight:600;
+        border-radius:6px;border:none;cursor:pointer;
+        transition:background .15s;font-family:inherit;
+    }
+    .file-btn:hover { background:#c7d8fc; }
+    .file-btn:disabled { opacity:0.6;cursor:wait; }
+    .badge-nouvelle   { background:#e3f2fd;color:#1565c0; }
+    .badge-encoursetude { background:#fff3e0;color:#e65100; }
+    .badge-entretien  { background:#e8eaf6;color:#3949ab; }
+    .badge-acceptee   { background:#e8f5e9;color:#2e7d32; }
+    .badge-refusee    { background:#ffebee;color:#c62828; }
+    .badge-active     { background:#e6faf0;color:#00b894; }
+    .badge-inactive   { background:#f0f0f0;color:#999; }
+    .badge { display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600; }
+    .empty-row td,.loading-row td { text-align:center;padding:32px;color:#6b7db3;font-size:13px; }
+    table { width:100%;border-collapse:collapse; }
+    thead th { padding:11px 16px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:#6b7db3;background:#f8faff;border-bottom:1px solid #dce4f5;text-align:left; }
+    tbody tr { border-bottom:1px solid #dce4f5;transition:background .1s; }
+    tbody tr:hover { background:#f8faff; }
+    tbody td { padding:12px 16px;font-size:13px;color:#1e2d5a;vertical-align:middle; }
+    .card { background:white;border:1px solid #dce4f5;border-radius:12px;overflow:hidden;margin-bottom:20px; }
+    .card-header { padding:16px 20px;border-bottom:1px solid #dce4f5;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px; }
+    .card-header h2 { font-size:15px;font-weight:600;color:#1e2d5a; }
+</style>
+<script>
+    const API = 'http://localhost:5057';
+    let currentTab = 'offers';
+    let allOffers = [], allApplications = [], allArchived = [];
+    let editingOfferId = null, editingAppId = null, deletingId = null, deleteType = null;
+
+    // ── Tab ──────────────────────────────────────────────────────────────────
+    function switchTab(tab) {
+        currentTab = tab;
+        ['offers','applications','archived'].forEach(t => {
+            document.getElementById('panel' + t.charAt(0).toUpperCase() + t.slice(1)).style.display = t === tab ? '' : 'none';
+            document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1)).classList.toggle('tab-btn--active', t === tab);
+        });
+        if (tab === 'offers')       loadOffers();
+        if (tab === 'applications') loadApplications();
+        if (tab === 'archived')     loadArchived();
+    }
+
+    // ── OFFRES ───────────────────────────────────────────────────────────────
+    async function loadOffers() {
+        const contract = document.getElementById('filterContract').value;
+        const postType = document.getElementById('filterPostType').value;
+        let url = `${API}/api/job-offers/all?isArchived=false`;
+        if (contract) url += `&contractType=${contract}`;
+        if (postType)  url += `&postType=${postType}`;
+
+        document.getElementById('offersTable').innerHTML = '<tr class="loading-row"><td colspan="9">Chargement...</td></tr>';
+        try {
+            const res = await fetch(url, { headers: authHeaders() });
+            allOffers = await res.json();
+            renderOffers(allOffers);
+            refreshOfferCounts();
+        } catch { document.getElementById('offersTable').innerHTML = '<tr class="empty-row"><td colspan="9">Erreur de chargement.</td></tr>'; }
+    }
+
+    async function refreshOfferCounts() {
+        try {
+            const res  = await fetch(`${API}/api/job-applications`, { headers: authHeaders() });
+            const apps = await res.json();
+            if (!Array.isArray(apps)) return;
+            allOffers.forEach(o => {
+                const el = document.getElementById('appCount-' + o.id);
+                if (el) el.textContent = '0';
+            });
+            apps.forEach(a => {
+                const el = document.getElementById('appCount-' + a.jobOfferId);
+                if (el) el.textContent = parseInt(el.textContent || '0') + 1;
+            });
+            document.getElementById('countApplications').textContent = apps.length;
+        } catch {}
+    }
+
+    function renderOffers(list) {
+        document.getElementById('offerCount').textContent = list.length;
+        document.getElementById('countOffers').textContent = list.length;
+        document.getElementById('offersTable').innerHTML = list.length ? list.map(o => `
+            <tr>
+                <td style="font-weight:600;max-width:200px">${escHtml(o.title)}</td>
+                <td><span class="badge badge-cyan">${escHtml(o.contractType)}</span></td>
+                <td>${escHtml(o.postType)}</td>
+                <td>${escHtml(o.academicLevel)}</td>
+                <td>${o.location ? escHtml(o.location) : '—'}</td>
+                <td style="white-space:nowrap">${o.deadline ? fmtDate(o.deadline) : '—'}</td>
+                <td style="text-align:center">
+                    <button class="btn btn-outline btn-sm" style="border-color:#00c8d4;color:#00c8d4;min-width:48px"
+                        onclick="switchTab('applications');filterByOffer(${o.id})">
+                        <span id="appCount-${o.id}">${o.applicationCount ?? 0}</span>
+                    </button>
+                </td>
+                <td>${o.isActive
+                    ? '<span class="badge badge-active">Active</span>'
+                    : '<span class="badge badge-inactive">Inactive</span>'}</td>
+                <td>
+                    <div style="display:flex;gap:5px;flex-wrap:wrap">
+                        <button class="btn btn-outline btn-sm" onclick="editOffer(${o.id})">Modifier</button>
+                        <button class="btn btn-outline btn-sm" onclick="toggleOffer(${o.id})">${o.isActive ? 'Désactiver' : 'Activer'}</button>
+                        <button class="btn btn-danger btn-sm" onclick="openDelete(${o.id},'offer','${escHtml(o.title)}')">Suppr.</button>
+                    </div>
+                </td>
+            </tr>`).join('')
+            : '<tr class="empty-row"><td colspan="9">Aucune offre.</td></tr>';
+    }
+
+    async function toggleOffer(id) {
+        await fetch(`${API}/api/job-offers/${id}/toggle`, { method: 'PATCH', headers: authHeaders() });
+        loadOffers();
+    }
+
+    // ── MODAL OFFRE ──────────────────────────────────────────────────────────
+    function openOfferModal(offer = null) {
+        editingOfferId = offer ? offer.id : null;
+        document.getElementById('offerModalTitle').textContent = offer ? 'Modifier l\'offre' : 'Nouvelle offre';
+        document.getElementById('offerTitle').value          = offer?.title          ?? '';
+        document.getElementById('offerContractType').value   = offer?.contractType   ?? 'CDI';
+        document.getElementById('offerPostType').value       = offer?.postType       ?? 'Emploi';
+        document.getElementById('offerAcademicLevel').value  = offer?.academicLevel  ?? 'Tous';
+        document.getElementById('offerLocation').value       = offer?.location       ?? '';
+        document.getElementById('offerDuration').value       = offer?.duration       ?? '';
+        document.getElementById('offerSalary').value         = offer?.salary         ?? '';
+        document.getElementById('offerDeadline').value       = offer?.deadline ? offer.deadline.substring(0,10) : '';
+        document.getElementById('offerSkills').value         = offer?.skills         ?? '';
+        document.getElementById('offerDescription').value    = offer?.description    ?? '';
+        document.getElementById('offerMissions').value       = offer?.missions       ?? '';
+        document.getElementById('offerBenefits').value       = offer?.benefits       ?? '';
+        document.getElementById('offerProcess').value        = offer?.process        ?? '';
+        document.getElementById('offerRequirements').value   = offer?.requirements   ?? '';
+        showOfferMsg('', null);
+        document.getElementById('modalOffer').classList.add('show');
+    }
+
+    function closeOfferModal() { document.getElementById('modalOffer').classList.remove('show'); editingOfferId = null; }
+
+    async function editOffer(id) {
+        try {
+            const res = await fetch(`${API}/api/job-offers/${id}`, { headers: authHeaders() });
+            if (!res.ok) { alert('Impossible de charger l\'offre.'); return; }
+            const offer = await res.json();
+            openOfferModal(offer);
+        } catch { alert('Erreur réseau.'); }
+    }
+
+    async function saveOffer() {
+        const title = document.getElementById('offerTitle').value.trim();
+        if (!title) { showOfferMsg('Le titre est obligatoire.', false); return; }
+
+        const u = JSON.parse(localStorage.getItem('tunav_user') || '{}');
+        const body = {
+            title,
+            contractType:  document.getElementById('offerContractType').value,
+            postType:      document.getElementById('offerPostType').value,
+            academicLevel: document.getElementById('offerAcademicLevel').value,
+            location:      document.getElementById('offerLocation').value.trim() || null,
+            duration:      document.getElementById('offerDuration').value.trim() || null,
+            salary:        document.getElementById('offerSalary').value.trim() || null,
+            deadline:      document.getElementById('offerDeadline').value || null,
+            skills:        document.getElementById('offerSkills').value.trim() || null,
+            description:   document.getElementById('offerDescription').value.trim() || null,
+            missions:      document.getElementById('offerMissions').value.trim() || null,
+            benefits:      document.getElementById('offerBenefits').value.trim() || null,
+            process:       document.getElementById('offerProcess').value.trim() || null,
+            requirements:  document.getElementById('offerRequirements').value.trim() || null,
+            isActive: true
+        };
+
+        const btn = document.getElementById('btnSaveOffer');
+        btn.disabled = true; btn.textContent = 'Enregistrement...';
+        try {
+            const url = editingOfferId
+                ? `${API}/api/job-offers/${editingOfferId}`
+                : `${API}/api/job-offers?userId=${u.userId || 1}`;
+            const method = editingOfferId ? 'PUT' : 'POST';
+            const res = await fetch(url, { method, headers: authHeaders(), body: JSON.stringify(body) });
+            if (res.ok) {
+                closeOfferModal();
+                await loadOffers();
+                await loadCounts();
+            } else {
+                const data = await res.json();
+                showOfferMsg(data.message || 'Erreur.', false);
+            }
+        } catch { showOfferMsg('Erreur réseau.', false); }
+        finally { btn.disabled = false; btn.textContent = 'Enregistrer'; }
+    }
+
+    function showOfferMsg(text, ok) {
+        const el = document.getElementById('offerMsg');
+        if (!text) { el.style.display = 'none'; return; }
+        el.textContent = text; el.style.display = 'block';
+        el.style.background = ok ? '#e6faf0' : '#fff0f0';
+        el.style.border = ok ? '1px solid #b2dfdb' : '1px solid #ffc5c5';
+        el.style.color  = ok ? '#00b894' : '#d63031';
+    }
+
+    // ── CANDIDATURES ─────────────────────────────────────────────────────────
+    async function loadApplications() {
+        const offerId = document.getElementById('filterAppOffer').value;
+        const status  = document.getElementById('filterAppStatus').value;
+        let url = `${API}/api/job-applications?`;
+        if (offerId) url += `jobOfferId=${offerId}&`;
+        if (status)  url += `status=${status}`;
+
+        document.getElementById('applicationsTable').innerHTML = '<tr class="loading-row"><td colspan="9">Chargement...</td></tr>';
+        try {
+            const res = await fetch(url, { headers: authHeaders() });
+            allApplications = await res.json();
+            renderApplications(allApplications);
+        } catch { document.getElementById('applicationsTable').innerHTML = '<tr class="empty-row"><td colspan="9">Erreur de chargement.</td></tr>'; }
+    }
+
+    function filterByOffer(id) {
+        document.getElementById('filterAppOffer').value = id;
+        loadApplications();
+    }
+
+    function applyAppSearch() {
+        const q = (document.getElementById('searchApp').value || '').toLowerCase().trim();
+        if (!q) { renderApplications(allApplications); return; }
+        renderApplications(allApplications.filter(a =>
+            a.fullName.toLowerCase().includes(q) ||
+            a.email.toLowerCase().includes(q) ||
+            (a.phone && a.phone.includes(q))
+        ));
+    }
+
+    function renderApplications(list) {
+        document.getElementById('appCount').textContent = list.length;
+        document.getElementById('countApplications').textContent = list.length;
+
+        const countsByOffer = {};
+        list.forEach(a => { countsByOffer[a.jobOfferId] = (countsByOffer[a.jobOfferId] || 0) + 1; });
+        Object.entries(countsByOffer).forEach(([offerId, count]) => {
+            const el = document.getElementById('appCount-' + offerId);
+            if (el) el.textContent = count;
+        });
+
+        document.getElementById('applicationsTable').innerHTML = list.length ? list.map(a => `
+            <tr>
+                <td style="font-weight:600">${escHtml(a.fullName)}</td>
+                <td><a href="mailto:${escHtml(a.email)}" style="color:#00c8d4">${escHtml(a.email)}</a></td>
+                <td>${a.phone ? escHtml(a.phone) : '—'}</td>
+                <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(a.jobTitle)}</td>
+                <td>${renderFileLink(a.cvFile, 'CV')}</td>
+                <td>${renderFileLink(a.motivationLetterFile, 'Lettre')}</td>
+                <td style="white-space:nowrap">${fmtDate(a.appliedAt)}</td>
+                <td>${appStatusBadge(a.status)}</td>
+                <td>
+                    <div style="display:flex;gap:5px;flex-wrap:wrap">
+                        <button class="btn btn-outline btn-sm" style="border-color:#00c8d4;color:#00c8d4"
+                            onclick="openAppStatus(${a.id},'${escHtml(a.fullName)}','${a.status}','${escHtml(a.internalNote||'')}')">Statut</button>
+                        <button class="btn btn-danger btn-sm" onclick="openDelete(${a.id},'app','${escHtml(a.fullName)}')">Suppr.</button>
+                    </div>
+                </td>
+            </tr>`).join('')
+            : '<tr class="empty-row"><td colspan="9">Aucune candidature.</td></tr>';
+    }
+
+    // ✅ CORRECTION : renderFileLink utilise un <button> + openFile() au lieu d'un <a href>
+    // Cela permet d'envoyer le token JWT dans le header Authorization via fetch()
+    function renderFileLink(fileStr, label) {
+        if (!fileStr) return '<span style="color:#b0bdd8">—</span>';
+        const parts = fileStr.split('|');
+        if (parts.length === 2) {
+            const originalName = parts[0];
+            const uniqueName   = parts[1];
+            const ext = uniqueName.split('.').pop().toLowerCase();
+            const icon = ext === 'pdf' ? '📄' : (ext.startsWith('doc') ? '📝' : '🖼️');
+            const title = originalName.length > 24 ? originalName.substring(0, 24) + '…' : originalName;
+            // Encoder les noms pour les passer en attribut onclick sans casser le JS
+            const safeUnique   = uniqueName.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+            const safeOriginal = originalName.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+            return `<button class="file-btn"
+                        onclick="openFile('${safeUnique}','${safeOriginal}',this)"
+                        title="${escHtml(originalName)}">${icon} ${escHtml(title)}</button>`;
+        }
+        // Ancien format sans séparateur — afficher sans lien
+        return `<span class="file-btn">📎 ${escHtml(fileStr)}</span>`;
+    }
+
+    // ✅ NOUVELLE FONCTION : télécharge le fichier via fetch (avec token JWT) puis l'ouvre via Blob URL
+    async function openFile(uniqueName, originalName, btn) {
+        if (btn) { btn.disabled = true; btn.textContent = '⏳'; }
+        try {
+            const res = await fetch(
+                `${API}/api/job-applications/file/${encodeURIComponent(uniqueName)}`,
+                { headers: authHeaders() }
+            );
+            if (!res.ok) {
+                alert('Fichier introuvable ou accès refusé. (HTTP ' + res.status + ')');
+                return;
+            }
+            const blob    = await res.blob();
+            const blobUrl = URL.createObjectURL(blob);
+            const ext     = uniqueName.split('.').pop().toLowerCase();
+
+            if (ext === 'pdf') {
+                // PDF → ouvrir dans un nouvel onglet (inline)
+                window.open(blobUrl, '_blank');
+            } else {
+                // DOC / DOCX → forcer le téléchargement
+                const a  = document.createElement('a');
+                a.href   = blobUrl;
+                a.download = originalName;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            }
+
+            // Libérer la mémoire après 60 secondes
+            setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000);
+        } catch (e) {
+            console.error('openFile error:', e);
+            alert('Erreur lors de l\'ouverture du fichier. Vérifiez la connexion au serveur.');
+        } finally {
+            if (btn) {
+                btn.disabled = false;
+                // Restaurer l'icône d'origine selon l'extension
+                const ext  = uniqueName.split('.').pop().toLowerCase();
+                const icon = ext === 'pdf' ? '📄' : (ext.startsWith('doc') ? '📝' : '🖼️');
+                const name = originalName.length > 24 ? originalName.substring(0, 24) + '…' : originalName;
+                btn.textContent = icon + ' ' + name;
+            }
+        }
+    }
+
+    function appStatusBadge(status) {
+        const map = {
+            'Nouvelle':     ['badge-nouvelle',     'Nouvelle'],
+            'EnCoursEtude': ['badge-encoursetude',  'En cours'],
+            'Entretien':    ['badge-entretien',     'Entretien'],
+            'Acceptee':     ['badge-acceptee',      'Acceptée'],
+            'Refusee':      ['badge-refusee',       'Refusée']
+        };
+        const [cls, lbl] = map[status] || ['badge-nouvelle', status];
+        return `<span class="badge ${cls}">${lbl}</span>`;
+    }
+
+    function openAppStatus(id, name, status, note) {
+        editingAppId = id;
+        document.getElementById('appStatusInfo').textContent = 'Candidat : ' + name;
+        document.getElementById('newAppStatus').value = status;
+        document.getElementById('appNote').value = note;
+        document.getElementById('modalAppStatus').classList.add('show');
+    }
+    function closeAppStatus() { document.getElementById('modalAppStatus').classList.remove('show'); editingAppId = null; }
+
+    async function saveAppStatus() {
+        if (!editingAppId) return;
+        const btn = document.getElementById('btnSaveAppStatus');
+        btn.disabled = true; btn.textContent = 'Enregistrement...';
+        try {
+            const res = await fetch(`${API}/api/job-applications/${editingAppId}/status`, {
+                method: 'PATCH', headers: authHeaders(),
+                body: JSON.stringify({ status: document.getElementById('newAppStatus').value, internalNote: document.getElementById('appNote').value.trim() || null })
+            });
+            if (res.ok) { closeAppStatus(); loadApplications(); }
+            else alert('Erreur lors de la mise à jour.');
+        } catch { alert('Erreur réseau.'); }
+        finally { btn.disabled = false; btn.textContent = 'Enregistrer'; }
+    }
+
+    // ── ARCHIVÉES ────────────────────────────────────────────────────────────
+    async function loadArchived() {
+        document.getElementById('archivedTable').innerHTML = '<tr class="loading-row"><td colspan="5">Chargement...</td></tr>';
+        try {
+            const res = await fetch(`${API}/api/job-offers/all?isArchived=true`, { headers: authHeaders() });
+            allArchived = await res.json();
+            document.getElementById('archivedCount').textContent = allArchived.length;
+            document.getElementById('countArchived').textContent  = allArchived.length;
+            document.getElementById('archivedTable').innerHTML = allArchived.length
+                ? allArchived.map(o => `<tr>
+                    <td style="font-weight:600">${escHtml(o.title)}</td>
+                    <td>${escHtml(o.contractType)}</td>
+                    <td>${o.deadline ? fmtDate(o.deadline) : '—'}</td>
+                    <td>${fmtDate(o.updatedAt || o.createdAt)}</td>
+                    <td>
+                        <button class="btn btn-outline btn-sm" onclick="editOffer(${o.id})">Modifier</button>
+                        <button class="btn btn-danger btn-sm" onclick="openDelete(${o.id},'offer','${escHtml(o.title)}')">Suppr.</button>
+                    </td></tr>`).join('')
+                : '<tr class="empty-row"><td colspan="5">Aucune offre archivée.</td></tr>';
+        } catch { document.getElementById('archivedTable').innerHTML = '<tr class="empty-row"><td colspan="5">Erreur.</td></tr>'; }
+    }
+
+    async function archiveExpired() {
+        try {
+            const res = await fetch(`${API}/api/job-offers/archive-expired`, { method: 'POST', headers: authHeaders() });
+            const data = await res.json();
+            alert(data.message);
+            loadArchived(); loadOffers(); loadCounts();
+        } catch { alert('Erreur réseau.'); }
+    }
+
+    // ── SUPPRESSION ──────────────────────────────────────────────────────────
+    function openDelete(id, type, name) {
+        deletingId = id; deleteType = type;
+        document.getElementById('deleteMsg').innerHTML = `Supprimer <strong>${escHtml(name)}</strong> ? <br><span style="color:#d63031">Action irréversible.</span>`;
+        document.getElementById('modalDelete').classList.add('show');
+    }
+    function closeDelete() { document.getElementById('modalDelete').classList.remove('show'); deletingId = null; deleteType = null; }
+
+    async function confirmDelete() {
+        if (!deletingId) return;
+        const btn = document.getElementById('btnConfirmDelete');
+        btn.disabled = true; btn.textContent = 'Suppression...';
+        const url = deleteType === 'offer'
+            ? `${API}/api/job-offers/${deletingId}`
+            : `${API}/api/job-applications/${deletingId}`;
+        try {
+            const res = await fetch(url, { method: 'DELETE', headers: authHeaders() });
+            if (res.ok || res.status === 204) {
+                closeDelete();
+                if (deleteType === 'offer') { loadOffers(); loadArchived(); }
+                else loadApplications();
+                loadCounts();
+            } else alert('Erreur lors de la suppression.');
+        } catch { alert('Erreur réseau.'); }
+        finally { btn.disabled = false; btn.textContent = 'Supprimer'; }
+    }
+
+    // ── UTILITAIRES ──────────────────────────────────────────────────────────
+    function fmtDate(d) {
+        if (!d) return '—';
+        return new Date(d).toLocaleDateString('fr-FR', { day:'2-digit', month:'short', year:'numeric' });
+    }
+
+    function escHtml(str) {
+        if (!str) return '';
+        return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+
+    async function loadCounts() {
+        try {
+            const [rOffers, rApps, rArch] = await Promise.all([
+                fetch(`${API}/api/job-offers/all?isArchived=false`, { headers: authHeaders() }),
+                fetch(`${API}/api/job-applications`, { headers: authHeaders() }),
+                fetch(`${API}/api/job-offers/all?isArchived=true`, { headers: authHeaders() })
+            ]);
+            const [offers, apps, arch] = await Promise.all([rOffers.json(), rApps.json(), rArch.json()]);
+            document.getElementById('countOffers').textContent       = Array.isArray(offers) ? offers.length : 0;
+            document.getElementById('countApplications').textContent = Array.isArray(apps)   ? apps.length   : 0;
+            document.getElementById('countArchived').textContent     = Array.isArray(arch)   ? arch.length   : 0;
+
+            const sel = document.getElementById('filterAppOffer');
+            const cur = sel.value;
+            sel.innerHTML = '<option value="">Toutes les offres</option>' +
+                (Array.isArray(offers) ? offers.map(o => `<option value="${o.id}" ${o.id == cur ? 'selected' : ''}>${escHtml(o.title)}</option>`).join('') : '');
+        } catch {}
+    }
+
+    (async function init() {
+        await loadCounts();
+        await loadOffers();
+    })();
+
+    // ── APERÇU COMPÉTENCES ───────────────────────────────────────────────────
+    function previewSkills(val) {
+        const preview = document.getElementById('skillsPreview');
+        if (!val.trim()) { preview.style.display = 'none'; return; }
+        const skills = val.split(',').map(s => s.trim()).filter(Boolean);
+        preview.style.display = 'flex';
+        preview.innerHTML = skills.map(s =>
+            `<span style="padding:4px 12px;background:#eef0f5;border-radius:20px;font-size:12px;color:#3a4a6b;font-weight:500">${escHtml(s)}</span>`
+        ).join('');
+    }
+</script>
+}

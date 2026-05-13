@@ -1,0 +1,649 @@
+<div class="emp-page">
+
+  <!-- ═══════════════════════════════════════════════════════════════ HERO -->
+  @if (viewMode() === 'list') {
+  <div class="emp-hero">
+    <div class="ev-hero-grid"></div>
+    <div class="ev-hero-orb ev-hero-orb--1"></div>
+    <div class="ev-hero-orb ev-hero-orb--2"></div>
+    <div class="ev-hero-line"></div>
+
+    <div class="ev-hero-content ev-container">
+      <div class="ev-hero-eyebrow">Rejoignez l'équipe</div>
+      <h1 class="ev-hero-title">
+        Carrière &amp; <span>Stages</span><br/>chez TUNAV
+      </h1>
+      <p class="ev-hero-sub">
+        Découvrez nos opportunités d'emploi et de stage. Rejoignez une équipe passionnée
+        qui façonne l'avenir technologique de la Tunisie.
+      </p>
+      <div class="ev-hero-stats">
+        <div class="ev-hero-stat">
+          <strong>{{ employCount() }}+</strong>
+          <span>Postes ouverts</span>
+        </div>
+        <div class="ev-hero-stat">
+          <strong>{{ stageCount() }}+</strong>
+          <span>Offres de stage</span>
+        </div>
+        <div class="ev-hero-stat">
+          <strong>Tunis</strong>
+          <span>Siège social</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  }
+
+  <!-- ══════════════════════════════════════════ VUE LISTE DES OFFRES -->
+  @if (viewMode() === 'list') {
+  <section class="emp-section">
+    <div class="ev-container">
+
+      <!-- En-tête section -->
+      <div class="ev-section-header ev-reveal">
+        <div class="ev-section-eyebrow">Opportunités</div>
+        <h2 class="ev-section-title">Nos <span>offres</span> disponibles</h2>
+        <p class="ev-section-sub">Filtrez les offres selon votre profil et postulez en quelques clics.</p>
+      </div>
+
+      <!-- ── LAYOUT : filtres sidebar + grille ─────────────────────── -->
+      <div class="emp-list-layout">
+
+        <!-- SIDEBAR FILTRES sticky -->
+        <aside class="emp-filters-sidebar">
+          <div class="emp-filters-sidebar__header">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+            </svg>
+            Filtres
+          </div>
+
+          <!-- Recherche -->
+          <div class="emp-filters-sidebar__search">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+            </svg>
+            <input type="text" [(ngModel)]="searchText" placeholder="Rechercher un poste..." class="emp-search-inline" />
+          </div>
+
+          <!-- Type de Poste -->
+          <div class="emp-filter-group">
+            <div class="emp-filter-group__label">Type de Poste</div>
+            <label class="emp-radio">
+              <input type="radio" name="postType" [(ngModel)]="filterPostType" value="" />
+              <span class="emp-radio__dot"></span> Tous
+            </label>
+            <label class="emp-radio">
+              <input type="radio" name="postType" [(ngModel)]="filterPostType" value="Emploi" />
+              <span class="emp-radio__dot"></span> Emploi
+            </label>
+            <label class="emp-radio">
+              <input type="radio" name="postType" [(ngModel)]="filterPostType" value="Stage" />
+              <span class="emp-radio__dot"></span> Stage
+            </label>
+            <label class="emp-radio">
+              <input type="radio" name="postType" [(ngModel)]="filterPostType" value="PFE" />
+              <span class="emp-radio__dot"></span> PFE
+            </label>
+          </div>
+
+          <!-- Type de Contrat -->
+          <div class="emp-filter-group">
+            <div class="emp-filter-group__label">Type de Contrat</div>
+            <label class="emp-radio">
+              <input type="radio" name="contract" [(ngModel)]="filterContract" value="" />
+              <span class="emp-radio__dot"></span> Tous
+            </label>
+            <label class="emp-radio">
+              <input type="radio" name="contract" [(ngModel)]="filterContract" value="CDI" />
+              <span class="emp-radio__dot"></span> CDI
+            </label>
+            <label class="emp-radio">
+              <input type="radio" name="contract" [(ngModel)]="filterContract" value="CDD" />
+              <span class="emp-radio__dot"></span> CDD
+            </label>
+            <label class="emp-radio">
+              <input type="radio" name="contract" [(ngModel)]="filterContract" value="Stage" />
+              <span class="emp-radio__dot"></span> Stage PFE
+            </label>
+            <label class="emp-radio">
+              <input type="radio" name="contract" [(ngModel)]="filterContract" value="StageEte" />
+              <span class="emp-radio__dot"></span> Stage d'été
+            </label>
+          </div>
+
+          <!-- Niveau Académique -->
+          <div class="emp-filter-group">
+            <div class="emp-filter-group__label">Niveau Académique</div>
+            <label class="emp-radio">
+              <input type="radio" name="academic" [(ngModel)]="filterAcademic" value="" />
+              <span class="emp-radio__dot"></span> Tous
+            </label>
+            <label class="emp-radio">
+              <input type="radio" name="academic" [(ngModel)]="filterAcademic" value="Licence" />
+              <span class="emp-radio__dot"></span> Licence
+            </label>
+            <label class="emp-radio">
+              <input type="radio" name="academic" [(ngModel)]="filterAcademic" value="Ingenieur" />
+              <span class="emp-radio__dot"></span> Ingénieur
+            </label>
+            <label class="emp-radio">
+              <input type="radio" name="academic" [(ngModel)]="filterAcademic" value="Master" />
+              <span class="emp-radio__dot"></span> Master
+            </label>
+          </div>
+        </aside>
+
+        <!-- GRILLE OFFRES -->
+        <div class="emp-grid-wrap">
+          @if (isLoading()) {
+            <div class="ev-loading">
+              <div class="ev-spinner"></div>
+              <p>Chargement des offres...</p>
+            </div>
+          } @else if (filteredOffers().length === 0) {
+            <div class="ev-empty">
+              <span>🔍</span>
+              <p>Aucune offre ne correspond à vos critères.<br/>Essayez d'autres filtres.</p>
+            </div>
+          } @else {
+            <p class="emp-count">{{ filteredOffers().length }} poste{{ filteredOffers().length > 1 ? 's' : '' }} disponible{{ filteredOffers().length > 1 ? 's' : '' }}</p>
+            <div class="emp-grid">
+              @for (offer of filteredOffers(); track offer.id; let i = $index) {
+                <div [class]="'emp-card ev-reveal-scale ev-delay-' + ((i % 3) + 1)">
+
+                  <!-- Badge type poste -->
+                  <div class="emp-card__type-badge">{{ postTypeLabel(offer.postType) }}</div>
+
+                  <div class="emp-card__body">
+                    <h3 class="emp-card__title">{{ offer.title }}</h3>
+
+                    @if (offer.description) {
+                      <p class="emp-card__desc">{{ offer.description | slice:0:100 }}{{ offer.description.length > 100 ? '...' : '' }}</p>
+                    }
+
+                    @if (offer.location || offer.duration) {
+                      <div class="emp-card__meta-row">
+                        @if (offer.location) {
+                          <span class="emp-card__meta-item">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+                            </svg>
+                            {{ offer.location }}
+                          </span>
+                        }
+                        @if (offer.duration) {
+                          <span class="emp-card__meta-item">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                            </svg>
+                            {{ offer.duration }}
+                          </span>
+                        }
+                      </div>
+                    }
+
+                    <!-- Badges contrat + niveau -->
+                    <div class="emp-card__tags">
+                      <span class="emp-badge" [ngClass]="contractClass(offer.contractType)">{{ contractLabel(offer.contractType) }}</span>
+                      @if (offer.academicLevel && offer.academicLevel !== 'Tous') {
+                        <span class="emp-badge emp-badge--level">{{ offer.academicLevel }}</span>
+                      }
+                    </div>
+
+                    <!-- Compétences — toutes visibles avec +N si > 4 -->
+                    @if (offer.skillList.length) {
+                      <div class="emp-card__skills-block">
+                        <div class="emp-card__skills-label">Compétences requises</div>
+                        <div class="emp-skill-pills">
+                          @for (skill of offer.skillList.slice(0, 5); track skill) {
+                            <span class="emp-skill-pill">{{ skill }}</span>
+                          }
+                          @if (offer.skillList.length > 5) {
+                            <span class="emp-skill-pill emp-skill-pill--more">+{{ offer.skillList.length - 5 }}</span>
+                          }
+                        </div>
+                      </div>
+                    }
+
+                  </div>
+
+                  <div class="emp-card__footer">
+                    <button class="emp-btn emp-btn--outline" (click)="openDetail(offer)">
+                      Voir plus →
+                    </button>
+                    <button class="emp-btn emp-btn--primary" (click)="openDetail(offer); openApply(offer)">
+                      Postuler
+                    </button>
+                  </div>
+
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Section candidature spontanée ─────────────────── -->
+  <section class="emp-spontaneous-section">
+    <div class="ev-container">
+      <div class="emp-spontaneous__inner">
+        <div class="emp-spontaneous__text">
+          <h2>Candidature Spontanée</h2>
+          <p>Vous ne trouvez pas l'offre qui vous correspond ? Envoyez-nous votre CV !</p>
+        </div>
+        <div class="emp-spontaneous__action">
+          <button class="emp-btn emp-btn--spontaneous" (click)="openApply()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+            </svg>
+            Envoyer ma candidature
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+  }
+
+  <!-- ══════════════════════════════════════════ VUE DÉTAIL (inline) -->
+  @if (viewMode() === 'detail' && selectedOffer()) {
+  <div class="emp-detail-page">
+
+    <!-- HERO DÉTAIL -->
+    <div class="emp-detail-hero">
+      <div class="ev-container">
+        <button class="emp-back-btn" (click)="closeDetail()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+          </svg>
+          Retour aux offres
+        </button>
+
+        <div class="emp-detail-hero__content">
+          <div class="emp-detail-hero__left">
+            <div class="emp-detail-hero__badges">
+              <span class="emp-badge emp-badge--hero" [ngClass]="contractClass(selectedOffer()!.contractType)">
+                {{ contractLabel(selectedOffer()!.contractType) }}
+              </span>
+              <span class="emp-badge emp-badge--hero emp-badge--post">
+                {{ postTypeLabel(selectedOffer()!.postType) }}
+              </span>
+            </div>
+            <h1 class="emp-detail-hero__title">{{ selectedOffer()!.title }}</h1>
+            <div class="emp-detail-hero__meta">
+              @if (selectedOffer()!.location) {
+                <span>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+                  </svg>
+                  {{ selectedOffer()!.location }}, Tunisie
+                </span>
+              }
+              @if (selectedOffer()!.duration) {
+                <span>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                  </svg>
+                  {{ selectedOffer()!.duration }}
+                </span>
+              }
+            </div>
+          </div>
+          <button class="emp-btn emp-btn--primary emp-btn--hero" (click)="openApply()">
+            Postuler maintenant
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTENU DÉTAIL : colonne principale + sidebar sticky -->
+    <div class="ev-container">
+    <div class="emp-detail-body">
+
+      <!-- COLONNE PRINCIPALE -->
+      <div class="emp-detail-main">
+
+        @if (selectedOffer()!.description) {
+          <div class="emp-detail-card">
+            <h2 class="emp-detail-card__title">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00c8d4" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+              </svg>
+              Description du poste
+            </h2>
+            <p>{{ selectedOffer()!.description }}</p>
+          </div>
+        }
+
+        @if (parseLines(selectedOffer()!.missions).length > 0) {
+          <div class="emp-detail-card">
+            <h2 class="emp-detail-card__title">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00c8d4" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/>
+              </svg>
+              Missions principales
+            </h2>
+            <ul class="emp-detail-list">
+              @for (line of parseLines(selectedOffer()!.missions); track $index) {
+                <li>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00c8d4" stroke-width="2.5">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                  {{ line }}
+                </li>
+              }
+            </ul>
+          </div>
+        }
+
+        @if (parseLines(selectedOffer()!.requirements).length > 0) {
+          <div class="emp-detail-card">
+            <h2 class="emp-detail-card__title">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00c8d4" stroke-width="2">
+                <path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>
+              </svg>
+              Profil recherché
+            </h2>
+            <ul class="emp-detail-list">
+              @for (line of parseLines(selectedOffer()!.requirements); track $index) {
+                <li>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00c8d4" stroke-width="2.5">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                  {{ line }}
+                </li>
+              }
+            </ul>
+          </div>
+        }
+
+        <!-- Ce que nous offrons — depuis le backoffice uniquement -->
+        @if (getBenefits(selectedOffer()!).length > 0) {
+          <div class="emp-detail-card">
+            <h2 class="emp-detail-card__title">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00c8d4" stroke-width="2">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+              </svg>
+              Ce que nous offrons
+            </h2>
+            <div class="emp-detail-grid2">
+              @for (line of getBenefits(selectedOffer()!); track $index) {
+                <div class="emp-detail-benefit">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00c8d4" stroke-width="2.5">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                  <span>{{ line }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Processus de recrutement — depuis le backoffice uniquement -->
+        @if (getProcess(selectedOffer()!).length > 0) {
+          <div class="emp-detail-card">
+            <h2 class="emp-detail-card__title">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00c8d4" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+              Processus de recrutement
+            </h2>
+            <ol class="emp-detail-steps">
+              @for (step of getProcess(selectedOffer()!); track $index; let idx = $index) {
+                <li class="emp-detail-step">
+                  <div class="emp-detail-step__num">{{ idx + 1 }}</div>
+                  <span>{{ step }}</span>
+                </li>
+              }
+            </ol>
+          </div>
+        }
+
+      </div>
+
+      <!-- SIDEBAR STICKY -->
+      <aside class="emp-detail-sidebar">
+
+        <!-- Informations clés -->
+        <div class="emp-detail-sidebar__card">
+          <h3>Informations clés</h3>
+          <div class="emp-detail-info-list">
+
+            <div class="emp-detail-info-item">
+              <div class="emp-detail-info-item__icon emp-detail-info-item__icon--blue">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+                </svg>
+              </div>
+              <div>
+                <div class="emp-detail-info-item__label">Type de contrat</div>
+                <div class="emp-detail-info-item__val">{{ contractLabel(selectedOffer()!.contractType) }}</div>
+              </div>
+            </div>
+
+            @if (selectedOffer()!.location) {
+              <div class="emp-detail-info-item">
+                <div class="emp-detail-info-item__icon emp-detail-info-item__icon--teal">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+                  </svg>
+                </div>
+                <div>
+                  <div class="emp-detail-info-item__label">Localisation</div>
+                  <div class="emp-detail-info-item__val">{{ selectedOffer()!.location }}, Tunisie</div>
+                </div>
+              </div>
+            }
+
+            @if (selectedOffer()!.duration) {
+              <div class="emp-detail-info-item">
+                <div class="emp-detail-info-item__icon emp-detail-info-item__icon--purple">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                  </svg>
+                </div>
+                <div>
+                  <div class="emp-detail-info-item__label">Expérience</div>
+                  <div class="emp-detail-info-item__val">{{ selectedOffer()!.duration }}</div>
+                </div>
+              </div>
+            }
+
+            @if (selectedOffer()!.salary) {
+              <div class="emp-detail-info-item">
+                <div class="emp-detail-info-item__icon emp-detail-info-item__icon--green">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                  </svg>
+                </div>
+                <div>
+                  <div class="emp-detail-info-item__label">Rémunération</div>
+                  <div class="emp-detail-info-item__val">{{ selectedOffer()!.salary }}</div>
+                </div>
+              </div>
+            }
+
+            @if (selectedOffer()!.deadline) {
+              <div class="emp-detail-info-item">
+                <div class="emp-detail-info-item__icon emp-detail-info-item__icon--orange">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/>
+                    <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+                  </svg>
+                </div>
+                <div>
+                  <div class="emp-detail-info-item__label">Date limite</div>
+                  <div class="emp-detail-info-item__val" [class.emp-deadline-soon]="isDeadlineSoon(selectedOffer()!.deadline)">
+                    {{ formatDeadline(selectedOffer()!.deadline) }}
+                    @if (isDeadlineSoon(selectedOffer()!.deadline)) {
+                      <span class="emp-deadline-warning">⚠ Bientôt !</span>
+                    }
+                  </div>
+                </div>
+              </div>
+            }
+
+          </div>
+        </div>
+
+        <!-- Compétences clés -->
+        @if (selectedOffer()!.skillList.length) {
+          <div class="emp-detail-sidebar__card">
+            <h3>Compétences clés</h3>
+            <div class="emp-skill-pills">
+              @for (skill of selectedOffer()!.skillList; track skill) {
+                <span class="emp-skill-pill">{{ skill }}</span>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- CTA Postuler -->
+        <button class="emp-btn emp-btn--primary emp-btn--full emp-btn--cta" (click)="openApply()">
+          Postuler à cette offre
+        </button>
+
+      </aside>
+
+    </div>
+    </div><!-- /ev-container -->
+  </div><!-- /emp-detail-page -->
+  }
+
+  <!-- ═══════════════════════════════════════════════ MODAL CANDIDATURE -->
+  @if (showApply()) {
+  <div class="ev-modal-backdrop" (click)="closeApply()">
+    <div class="ev-modal ev-modal--register" (click)="$event.stopPropagation()">
+      <div class="ev-modal-header">
+        <div class="ev-modal-header-icon">✉️</div>
+        <div>
+          <h3>Postuler</h3>
+          <p>{{ selectedOffer()?.title || 'Candidature spontanée' }}</p>
+        </div>
+        <button class="ev-modal-close" (click)="closeApply()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="ev-modal-body">
+
+        @if (submitError()) {
+          <div class="ev-form-error">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
+            </svg>
+            {{ submitError() }}
+          </div>
+        }
+
+        <div class="ev-form-row">
+          <div class="ev-form-field">
+            <label>Nom <span class="req">*</span></label>
+            <input type="text" [(ngModel)]="form.lastName" placeholder="Votre nom" />
+          </div>
+          <div class="ev-form-field">
+            <label>Prénom <span class="req">*</span></label>
+            <input type="text" [(ngModel)]="form.firstName" placeholder="Votre prénom" />
+          </div>
+        </div>
+
+        <div class="ev-form-row">
+          <div class="ev-form-field">
+            <label>Email <span class="req">*</span></label>
+            <input type="email" [(ngModel)]="form.email" placeholder="votre@email.com" />
+          </div>
+          <div class="ev-form-field">
+            <label>Téléphone</label>
+            <input type="tel" [(ngModel)]="form.phone" placeholder="+216 XX XXX XXX" />
+          </div>
+        </div>
+
+        <div class="ev-form-field">
+          <label>CV (PDF) <span class="req">*</span></label>
+          <label class="ev-file-drop" [class.emp-file-selected]="cvFileName" (click)="cvInput.click()">
+            @if (cvFileName) {
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00c8d4" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+              </svg>
+              <p style="color:#00c8d4">{{ cvFileName }}</p>
+              <span>Cliquez pour changer</span>
+            } @else {
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/>
+                <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/>
+              </svg>
+              <p>Cliquez pour télécharger votre CV</p>
+              <span>PDF uniquement (Max 5MB)</span>
+            }
+          </label>
+          <input #cvInput type="file" accept=".pdf" style="display:none" (change)="onCvSelected($event)" />
+        </div>
+
+        <div class="ev-form-field">
+          <label>Lettre de motivation <span class="req">*</span></label>
+          <label class="ev-file-drop" [class.emp-file-selected]="motivationFileName" (click)="motivationInput.click()">
+            @if (motivationFileName) {
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00c8d4" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              </svg>
+              <p style="color:#00c8d4">{{ motivationFileName }}</p>
+              <span>Cliquez pour changer</span>
+            } @else {
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/>
+                <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/>
+              </svg>
+              <p>Cliquez pour télécharger votre lettre</p>
+              <span>PDF, DOC, DOCX (Max 5MB)</span>
+            }
+          </label>
+          <input #motivationInput type="file" accept=".pdf,.doc,.docx" style="display:none" (change)="onMotivationSelected($event)" />
+        </div>
+
+        <div class="ev-modal-gdpr">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+          <span>Vos données sont traitées conformément à notre politique de confidentialité.</span>
+        </div>
+
+      </div>
+
+      <div class="ev-modal-footer">
+        <div style="display:flex;gap:12px">
+          <button class="emp-btn emp-btn--outline emp-btn--full" (click)="closeApply()">Annuler</button>
+          <button class="emp-btn emp-btn--primary emp-btn--full" [disabled]="isSubmitting()" (click)="submitApplication()">
+            @if (isSubmitting()) { <span>Envoi en cours...</span> }
+            @else { <span>Envoyer ma candidature</span> }
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  }
+
+  <!-- ═══════════════════════════════════════════════════ MODAL SUCCÈS -->
+  @if (showSuccess()) {
+  <div class="ev-modal-backdrop" (click)="closeSuccess()">
+    <div class="ev-modal" style="max-width:420px" (click)="$event.stopPropagation()">
+      <div class="ev-modal-success">
+        <div class="ev-success-icon">🎉</div>
+        <h4>Candidature envoyée !</h4>
+        <p>Votre candidature a bien été enregistrée. Notre équipe RH l'étudiera et vous contactera prochainement.</p>
+        <button class="emp-btn emp-btn--primary" (click)="closeSuccess()">Fermer</button>
+      </div>
+    </div>
+  </div>
+  }
+
+</div>

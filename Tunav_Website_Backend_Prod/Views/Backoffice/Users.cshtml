@@ -1,0 +1,266 @@
+@{
+    ViewData["Title"] = "Utilisateurs";
+    ViewData["ActivePage"] = "Users";
+    Layout = "~/Views/Shared/_LayoutBackoffice.cshtml";
+}
+
+<div class="page-header">
+    <h1>Utilisateurs</h1>
+    <p>Gestion des comptes utilisateurs du backoffice</p>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2>Liste des utilisateurs (<span id="userCount">0</span>)</h2>
+        <button class="btn btn-primary btn-sm" onclick="openAddModal()">+ Ajouter un utilisateur</button>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Nom complet</th>
+                <th>Email</th>
+                <th>Rôle</th>
+                <th>Statut</th>
+                <th>Créé le</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="userTable">
+            <tr class="loading-row"><td colspan="6">Chargement...</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- MODAL AJOUTER / MODIFIER -->
+<div class="modal-overlay" id="modalForm">
+    <div class="modal-box" style="max-width:540px">
+        <button class="modal-close-btn" onclick="closeForm()" title="Fermer">✕</button>
+        <h3 id="modalTitle">Ajouter un utilisateur</h3>
+        <div id="formError" style="display:none;background:#fff0f0;border:1px solid #ffc5c5;color:#d63031;padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:14px"></div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+            <div class="mfield"><label>Prénom *</label><input type="text" id="fFirstName" placeholder="Mohamed" /></div>
+            <div class="mfield"><label>Nom *</label><input type="text" id="fLastName" placeholder="Ben Salem" /></div>
+        </div>
+        <div class="mfield" style="margin-bottom:14px">
+            <label>Email *</label>
+            <input type="email" id="fEmail" placeholder="nom@tunav.tn" />
+        </div>
+        <div class="mfield" style="margin-bottom:14px" id="passwordField">
+            <label>Mot de passe *</label>
+            <input type="password" id="fPassword" placeholder="••••••••" />
+        </div>
+        <div class="mfield" style="margin-bottom:14px">
+            <label>Rôle *</label>
+            <select id="fRoleId"><option value="">-- Sélectionner un rôle --</option></select>
+        </div>
+        <div class="mfield" id="isActiveField" style="display:none;margin-bottom:14px">
+            <label>Statut</label>
+            <select id="fIsActive">
+                <option value="true">Actif</option>
+                <option value="false">Inactif</option>
+            </select>
+        </div>
+        <div class="modal-actions">
+            <button class="btn btn-outline" onclick="closeForm()">Annuler</button>
+            <button class="btn btn-primary" id="btnSave" onclick="saveUser()">Enregistrer</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL SUPPRESSION -->
+<div class="modal-overlay" id="modalDelete">
+    <div class="modal-box" style="max-width:400px;text-align:center">
+        <button class="modal-close-btn" onclick="closeDelete()" title="Fermer">✕</button>
+        <h3 style="margin-bottom:8px">Supprimer cet utilisateur ?</h3>
+        <p style="font-size:14px;color:#6b7db3;margin-bottom:24px" id="deleteMsg">Cette action est irréversible.</p>
+        <div style="display:flex;gap:10px;justify-content:center">
+            <button class="btn btn-outline" onclick="closeDelete()">Annuler</button>
+            <button class="btn btn-danger" onclick="confirmDelete()">Supprimer</button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<style>
+    .modal-close-btn { position:absolute; top:16px; right:16px; background:none; border:none; font-size:20px; cursor:pointer; color:#6b7db3; line-height:1; padding:4px 8px; border-radius:6px; transition:background 0.2s; }
+    .modal-close-btn:hover { background:#f0f4ff; color:#1e2d5a; }
+    .modal-box { position:relative; }
+    .mfield label { display:block; font-size:12px; font-weight:500; color:#6b7db3; margin-bottom:5px; }
+    .mfield input, .mfield select {
+        width:100%; padding:10px 12px; border:1.5px solid #dce4f5; border-radius:8px;
+        font-size:14px; font-family:inherit; outline:none; color:#1e2d5a;
+        transition:border-color 0.2s; background:white;
+    }
+    .mfield input:focus, .mfield select:focus { border-color:#00c8d4; }
+    .user-av {
+        width:38px; height:38px; border-radius:50%; background:#00c8d4;
+        display:flex; align-items:center; justify-content:center;
+        font-size:13px; font-weight:700; color:#0d1b4b; flex-shrink:0;
+    }
+</style>
+<script>
+    let editingId  = null;
+    let deletingId = null;
+    let rolesCache = [];
+
+    async function loadRoles() {
+        try {
+            const res  = await fetch('/api/roles', { headers: authHeaders() });
+            rolesCache = await res.json();
+            const sel  = document.getElementById('fRoleId');
+            sel.innerHTML = '<option value="">-- Sélectionner un rôle --</option>';
+            rolesCache.filter(r => r.isActive).forEach(r => {
+                sel.innerHTML += `<option value="${r.id}">${r.name}</option>`;
+            });
+        } catch(e) { console.error(e); }
+    }
+
+    async function loadUsers() {
+        try {
+            const res   = await fetch('/api/users', { headers: authHeaders() });
+            const users = await res.json();
+            document.getElementById('userCount').textContent = Array.isArray(users) ? users.length : 0;
+            if (!Array.isArray(users) || !users.length) {
+                document.getElementById('userTable').innerHTML = '<tr class="empty-row"><td colspan="6">Aucun utilisateur.</td></tr>';
+                return;
+            }
+            document.getElementById('userTable').innerHTML = users.map(u => `
+                <tr style="${!u.isActive ? 'opacity:0.6' : ''}">
+                    <td>
+                        <div style="display:flex;align-items:center;gap:10px">
+                            <div class="user-av">${(u.firstName?.[0]||'')+(u.lastName?.[0]||'')}</div>
+                            <span>${u.firstName} ${u.lastName}</span>
+                        </div>
+                    </td>
+                    <td style="color:#6b7db3">${u.email}</td>
+                    <td><span class="badge badge-navy">${u.role?.name || '—'}</span></td>
+                    <td><span class="badge ${u.isActive ? 'badge-success' : 'badge-danger'}">${u.isActive ? 'Actif' : 'Inactif'}</span></td>
+                    <td style="color:#6b7db3">${new Date(u.createdAt).toLocaleDateString('fr-FR')}</td>
+                    <td>
+                        <div style="display:flex;gap:6px;flex-wrap:wrap">
+                            <button class="btn btn-outline btn-sm" onclick="openEditModal(${u.id})">Modifier</button>
+                            <button class="btn btn-outline btn-sm"
+                                style="${u.isActive ? 'border-color:#ffc107;color:#856404' : 'border-color:#00b894;color:#00704a'}"
+                                onclick="toggleUser(${u.id})">${u.isActive ? 'Désactiver' : 'Activer'}</button>
+                            <button class="btn btn-danger btn-sm" onclick="openDelete(${u.id}, '${u.firstName} ${u.lastName}')">Supprimer</button>
+                        </div>
+                    </td>
+                </tr>`).join('');
+        } catch(e) {
+            document.getElementById('userTable').innerHTML = '<tr class="empty-row"><td colspan="6">Erreur de chargement.</td></tr>';
+        }
+    }
+
+    function openAddModal() {
+        editingId = null;
+        document.getElementById('modalTitle').textContent = 'Ajouter un utilisateur';
+        document.getElementById('fFirstName').value = '';
+        document.getElementById('fLastName').value  = '';
+        document.getElementById('fEmail').value     = '';
+        document.getElementById('fPassword').value  = '';
+        document.getElementById('fRoleId').value    = '';
+        document.getElementById('passwordField').style.display  = '';
+        document.getElementById('isActiveField').style.display  = 'none';
+        document.getElementById('formError').style.display = 'none';
+        document.getElementById('modalForm').classList.add('show');
+    }
+
+    async function openEditModal(id) {
+        editingId = id;
+        document.getElementById('modalTitle').textContent = 'Modifier un utilisateur';
+        document.getElementById('formError').style.display = 'none';
+        document.getElementById('passwordField').style.display = 'none';
+        document.getElementById('isActiveField').style.display = '';
+        try {
+            const res  = await fetch(`/api/users/${id}`, { headers: authHeaders() });
+            const user = await res.json();
+            document.getElementById('fFirstName').value = user.firstName;
+            document.getElementById('fLastName').value  = user.lastName;
+            document.getElementById('fEmail').value     = user.email;
+            document.getElementById('fRoleId').value    = user.roleId;
+            document.getElementById('fIsActive').value  = user.isActive ? 'true' : 'false';
+        } catch(e) { console.error(e); }
+        document.getElementById('modalForm').classList.add('show');
+    }
+
+    function closeForm() { document.getElementById('modalForm').classList.remove('show'); }
+
+    async function saveUser() {
+        const firstName = document.getElementById('fFirstName').value.trim();
+        const lastName  = document.getElementById('fLastName').value.trim();
+        const email     = document.getElementById('fEmail').value.trim();
+        const password  = document.getElementById('fPassword').value;
+        const roleId    = parseInt(document.getElementById('fRoleId').value);
+        const isActive  = document.getElementById('fIsActive').value === 'true';
+        const errDiv    = document.getElementById('formError');
+
+        if (!firstName || !lastName || !email || !roleId) {
+            errDiv.textContent = 'Veuillez remplir tous les champs obligatoires.';
+            errDiv.style.display = 'block'; return;
+        }
+        document.getElementById('btnSave').disabled = true;
+        try {
+            let res;
+            if (!editingId) {
+                res = await fetch('/api/users', {
+                    method: 'POST',
+                    headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id:0, firstName, lastName, email, passwordHash: password, roleId, isActive: true })
+                });
+            } else {
+                res = await fetch(`/api/users/${editingId}`, {
+                    method: 'PUT',
+                    headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: editingId, firstName, lastName, email, passwordHash: password, roleId, isActive })
+                });
+            }
+            if (res.ok) { closeForm(); loadUsers(); }
+            else {
+                const data = await res.json();
+                errDiv.textContent = data.message || 'Erreur.';
+                errDiv.style.display = 'block';
+            }
+        } catch(e) { errDiv.textContent = 'Erreur réseau.'; errDiv.style.display = 'block'; }
+        document.getElementById('btnSave').disabled = false;
+    }
+
+    async function toggleUser(id) {
+        try {
+            await fetch(`/api/users/${id}/toggle`, { method: 'PATCH', headers: authHeaders() });
+            loadUsers();
+        } catch(e) { console.error(e); }
+    }
+
+    function openDelete(id, name) {
+        deletingId = id;
+        document.getElementById('deleteMsg').textContent = `Supprimer "${name}" ? Cette action est irréversible.`;
+        document.getElementById('modalDelete').classList.add('show');
+    }
+    function closeDelete() { document.getElementById('modalDelete').classList.remove('show'); }
+
+    async function confirmDelete() {
+        const btn = document.getElementById('btnConfirmDelete');
+        if (btn) { btn.disabled = true; btn.textContent = 'Suppression...'; }
+        try {
+            const res = await fetch(`/api/users/${deletingId}`, { method: 'DELETE', headers: authHeaders() });
+            if (res.ok || res.status === 204) {
+                closeDelete();
+                loadUsers();
+            } else {
+                const data = await res.json().catch(() => ({}));
+                const msg = data.message || 'Erreur lors de la suppression.';
+                alert(msg);
+            }
+        } catch(e) {
+            alert('Erreur réseau.');
+            console.error(e);
+        } finally {
+            if (btn) { btn.disabled = false; btn.textContent = 'Supprimer'; }
+        }
+    }
+
+    loadRoles();
+    loadUsers();
+</script>
+}

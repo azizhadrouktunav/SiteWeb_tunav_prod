@@ -1,0 +1,330 @@
+@{
+    ViewData["Title"] = "Réclamations Partenaires — SAV";
+    Layout = "~/Views/Shared/_LayoutBackoffice.cshtml";
+    ViewData["ActivePage"] = "SavClaims";
+}
+
+<style>
+    .modal-close-btn { position:absolute; top:16px; right:16px; background:none; border:none; font-size:20px; cursor:pointer; color:#6b7db3; line-height:1; padding:4px 8px; border-radius:6px; transition:background 0.2s; }
+    .modal-close-btn:hover { background:#f0f4ff; color:#1e2d5a; }
+    .modal-box { position:relative; }
+
+    .priority-badge { display:inline-flex; padding:2px 10px; border-radius:5px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; }
+    .priority-basse   { background:#d4edda; color:#1a5c33; }
+    .priority-normale { background:#e8f0fe; color:#1a56cc; }
+    .priority-haute   { background:#fef3cd; color:#a05a00; }
+    .priority-urgente { background:#fde8e8; color:#991b1b; }
+
+    .status-badge { display:inline-flex; padding:2px 10px; border-radius:5px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; }
+    .s-nouvelle { background:#e8f0fe; color:#1a56cc; }
+    .s-encours  { background:#fef3cd; color:#a05a00; }
+    .s-resolue  { background:#d4edda; color:#1a5c33; }
+    .s-fermee   { background:#f0f0f0; color:#555; }
+
+    .detail-block { background:#f8faff; border:1px solid #dce4f5; border-radius:8px; padding:14px 16px; margin-bottom:16px; }
+    .detail-label { font-size:11px; font-weight:600; color:#6b7db3; text-transform:uppercase; letter-spacing:.5px; margin-bottom:4px; }
+    .detail-value { font-size:13px; color:#1e2d5a; line-height:1.55; white-space:pre-wrap; }
+
+    /* ── Modal Détails (read-only) ── */
+    .detail-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px 16px; background:#f8faff; border:1px solid #dce4f5; border-radius:8px; padding:14px 16px; margin-bottom:14px; }
+    .dg-label { font-size:10px; font-weight:700; color:#6b7db3; text-transform:uppercase; letter-spacing:.5px; margin-bottom:2px; }
+    .dg-value { font-size:13px; color:#1e2d5a; font-weight:500; }
+    .dg-full  { grid-column:1/-1; }
+    .detail-desc-wrap { margin-bottom:12px; }
+    .detail-desc-wrap .dg-label { margin-bottom:6px; }
+    .detail-desc-text { font-size:13px; color:#1e2d5a; line-height:1.65; background:#f8faff; border:1px solid #dce4f5; border-radius:8px; padding:12px 14px; white-space:pre-wrap; max-height:160px; overflow-y:auto; }
+    .detail-sav-note { padding:10px 12px; background:#f5f7ff; border-left:3px solid #93a8e8; border-radius:0 6px 6px 0; margin-bottom:4px; }
+    .detail-sav-note .dg-label { display:block; margin-bottom:4px; }
+    .detail-sav-note p { margin:0; font-size:13px; color:#1e2d5a; line-height:1.55; }
+    .eye-btn { background:none; border:none; cursor:pointer; padding:4px 6px; border-radius:6px; color:#6b7db3; transition:color .15s,background .15s; vertical-align:middle; }
+    .eye-btn:hover { color:#00c8d4; background:#f0fdfe; }
+</style>
+
+<div class="page-header">
+    <h1>Réclamations Partenaires</h1>
+    <p>Traitez et suivez les réclamations soumises par les partenaires</p>
+</div>
+
+<!-- Stats ──────────────────────────────────────────────────────────────────── -->
+<div class="stat-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:24px">
+    <div class="stat-card">
+        <div class="stat-label">TOTAL</div>
+        <div class="stat-value" id="stTotal">—</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">NOUVELLES</div>
+        <div class="stat-value" id="stNew" style="color:#1a56cc">—</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">EN COURS</div>
+        <div class="stat-value" id="stProgress" style="color:#a05a00">—</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">RÉSOLUES</div>
+        <div class="stat-value" id="stResolved" style="color:#1a5c33">—</div>
+    </div>
+</div>
+
+<!-- Tableau ─────────────────────────────────────────────────────────────────── -->
+<div class="card">
+    <div class="card-header">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex:1">
+            <h2>Liste des réclamations (<span id="claimCount">0</span>)</h2>
+            <select id="filterStatus" onchange="renderTable()"
+                style="padding:7px 12px;border:1.5px solid #dce4f5;border-radius:8px;font-size:13px;color:#1e2d5a;outline:none">
+                <option value="">Tous les statuts</option>
+                <option value="Nouvelle">Nouvelle</option>
+                <option value="En cours">En cours</option>
+                <option value="Résolue">Résolue</option>
+                <option value="Fermée">Fermée</option>
+            </select>
+            <select id="filterPriority" onchange="renderTable()"
+                style="padding:7px 12px;border:1.5px solid #dce4f5;border-radius:8px;font-size:13px;color:#1e2d5a;outline:none">
+                <option value="">Toutes les priorités</option>
+                <option value="Basse">Basse</option>
+                <option value="Normale">Normale</option>
+                <option value="Haute">Haute</option>
+                <option value="Urgente">Urgente</option>
+            </select>
+            <input type="text" id="searchInput" placeholder="Rechercher partenaire, objet…" oninput="renderTable()"
+                style="padding:7px 12px;border:1.5px solid #dce4f5;border-radius:8px;font-size:13px;color:#1e2d5a;outline:none;width:230px" />
+        </div>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th style="width:50px">#</th>
+                <th>Partenaire</th>
+                <th>Objet</th>
+                <th style="width:110px">Priorité</th>
+                <th style="width:110px">Statut</th>
+                <th style="width:100px">Date</th>
+                <th style="width:90px">Actions</th>
+            </tr>
+        </thead>
+        <tbody id="claimsTbody">
+            <tr class="loading-row"><td colspan="7">Chargement…</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal Détails (read-only) ───────────────────────────────────────────────── -->
+<div class="modal-overlay" id="modalDetail">
+    <div class="modal-box" style="max-width:600px;max-height:90vh;overflow-y:auto">
+        <button class="modal-close-btn" onclick="document.getElementById('modalDetail').classList.remove('show')" title="Fermer">&#x2715;</button>
+        <div id="modalDetailContent"></div>
+        <div class="modal-actions" style="margin-top:8px">
+            <button class="btn btn-outline" onclick="document.getElementById('modalDetail').classList.remove('show')">Fermer</button>
+            <button class="btn btn-primary" id="detailToTreatBtn">Traiter cette réclamation</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Traitement ────────────────────────────────────────────────────────── -->
+<div class="modal-overlay" id="modalTreat">
+    <div class="modal-box" style="max-width:600px;max-height:90vh;overflow-y:auto">
+        <button class="modal-close-btn" onclick="closeTreat()" title="Fermer">&#x2715;</button>
+        <h3 id="treatTitle" style="margin-bottom:4px">Traiter la réclamation</h3>
+        <p id="treatMeta" style="font-size:12px;color:#6b7db3;margin-bottom:18px;font-weight:500"></p>
+
+        <div class="detail-block">
+            <div class="detail-label">Objet</div>
+            <div class="detail-value" id="treatSubject" style="font-weight:700;font-size:14px;color:#1e2d5a;margin-bottom:12px"></div>
+            <div class="detail-label">Description</div>
+            <div class="detail-value" id="treatDesc"></div>
+        </div>
+
+        <div class="modal-field">
+            <label>Changer le statut</label>
+            <select id="treatStatus"
+                style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:'Inter',sans-serif;outline:none;color:var(--text)">
+                <option value="Nouvelle">Nouvelle</option>
+                <option value="En cours">En cours — prise en charge</option>
+                <option value="Résolue">Résolue</option>
+                <option value="Fermée">Fermée</option>
+            </select>
+        </div>
+        <div class="modal-field">
+            <label>Note SAV <span style="font-size:11px;font-weight:400;color:#6b7db3">(visible par le partenaire)</span></label>
+            <textarea id="treatNote" rows="4" maxlength="1000"
+                placeholder="Expliquez l'action prise, la solution apportée…"
+                style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:'Inter',sans-serif;outline:none;resize:vertical;color:var(--text)"></textarea>
+        </div>
+        <div id="treatError" style="display:none;padding:10px 14px;background:#fde8e8;border-radius:8px;color:#991b1b;font-size:13px;margin-bottom:12px"></div>
+        <div class="modal-actions">
+            <button class="btn btn-outline" onclick="closeTreat()">Annuler</button>
+            <button class="btn btn-primary" id="treatSaveBtn" onclick="saveTreat()">Enregistrer</button>
+        </div>
+    </div>
+</div>
+
+<script>
+const API = '/api/partner-portal/claims';
+let allClaims = [];
+let treating  = null;
+
+async function loadClaims() {
+    try {
+        const res = await authFetch(API);
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        allClaims = data.items ?? data;
+        updateStats();
+        renderTable();
+    } catch(e) {
+        if (e.message !== 'AUTH_REDIRECT')
+            document.getElementById('claimsTbody').innerHTML =
+                '<tr class="empty-row"><td colspan="7">Erreur de chargement.</td></tr>';
+    }
+}
+
+function updateStats() {
+    document.getElementById('stTotal').textContent    = allClaims.length;
+    document.getElementById('stNew').textContent      = allClaims.filter(c => c.status === 'Nouvelle').length;
+    document.getElementById('stProgress').textContent = allClaims.filter(c => c.status === 'En cours').length;
+    document.getElementById('stResolved').textContent = allClaims.filter(c => c.status === 'Résolue').length;
+}
+
+function renderTable() {
+    const status   = document.getElementById('filterStatus').value;
+    const priority = document.getElementById('filterPriority').value;
+    const search   = (document.getElementById('searchInput').value || '').toLowerCase();
+
+    let data = allClaims;
+    if (status)   data = data.filter(c => c.status === status);
+    if (priority) data = data.filter(c => c.priority === priority);
+    if (search)   data = data.filter(c =>
+        (c.subject||'').toLowerCase().includes(search) ||
+        (c.partnerUser?.fullName||'').toLowerCase().includes(search)
+    );
+
+    document.getElementById('claimCount').textContent = data.length;
+    const tbody = document.getElementById('claimsTbody');
+    if (!data.length) {
+        tbody.innerHTML = '<tr class="empty-row"><td colspan="7">Aucune réclamation trouvée.</td></tr>';
+        return;
+    }
+    tbody.innerHTML = data.map(c => {
+        const pKey = (c.priority||'normale').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+        const sKey = (c.status||'nouvelle').toLowerCase().replace(/\s+/g,'').normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+        const date = new Date(c.createdAt).toLocaleDateString('fr-FR');
+        const partner = c.partnerUser?.fullName || 'Partenaire #' + c.userId;
+        const noteSnippet = c.savNote
+            ? `<div style="font-size:11px;color:#6b7db3;margin-top:2px">${escHtml(c.savNote.substring(0,60))}${c.savNote.length>60?'…':''}</div>`
+            : '';
+        return `<tr>
+            <td style="font-weight:700;color:#6b7db3">#${c.id}</td>
+            <td><strong>${escHtml(partner)}</strong></td>
+            <td style="max-width:220px">
+                <div style="font-weight:600;font-size:13px">${escHtml(c.subject)}</div>
+                ${noteSnippet}
+            </td>
+            <td><span class="priority-badge priority-${pKey}">${c.priority||'Normale'}</span></td>
+            <td><span class="status-badge s-${sKey}">${c.status}</span></td>
+            <td style="color:#6b7db3;font-size:12px;white-space:nowrap">${date}</td>
+            <td style="white-space:nowrap">
+                <button class="eye-btn" onclick='openDetail(${JSON.stringify(c).replace(/'/g,"&#39;")})' title="Voir les détails">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+                <button class="btn btn-sm btn-primary" onclick='openTreat(${JSON.stringify(c).replace(/'/g,"&#39;")})'>Traiter</button>
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+function openTreat(c) {
+    treating = c;
+    const partner = c.partnerUser?.fullName || 'Partenaire #' + c.userId;
+    document.getElementById('treatTitle').textContent   = 'Réclamation #' + c.id;
+    document.getElementById('treatMeta').textContent    = partner + ' · ' + new Date(c.createdAt).toLocaleDateString('fr-FR') + ' · Priorité : ' + (c.priority||'Normale');
+    document.getElementById('treatSubject').textContent = c.subject;
+    document.getElementById('treatDesc').textContent    = c.description;
+    document.getElementById('treatStatus').value = c.status || 'Nouvelle';
+    document.getElementById('treatNote').value   = c.savNote || '';
+    document.getElementById('treatError').style.display = 'none';
+    document.getElementById('modalTreat').classList.add('show');
+}
+
+function closeTreat() {
+    document.getElementById('modalTreat').classList.remove('show');
+    treating = null;
+}
+
+async function saveTreat() {
+    if (!treating) return;
+    const btn = document.getElementById('treatSaveBtn');
+    btn.disabled = true; btn.textContent = 'Enregistrement…';
+    try {
+        const res = await authFetch(`${API}/${treating.id}/treat`, {
+            method: 'PATCH',
+            body: JSON.stringify({
+                status:  document.getElementById('treatStatus').value,
+                savNote: document.getElementById('treatNote').value.trim()
+            })
+        });
+        if (!res.ok) throw new Error(await res.text());
+        closeTreat();
+        await loadClaims();
+    } catch(e) {
+        if (e.message !== 'AUTH_REDIRECT') {
+            const err = document.getElementById('treatError');
+            err.textContent = e.message || 'Une erreur est survenue.';
+            err.style.display = 'block';
+        }
+    } finally { btn.disabled = false; btn.textContent = 'Enregistrer'; }
+}
+
+function escHtml(str) {
+    return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function openDetail(c) {
+    const fmt = (d) => d ? new Date(d).toLocaleString('fr-FR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' }) : '—';
+    const pKey = (c.priority||'normale').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+    const sKey = (c.status||'nouvelle').toLowerCase().replace(/\s+/g,'').normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+    const partner = c.partnerUser?.fullName || 'Partenaire #' + c.userId;
+    const email   = c.partnerUser?.email || '';
+
+    const noteHtml = c.savNote
+        ? `<div class="detail-sav-note"><span class="dg-label">Note SAV (visible partenaire)</span><p>${escHtml(c.savNote)}</p></div>`
+        : '';
+
+    document.getElementById('modalDetailContent').innerHTML = `
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap">
+            <h3 style="margin:0;font-size:15px;font-weight:700;color:#1e2d5a;flex:1">Réclamation #${c.id}</h3>
+            <span class="priority-badge priority-${pKey}">${c.priority||'Normale'}</span>
+            <span class="status-badge s-${sKey}">${c.status}</span>
+        </div>
+        <div class="detail-grid">
+            <div class="dg-full">
+                <div class="dg-label">Objet</div>
+                <div class="dg-value" style="font-weight:700;font-size:14px">${escHtml(c.subject)}</div>
+            </div>
+            <div>
+                <div class="dg-label">Partenaire</div>
+                <div class="dg-value">${escHtml(partner)}</div>
+                ${email ? `<div style="font-size:11px;color:#6b7db3">${escHtml(email)}</div>` : ''}
+            </div>
+            <div>
+                <div class="dg-label">Soumis le</div>
+                <div class="dg-value">${fmt(c.createdAt)}</div>
+            </div>
+            ${c.updatedAt ? `<div><div class="dg-label">Mis à jour</div><div class="dg-value">${fmt(c.updatedAt)}</div></div>` : ''}
+            ${c.resolvedAt ? `<div><div class="dg-label">Résolue le</div><div class="dg-value">${fmt(c.resolvedAt)}</div></div>` : ''}
+            ${c.assignedTo ? `<div><div class="dg-label">Assignée à</div><div class="dg-value">${escHtml(c.assignedTo.fullName)}</div></div>` : ''}
+        </div>
+        <div class="detail-desc-wrap">
+            <div class="dg-label">Description</div>
+            <div class="detail-desc-text">${escHtml(c.description||'').replace(/\n/g,'<br>')}</div>
+        </div>
+        ${noteHtml}
+    `;
+    document.getElementById('detailToTreatBtn').onclick = () => {
+        document.getElementById('modalDetail').classList.remove('show');
+        openTreat(c);
+    };
+    document.getElementById('modalDetail').classList.add('show');
+}
+
+loadClaims();
+</script>

@@ -1,0 +1,255 @@
+<section class="solutions-hero">
+  <div class="solutions-hero__content">
+    <h1 class="solutions-hero__title">Nos Solutions</h1>
+    <p class="solutions-hero__subtitle">
+      Des solutions technologiques innovantes pour transformer votre entreprise
+    </p>
+  </div>
+</section>
+
+<section class="solutions-page">
+  <div class="solutions-page__container">
+    <aside class="filters-card">
+      <div class="filters-card__header">
+        <h2>Filtres</h2>
+      </div>
+
+      <div class="filters-card__group">
+        <label class="filters-card__label" for="solution-search">
+          Rechercher
+        </label>
+        <div class="filters-card__search">
+          <svg
+            class="filters-card__search-icon"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <path
+              d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z"
+              fill="none"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+            />
+          </svg>
+          <input
+            id="solution-search"
+            type="text"
+            placeholder="Rechercher..."
+            [ngModel]="vm.searchQuery()"
+            (ngModelChange)="vm.setSearch($event)"
+          />
+        </div>
+      </div>
+
+      <div class="filters-card__group">
+        <span class="filters-card__label">Secteur</span>
+        <div class="filters-card__sectors">
+          @for (sector of vm.sectors(); track sector) {
+            <label class="filters-card__checkbox">
+              <input
+                type="checkbox"
+                [checked]="isSectorSelected(sector)"
+                (change)="vm.toggleSector(sector)"
+              />
+              <span>{{ sector }}</span>
+            </label>
+          }
+        </div>
+      </div>
+
+      @if (vm.selectedSectors().length > 0) {
+        <button
+          type="button"
+          class="filters-card__reset"
+          (click)="vm.clearSectorFilters()"
+        >
+          R&eacute;initialiser les filtres
+        </button>
+      }
+    </aside>
+
+    <div class="solutions-results">
+      <div class="solutions-results__header">
+        <p class="solutions-results__count">
+          <strong>{{ vm.filteredSolutions().length }}</strong>
+          solution{{ vm.filteredSolutions().length > 1 ? 's' : '' }}
+          trouv&eacute;e{{ vm.filteredSolutions().length > 1 ? 's' : '' }}
+          @if (vm.selectedSectors().length > 0) {
+            <span class="solutions-results__count-extra">
+              pour {{ vm.selectedSectors().length }} secteur{{
+                vm.selectedSectors().length > 1 ? 's' : ''
+              }}
+            </span>
+          }
+        </p>
+      </div>
+
+      @if (vm.loading()) {
+        <div class="solutions-state">
+          <div class="solutions-state__spinner"></div>
+          <p>Chargement des solutions...</p>
+        </div>
+      } @else if (vm.error(); as errorMessage) {
+        <div class="solutions-state solutions-state--error">
+          <p>{{ errorMessage }}</p>
+          <button
+            type="button"
+            class="solutions-btn"
+            (click)="vm.reloadSolutions()"
+          >
+            R&eacute;essayer
+          </button>
+        </div>
+      } @else if (vm.filteredSolutions().length === 0) {
+        <div class="solutions-state">
+          <p>Aucune solution trouv&eacute;e</p>
+          @if (vm.hasFilters()) {
+            <button
+              type="button"
+              class="solutions-btn solutions-btn--ghost"
+              (click)="vm.clearFilters()"
+            >
+              Voir toutes les solutions
+            </button>
+          }
+        </div>
+      } @else {
+        <div class="solutions-grid">
+          @for (solution of vm.filteredSolutions(); track solution.id) {
+            <article class="solution-card">
+              <a
+                class="solution-card__media"
+                [routerLink]="['/solutions', solution.id]"
+                [attr.aria-label]="'Voir la solution ' + solution.title"
+              >
+                <img
+                  [src]="getImageUrl(solution)"
+                  [alt]="solution.title"
+                  loading="lazy"
+                />
+                <div class="solution-card__overlay"></div>
+                @if (solution.type === 'Sectorial' && solution.sectorName) {
+                  <span class="solution-card__sector-badge">
+                    Secteur: {{ solution.sectorName }}
+                  </span>
+                }
+                <div class="solution-card__headline">
+                  <h3>{{ solution.title }}</h3>
+                </div>
+              </a>
+
+              <div class="solution-card__body">
+                <p class="solution-card__description">{{ solution.description }}</p>
+
+                @if (getVisibleSectors(solution).length > 0) {
+                  <div class="solution-card__meta-block">
+                    <div class="solution-card__meta-heading">
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path
+                          d="M3 21h18M5 21V8l7-4 7 4v13M9 12h.01M15 12h.01M9 16h.01M15 16h.01"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                        />
+                      </svg>
+                      <p class="solution-card__meta-label">Secteurs:</p>
+                    </div>
+                    <div class="solution-card__chips">
+                      @for (sector of getVisibleSectors(solution); track sector) {
+                        <span class="solution-card__chip">{{ sector }}</span>
+                      }
+                    </div>
+                  </div>
+                }
+
+                @if (getVisibleTopClients(solution).length > 0) {
+                  <div class="solution-card__meta-block">
+                    <div class="solution-card__meta-heading">
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path
+                          d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm13 10v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                        />
+                      </svg>
+                      <p class="solution-card__meta-label">Top Clients:</p>
+                    </div>
+                    <ul class="solution-card__clients">
+                      @for (client of getVisibleTopClients(solution); track client) {
+                        <li>
+                          <span class="solution-card__client-dot"></span>
+                          {{ client }}
+                        </li>
+                      }
+                    </ul>
+                  </div>
+                }
+
+                <div class="solution-card__actions">
+                  <button
+                    type="button"
+                    class="solutions-btn solutions-btn--small"
+                    (click)="openDemoModal(solution)"
+                  >
+                    Demander D&eacute;mo
+                  </button>
+                  <a
+                    [routerLink]="['/solutions', solution.id]"
+                    class="solutions-btn solutions-btn--small solution-card__link-btn"
+                  >
+                    Voir Plus
+                    <span aria-hidden="true">&rarr;</span>
+                  </a>
+                </div>
+              </div>
+            </article>
+          }
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+@if (activeDemoSolution(); as solution) {
+  <div class="demo-modal-backdrop" (click)="closeDemoModal()">
+    <section
+      class="demo-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="demo-modal-title"
+      (click)="$event.stopPropagation()"
+    >
+      <button
+        type="button"
+        class="demo-modal__close"
+        aria-label="Fermer la fenetre"
+        (click)="closeDemoModal()"
+      >
+        &times;
+      </button>
+
+      <div class="demo-modal__header">
+        <div>
+          <h2 id="demo-modal-title">Demander une D&eacute;mo</h2>
+          <p class="demo-modal__subtitle">{{ solution.title }}</p>
+        </div>
+      </div>
+
+      <app-demo-request-form
+        [presetSolution]="solution"
+        entryPoint="SolutionsList"
+        [compact]="true"
+        [showCancelButton]="true"
+        submitLabel="Envoyer"
+        (cancel)="closeDemoModal()"
+      />
+    </section>
+  </div>
+}

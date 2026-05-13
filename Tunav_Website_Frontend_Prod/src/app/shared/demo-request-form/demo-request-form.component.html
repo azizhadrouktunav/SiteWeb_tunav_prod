@@ -1,0 +1,166 @@
+<div
+  class="demo-request-form"
+  [class.demo-request-form--compact]="compact"
+>
+  @if (submitSuccess(); as successMessage) {
+    <div class="demo-request-form__alert demo-request-form__alert--success">
+      {{ successMessage }}
+    </div>
+  }
+
+  @if (submitError(); as errorMessage) {
+    <div class="demo-request-form__alert demo-request-form__alert--error">
+      {{ errorMessage }}
+    </div>
+  }
+
+  <form class="demo-request-form__grid" novalidate (ngSubmit)="submit()">
+    @if (showSolutionSelector) {
+      <label class="demo-request-form__field demo-request-form__field--full">
+        <span>Solution *</span>
+        <select
+          name="demoSolutionId"
+          [(ngModel)]="form.solutionId"
+          [class.is-invalid]="errors.solutionId"
+        >
+          <option [ngValue]="null">Choisissez une solution</option>
+          @for (solution of solutions(); track solution.id) {
+            <option [ngValue]="solution.id">{{ solution.title }}</option>
+          }
+        </select>
+        @if (loadingSolutions()) {
+          <small class="demo-request-form__helper">
+            Chargement des solutions...
+          </small>
+        }
+        @if (solutionsError(); as loadError) {
+          <small class="demo-request-form__error">
+            {{ loadError }}
+          </small>
+          <button
+            type="button"
+            class="demo-request-form__link"
+            (click)="retrySolutionsLoad()"
+          >
+            Reessayer
+          </button>
+        }
+        @if (errors.solutionId) {
+          <small class="demo-request-form__error">{{ errors.solutionId }}</small>
+        }
+      </label>
+    }
+
+    <div class="demo-request-form__row">
+      <label class="demo-request-form__field">
+        <span>Nom *</span>
+        <input
+          type="text"
+          name="demoLastName"
+          [(ngModel)]="form.lastName"
+          [class.is-invalid]="errors.lastName"
+        />
+        @if (errors.lastName) {
+          <small class="demo-request-form__error">{{ errors.lastName }}</small>
+        }
+      </label>
+
+      <label class="demo-request-form__field">
+        <span>Prenom *</span>
+        <input
+          type="text"
+          name="demoFirstName"
+          [(ngModel)]="form.firstName"
+          [class.is-invalid]="errors.firstName"
+        />
+        @if (errors.firstName) {
+          <small class="demo-request-form__error">{{ errors.firstName }}</small>
+        }
+      </label>
+    </div>
+
+    <label class="demo-request-form__field demo-request-form__field--full">
+      <span>Adresse Email *</span>
+      <input
+        type="email"
+        name="demoEmail"
+        [(ngModel)]="form.email"
+        [class.is-invalid]="errors.email"
+      />
+      @if (errors.email) {
+        <small class="demo-request-form__error">{{ errors.email }}</small>
+      }
+    </label>
+
+    <div class="demo-request-form__field demo-request-form__field--full">
+      <span>Est-ce que vous avez un numero WhatsApp ? *</span>
+      <div class="demo-request-form__radio-group">
+        <label class="demo-request-form__radio">
+          <input
+            type="radio"
+            name="demoWhatsappPreference"
+            value="yes"
+            [ngModel]="form.hasWhatsapp"
+            (ngModelChange)="onWhatsappChange($event)"
+          />
+          <span>Oui</span>
+        </label>
+
+        <label class="demo-request-form__radio">
+          <input
+            type="radio"
+            name="demoWhatsappPreference"
+            value="no"
+            [ngModel]="form.hasWhatsapp"
+            (ngModelChange)="onWhatsappChange($event)"
+          />
+          <span>Non</span>
+        </label>
+      </div>
+      @if (errors.hasWhatsapp) {
+        <small class="demo-request-form__error">{{ errors.hasWhatsapp }}</small>
+      }
+    </div>
+
+    @if (form.hasWhatsapp === 'yes') {
+      <label class="demo-request-form__field demo-request-form__field--full">
+        <span>Numero WhatsApp *</span>
+        <input
+          type="tel"
+          name="demoWhatsappNumber"
+          [(ngModel)]="form.whatsappNumber"
+          placeholder="+216 XX XXX XXX"
+          [class.is-invalid]="errors.whatsappNumber"
+        />
+        @if (errors.whatsappNumber) {
+          <small class="demo-request-form__error">
+            {{ errors.whatsappNumber }}
+          </small>
+        }
+      </label>
+    }
+
+    <div
+      class="demo-request-form__actions"
+      [class.demo-request-form__actions--single]="!showCancelButton"
+    >
+      @if (showCancelButton) {
+        <button
+          type="button"
+          class="demo-request-form__btn demo-request-form__btn--cancel"
+          (click)="cancel.emit()"
+        >
+          Annuler
+        </button>
+      }
+
+      <button
+        type="submit"
+        class="demo-request-form__btn demo-request-form__btn--submit"
+        [disabled]="submitting()"
+      >
+        {{ submitting() ? 'Envoi en cours...' : submitLabel }}
+      </button>
+    </div>
+  </form>
+</div>

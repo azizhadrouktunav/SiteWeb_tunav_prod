@@ -1,0 +1,267 @@
+$navy: #0d1b4b;
+$navy2: #1a2a6c;
+$cyan: #00c8d4;
+$dark: #0a0f1e;
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+// ── NEWSLETTER ────────────────────────────────────────────────────────────────
+.newsletter-section {
+  background: linear-gradient(135deg, $navy2 0%, $cyan 100%);
+  padding: 70px 24px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle at 20% 50%, rgba(255,255,255,0.03) 1px, transparent 1px), radial-gradient(circle at 80% 20%, rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+}
+
+.newsletter-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255,255,255,0.15);
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 6px 16px;
+  border-radius: 20px;
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.newsletter-section h2 {
+  font-size: clamp(24px, 4vw, 36px);
+  font-weight: 800;
+  color: white;
+  margin-bottom: 12px;
+  position: relative;
+}
+
+.newsletter-section p {
+  font-size: 15px;
+  color: rgba(255,255,255,0.8);
+  max-width: 600px;
+  margin: 0 auto 32px;
+  line-height: 1.65;
+  position: relative;
+}
+
+.newsletter-form {
+  display: flex;
+  gap: 12px;
+  max-width: 700px;
+  margin: 0 auto 20px;
+  position: relative;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.newsletter-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255,255,255,0.15);
+  border: 1.5px solid rgba(255,255,255,0.3);
+  border-radius: 10px;
+  padding: 0 16px;
+  flex: 1;
+  min-width: 200px;
+
+  .input-icon {
+    font-size: 16px;
+    opacity: 0.8;
+    flex-shrink: 0;
+  }
+
+  input {
+    background: none;
+    border: none;
+    outline: none;
+    color: white;
+    font-size: 14px;
+    padding: 14px 0;
+    width: 100%;
+    font-family: inherit;
+
+    &::placeholder {
+      color: rgba(255,255,255,0.6);
+    }
+  }
+}
+
+.newsletter-btn {
+  background: white;
+  color: $navy2;
+  border: none;
+  border-radius: 10px;
+  padding: 14px 24px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+  font-family: inherit;
+
+  &:hover {
+    background: $cyan;
+    color: $navy;
+    transform: translateY(-2px);
+  }
+}
+
+.newsletter-badges {
+  display: flex;
+  gap: 24px;
+  justify-content: center;
+  flex-wrap: wrap;
+  position: relative;
+
+  span {
+    font-size: 13px;
+    color: rgba(255,255,255,0.8);
+  }
+}
+
+// ── FOOTER MAIN ───────────────────────────────────────────────────────────────
+.footer-main {
+  background: #0f1729;
+  padding: 56px 0 40px;
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 48px;
+
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.footer-brand {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.brand-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.footer-logo {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  border-radius: 10px;
+  background: white;
+  padding: 4px;
+  flex-shrink: 0;
+}
+
+.brand-name {
+  font-size: 18px;
+  font-weight: 800;
+  color: white;
+}
+
+.brand-sub {
+  font-size: 11px;
+  color: rgba(255,255,255,0.45);
+}
+
+.brand-desc {
+  font-size: 14px;
+  color: rgba(255,255,255,0.55);
+  line-height: 1.6;
+  max-width: 260px;
+}
+
+.social-links {
+  display: flex;
+  gap: 10px;
+}
+
+.social-link {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255,255,255,0.6);
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 600;
+  transition: all 0.15s;
+
+  &:hover {
+    border-color: $cyan;
+    color: $cyan;
+  }
+}
+
+.footer-col {
+  h4 {
+    font-size: 15px;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 20px;
+  }
+
+  ul {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  li a {
+    font-size: 14px;
+    color: rgba(255,255,255,0.55);
+    text-decoration: none;
+    transition: color 0.15s;
+
+    &:hover {
+      color: $cyan;
+    }
+  }
+}
+
+.contact-list li {
+  font-size: 14px;
+  color: rgba(255,255,255,0.55);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+// ── COPYRIGHT ─────────────────────────────────────────────────────────────────
+.footer-bottom {
+  background: $dark;
+  padding: 16px 0;
+  text-align: center;
+
+  span {
+    font-size: 13px;
+    color: rgba(255,255,255,0.4);
+  }
+}

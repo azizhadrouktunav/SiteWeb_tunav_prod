@@ -1,0 +1,1350 @@
+// ═══════════════════════════════════════════════════════════════════════════════
+//  formation.component.scss
+//  Inspiration : igloo.inc / sunmetalon.com / wodniack.dev / ponpon-mania.com
+//  Animations  : clip-path reveal, floating blobs, card morphing, text gradient
+// ═══════════════════════════════════════════════════════════════════════════════
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+$navy: #0d1b4b;
+$navy2: #1a2a6c;
+$cyan: #00c8d4;
+$cyan2: #17d5e8;
+$white: #ffffff;
+$off: #f7f8fc;
+$bg: #f0f4ff;
+$bg2: #f5f7fc;
+$text: #1e2d5a;
+$muted: #6b7db3;
+$border: #dce4f5;
+$red: #e53e3e;
+$green: #00b894;
+$gold: #f5b042;
+
+:host {
+  font-family: 'Inter', sans-serif;
+  display: block;
+}
+
+.container {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 0 40px;
+
+  @media (max-width: 768px) {
+    padding: 0 20px;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+//  ANIMATION SYSTEM
+// ═══════════════════════════════════════════════════════════════════════════════
+.pf-reveal {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1), transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+
+  &.visible {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.pf-reveal-clip {
+  clip-path: inset(0 0 100% 0);
+  transition: clip-path 1s cubic-bezier(0.16, 1, 0.3, 1);
+
+  &.visible {
+    clip-path: inset(0 0 0% 0);
+  }
+}
+
+.pf-reveal-left {
+  opacity: 0;
+  transform: translateX(-50px);
+  transition: opacity 0.9s cubic-bezier(0.16,1,0.3,1), transform 0.9s cubic-bezier(0.16,1,0.3,1);
+
+  &.visible {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.pf-reveal-scale {
+  opacity: 0;
+  transform: scale(0.9);
+  transition: opacity 0.85s cubic-bezier(0.16,1,0.3,1), transform 0.85s cubic-bezier(0.16,1,0.3,1);
+
+  &.visible {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@for $i from 1 through 6 {
+  .pf-reveal-delay-#{$i} {
+    transition-delay: #{$i * 0.08}s !important;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+//  HERO — Cinematic avec blobs animés
+// ═══════════════════════════════════════════════════════════════════════════════
+.pf-hero {
+  position: relative;
+  min-height: 580px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: -6%;
+    background-image: url('https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=1800&h=700&fit=crop&q=85');
+    background-size: cover;
+    background-position: center 35%;
+    z-index: 0;
+    animation: kenBurns 18s ease-out forwards;
+    will-change: transform;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(125deg, rgba($navy, 0.96) 0%, rgba($navy2, 0.88) 50%, rgba($cyan, 0.5) 100%);
+    z-index: 1;
+  }
+}
+
+@keyframes kenBurns {
+  from {
+    transform: scale(1.1) translateY(0);
+  }
+
+  to {
+    transform: scale(1.0) translateY(-12px);
+  }
+}
+
+.pf-hero-pattern {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background-image: linear-gradient(rgba($cyan, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba($cyan, 0.05) 1px, transparent 1px);
+  background-size: 60px 60px;
+  animation: gridDrift 25s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes gridDrift {
+  from {
+    background-position: 0 0;
+  }
+
+  to {
+    background-position: 60px 60px;
+  }
+}
+
+// Blobs morphing
+.pf-hero-blob {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 2;
+  filter: blur(60px);
+
+  &--1 {
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba($cyan, 0.2) 0%, transparent 70%);
+    top: -120px;
+    right: -80px;
+    animation: blobMorph 12s ease-in-out infinite;
+  }
+
+  &--2 {
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba($cyan2, 0.12) 0%, transparent 70%);
+    bottom: 40px;
+    left: 20%;
+    animation: blobMorph 16s ease-in-out infinite reverse;
+  }
+}
+
+@keyframes blobMorph {
+  0%,100% {
+    transform: scale(1) translate(0,0);
+    border-radius: 50%;
+  }
+
+  25% {
+    transform: scale(1.1) translate(15px,-20px);
+    border-radius: 44% 56% 52% 48%;
+  }
+
+  50% {
+    transform: scale(0.95) translate(-10px,15px);
+    border-radius: 56% 44% 48% 52%;
+  }
+
+  75% {
+    transform: scale(1.05) translate(8px,5px);
+    border-radius: 50% 50% 55% 45%;
+  }
+}
+
+.pf-hero__inner {
+  position: relative;
+  z-index: 3;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 100px 40px 96px;
+
+  @media (max-width: 768px) {
+    padding: 80px 20px 72px;
+  }
+}
+
+// Badge hero
+.pf-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 20px;
+  border: 1.5px solid rgba($cyan, 0.35);
+  background: rgba($cyan, 0.1);
+  border-radius: 30px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: $cyan;
+  margin-bottom: 28px;
+  animation: fadeSlideUp 0.8s 0.05s cubic-bezier(0.16,1,0.3,1) both;
+
+  &::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: $cyan;
+    animation: pulse 2s ease-in-out infinite;
+  }
+}
+
+@keyframes pulse {
+  0%,100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.5;
+    transform: scale(1.4);
+  }
+}
+
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.pf-hero__title {
+  font-family: 'Inter', sans-serif;
+  font-size: clamp(44px, 7vw, 86px);
+  font-weight: 800;
+  color: $white;
+  line-height: 1.0;
+  letter-spacing: -2px;
+  margin-bottom: 22px;
+  animation: fadeSlideUp 0.9s 0.12s cubic-bezier(0.16,1,0.3,1) both;
+  // Dégradé sur le texte (igloo.inc style)
+  background: linear-gradient(135deg, $white 40%, rgba($cyan, 0.85) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.pf-hero__sub {
+  font-size: clamp(15px, 1.8vw, 18px);
+  color: rgba($white, 0.7);
+  line-height: 1.8;
+  max-width: 560px;
+  font-weight: 300;
+  margin-bottom: 44px;
+  animation: fadeSlideUp 0.9s 0.22s cubic-bezier(0.16,1,0.3,1) both;
+}
+
+.pf-hero-cta {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  animation: fadeSlideUp 0.9s 0.34s cubic-bezier(0.16,1,0.3,1) both;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+//  BOUTONS
+// ═══════════════════════════════════════════════════════════════════════════════
+.pf-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 30px;
+  border-radius: 10px;
+  font-size: 14.5px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  font-family: 'Inter', sans-serif;
+  transition: all 0.35s cubic-bezier(0.16,1,0.3,1);
+  position: relative;
+  overflow: hidden;
+  text-decoration: none;
+  letter-spacing: 0.2px;
+  // Shine effect
+  &::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -60%;
+    width: 35%;
+    height: 200%;
+    background: rgba($white, 0.12);
+    transform: skewX(-20deg);
+    transition: left 0.55s cubic-bezier(0.16,1,0.3,1);
+    pointer-events: none;
+  }
+
+  &:hover::after {
+    left: 115%;
+  }
+
+  &--primary {
+    background: linear-gradient(135deg, $cyan, $cyan2);
+    color: $navy;
+    box-shadow: 0 4px 24px rgba($cyan, 0.35);
+
+    &:hover {
+      box-shadow: 0 8px 36px rgba($cyan, 0.55);
+      transform: translateY(-3px);
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+  }
+
+  &--outline {
+    background: rgba($white, 0.1);
+    color: $white;
+    border: 1.5px solid rgba($white, 0.3);
+    backdrop-filter: blur(8px);
+
+    &:hover {
+      background: rgba($white, 0.18);
+      border-color: rgba($white, 0.6);
+      transform: translateY(-3px);
+    }
+  }
+
+  &--outline-light {
+    background: transparent;
+    color: $white;
+    border: 1.5px solid rgba($cyan, 0.4);
+
+    &:hover {
+      background: rgba($cyan, 0.12);
+      border-color: $cyan;
+      transform: translateY(-3px);
+    }
+  }
+
+  &--full {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+//  SECTIONS
+// ═══════════════════════════════════════════════════════════════════════════════
+.pf-section-wrap {
+  width: 100%;
+
+  &--white {
+    background: $white;
+  }
+
+  &--alt {
+    background: $off;
+    position: relative;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(to right, transparent, $border 30%, $border 70%, transparent);
+    }
+  }
+  // Section partenaires : le ticker doit déborder du conteneur centré
+  &--partners {
+    background: $white;
+    overflow: hidden;
+
+    .pf-section {
+      // Le header reste centré, le ticker est en dehors du max-width
+      padding-bottom: 0;
+    }
+
+    .pf-partners-ticker {
+      // Déborde légèrement de la section pour un effet pleine largeur
+      margin: 0 -40px;
+      padding-bottom: 40px;
+
+      @media (max-width: 768px) {
+        margin: 0 -20px;
+        padding-bottom: 28px;
+      }
+    }
+  }
+}
+
+.pf-section {
+  padding: 104px 40px;
+  max-width: 1240px;
+  margin: 0 auto;
+
+  @media (max-width: 768px) {
+    padding: 72px 20px;
+  }
+}
+
+.pf-section__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: $cyan;
+  margin-bottom: 20px;
+
+  &::before, &::after {
+    content: '';
+    display: block;
+    width: 22px;
+    height: 1.5px;
+    background: linear-gradient(to right, $cyan, $cyan2);
+  }
+}
+
+.pf-section__title {
+  font-family: 'Inter', sans-serif;
+  font-size: clamp(28px, 3.8vw, 46px);
+  font-weight: 800;
+  color: $navy;
+  margin-bottom: 14px;
+  line-height: 1.08;
+  letter-spacing: -1px;
+
+  &--white {
+    background: linear-gradient(135deg, $white 50%, rgba($cyan, 0.85) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}
+
+.pf-section__sub {
+  font-size: 16px;
+  color: $muted;
+  max-width: 540px;
+  line-height: 1.8;
+  font-weight: 300;
+  margin-bottom: 56px;
+
+  &--white {
+    color: rgba($white, 0.65);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+//  GRILLE PARTENAIRES — cartes avec image de fond
+// ═══════════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════════════════
+//  PARTENAIRES — Ticker défilant infini vers la gauche
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// Animation de défilement
+@keyframes tickerScroll {
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.pf-partners-ticker {
+  // Masque les cartes qui débordent de chaque côté avec un fondu
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  // Fondu gauche
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 80px;
+    background: linear-gradient(to right, $white 0%, transparent 100%);
+    z-index: 2;
+    pointer-events: none;
+  }
+  // Fondu droite
+  &::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 80px;
+    background: linear-gradient(to left, $white 0%, transparent 100%);
+    z-index: 2;
+    pointer-events: none;
+  }
+  // Pause au survol du conteneur
+  &:hover .pf-partners-track {
+    animation-play-state: paused;
+  }
+}
+
+.pf-partners-track {
+  display: flex;
+  gap: 20px;
+  // La largeur totale = 2× la largeur naturelle des cartes (car on duplique)
+  width: max-content;
+  animation: tickerScroll 28s linear infinite;
+  // Vitesse plus lente si peu de cartes
+  &:has(.pf-partner-card:nth-child(-n+4)) {
+    animation-duration: 18s;
+  }
+}
+
+.pf-partner-card {
+  // Largeur fixe pour chaque carte dans le ticker
+  width: 260px;
+  flex-shrink: 0;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1.5px solid $border;
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.5s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s;
+  position: relative;
+  cursor: default;
+
+  &:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 20px 52px rgba($navy, 0.16);
+    border-color: rgba($cyan, 0.45);
+
+    .pf-partner-card__img {
+      transform: scale(1.06);
+    }
+
+    .pf-partner-card__overlay {
+      opacity: 0.88;
+    }
+  }
+}
+
+.pf-partner-card__img {
+  width: 100%;
+  aspect-ratio: 4/3;
+  background-size: cover;
+  background-position: center;
+  background-color: $bg;
+  transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.pf-partner-card__overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba($navy, 0.25) 0%, rgba($navy, 0.75) 100%);
+  opacity: 0.7;
+  transition: opacity 0.4s;
+}
+
+.pf-partner-card__top,
+.pf-partner-card__bottom {
+  position: relative;
+  z-index: 1;
+  padding: 16px;
+}
+
+.pf-partner-card__icon {
+  font-size: 28px;
+  display: block;
+  filter: drop-shadow(0 2px 6px rgba($navy, 0.4));
+}
+
+.pf-partner-card__name {
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: $white;
+  margin-bottom: 4px;
+}
+
+.pf-partner-card__domain {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: rgba($white, 0.75);
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.pf-partner-card__certified {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  color: $green;
+  background: rgba($green, 0.15);
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+//  TÉMOIGNAGES — Fond blanc · avatar haut centré · style magazine
+// ═══════════════════════════════════════════════════════════════════════════════
+
+.pf-testi-section {
+  background: $white;
+  padding: 110px 40px 120px;
+  position: relative;
+  // Subtile texture de fond
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 60% 40% at 20% 50%, rgba($bg, 0.8) 0%, transparent 70%), radial-gradient(ellipse 50% 50% at 80% 20%, rgba($bg, 0.6) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  @media (max-width: 768px) {
+    padding: 72px 20px 80px;
+  }
+}
+
+// ── Header centré ─────────────────────────────────────────────────────────────
+.pf-testi-section__header {
+  text-align: center;
+  max-width: 640px;
+  margin: 0 auto 72px;
+  position: relative;
+  z-index: 1;
+}
+
+.pf-testi-section__title {
+  font-family: 'Inter', sans-serif;
+  font-size: clamp(28px, 3.8vw, 46px);
+  font-weight: 800;
+  color: $navy;
+  line-height: 1.1;
+  letter-spacing: -1px;
+  margin-bottom: 16px;
+
+  span {
+    color: $cyan;
+  }
+}
+
+.pf-testi-section__sub {
+  font-size: 16px;
+  color: $muted;
+  line-height: 1.8;
+  font-weight: 300;
+}
+
+// ── Grille ────────────────────────────────────────────────────────────────────
+.pf-testi-grid2 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 28px;
+  max-width: 1240px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+    max-width: 400px;
+  }
+}
+
+// ── Carte — style magazine de l'image ─────────────────────────────────────────
+.pf-tc2 {
+  background: $white;
+  border: 1.5px solid $border;
+  border-radius: 18px;
+  padding: 0 32px 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: relative;
+  overflow: visible; // l'avatar déborde en haut
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.45s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s;
+  margin-top: 48px; // espace pour l'avatar qui déborde
+  // Ligne d'accent bas au hover
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, $cyan, $cyan2);
+    border-radius: 0 0 18px 18px;
+    transform: scaleX(0);
+    transform-origin: center;
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  &:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 24px 60px rgba($navy, 0.10), 0 0 0 1px rgba($cyan, 0.15);
+    border-color: rgba($cyan, 0.3);
+
+    &::after {
+      transform: scaleX(1);
+    }
+
+    .pf-tc2__avatar {
+      border-color: $cyan;
+      box-shadow: 0 0 0 6px rgba($cyan, 0.12), 0 12px 32px rgba($navy, 0.18);
+    }
+  }
+}
+
+// ── Avatar rond qui déborde en haut ──────────────────────────────────────────
+.pf-tc2__avatar-wrap {
+  position: absolute;
+  top: -48px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+}
+
+.pf-tc2__avatar {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, $bg 0%, $border 100%);
+  border: 4px solid $white;
+  box-shadow: 0 6px 28px rgba($navy, 0.14), 0 0 0 3px rgba($cyan, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Inter', sans-serif;
+  font-size: 28px;
+  font-weight: 800;
+  color: $navy2;
+  overflow: hidden;
+  transition: border-color 0.3s, box-shadow 0.4s;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+// ── Espace pour compenser l'avatar ────────────────────────────────────────────
+.pf-tc2__badge {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 58px; // avatar (88px / 2 = 44) + padding interne
+  margin-bottom: 16px;
+  width: 100%;
+}
+
+.pf-tc2__badge-line {
+  flex: 1;
+  height: 1px;
+  background: $border;
+}
+
+.pf-tc2__badge-text {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: $muted;
+  line-height: 1.5;
+  text-align: center;
+  white-space: nowrap;
+}
+
+// ── Nom en majuscules gras ────────────────────────────────────────────────────
+.pf-tc2__name {
+  font-family: 'Inter', sans-serif;
+  font-size: 17px;
+  font-weight: 800;
+  color: $navy;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin: 0 0 14px;
+  line-height: 1.2;
+}
+
+// ── Étoiles dorées ────────────────────────────────────────────────────────────
+.pf-tc2__stars {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+  margin-bottom: 20px;
+
+  svg {
+    fill: none;
+    stroke: rgba($gold, 0.3);
+    transition: fill 0.15s, stroke 0.15s;
+
+    &.filled {
+      fill: $gold;
+      stroke: darken($gold, 5%);
+      filter: drop-shadow(0 1px 3px rgba($gold, 0.5));
+    }
+  }
+}
+
+// ── Contenu ───────────────────────────────────────────────────────────────────
+.pf-tc2__content {
+  font-size: 14.5px;
+  color: $muted;
+  line-height: 1.82;
+  font-weight: 400;
+  margin: 0 0 24px;
+  flex: 1;
+  font-style: normal;
+}
+
+// ── Footer rôle ───────────────────────────────────────────────────────────────
+.pf-tc2__footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding-top: 18px;
+  border-top: 1px solid $border;
+  width: 100%;
+  margin-top: auto;
+}
+
+.pf-tc2__role {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: $navy;
+}
+
+.pf-tc2__company {
+  font-size: 12px;
+  font-weight: 600;
+  color: $cyan;
+  letter-spacing: 0.05em;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+//  CTA BAS DE PAGE — gradient premium
+// ═══════════════════════════════════════════════════════════════════════════════
+.pf-cta {
+  background: linear-gradient(135deg, $navy 0%, $navy2 50%, mix($navy2, $cyan, 70%) 100%);
+  padding: 100px 40px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: linear-gradient(rgba($cyan, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba($cyan, 0.05) 1px, transparent 1px);
+    background-size: 60px 60px;
+    animation: gridDrift 25s linear infinite;
+    pointer-events: none;
+  }
+  // Blob décoratif
+  &::after {
+    content: '';
+    position: absolute;
+    width: 500px;
+    height: 500px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba($cyan, 0.12) 0%, transparent 70%);
+    top: -150px;
+    right: -100px;
+    filter: blur(60px);
+    pointer-events: none;
+  }
+}
+
+@keyframes gridDrift {
+  from {
+    background-position: 0 0;
+  }
+
+  to {
+    background-position: 60px 60px;
+  }
+}
+
+.pf-cta__icon {
+  font-size: 52px;
+  display: block;
+  margin-bottom: 20px;
+  position: relative;
+  z-index: 1;
+  animation: iconBob 6s ease-in-out infinite;
+}
+
+@keyframes iconBob {
+  0%,100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.pf-cta h2 {
+  font-family: 'Inter', sans-serif;
+  font-size: clamp(26px, 3.5vw, 44px);
+  font-weight: 800;
+  color: $white;
+  line-height: 1.1;
+  letter-spacing: -0.8px;
+  margin-bottom: 14px;
+  position: relative;
+  z-index: 1;
+}
+
+.pf-cta p {
+  font-size: 16px;
+  color: rgba($white, 0.65);
+  line-height: 1.8;
+  max-width: 480px;
+  margin: 0 auto 40px;
+  font-weight: 300;
+  position: relative;
+  z-index: 1;
+}
+
+.pf-cta__actions {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  flex-wrap: wrap;
+  position: relative;
+  z-index: 1;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+//  MODALS — Ultra premium
+// ═══════════════════════════════════════════════════════════════════════════════
+.pf-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba($navy, 0.65);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: backdropIn 0.3s ease;
+}
+
+@keyframes backdropIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.pf-modal {
+  background: $white;
+  border-radius: 22px;
+  width: 100%;
+  max-width: 600px;
+  max-height: 92vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 40px 100px rgba($navy, 0.28), 0 0 0 1px rgba($white, 0.1);
+  animation: modalIn 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+  scrollbar-width: thin;
+  scrollbar-color: $border transparent;
+
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: $border;
+    border-radius: 2px;
+  }
+}
+
+@keyframes modalIn {
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateY(24px);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.pf-modal__close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: 1.5px solid $border;
+  background: $white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: $muted;
+  transition: all 0.25s;
+  z-index: 10;
+
+  &:hover {
+    background: $bg;
+    color: $navy;
+    transform: rotate(90deg);
+    border-color: $border;
+  }
+}
+
+.pf-modal__header {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 28px 28px 20px;
+  border-bottom: 1px solid $border;
+}
+
+.pf-modal__icon {
+  font-size: 28px;
+  width: 52px;
+  height: 52px;
+  background: $bg;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 1.5px solid $border;
+}
+
+.pf-modal__header h3 {
+  font-family: 'Inter', sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+  color: $navy;
+  margin: 0 0 4px;
+  letter-spacing: -0.3px;
+}
+
+.pf-modal__header p {
+  font-size: 13px;
+  color: $muted;
+  margin: 0;
+  font-weight: 300;
+}
+
+// Succès modal
+.pf-success {
+  padding: 60px 28px;
+  text-align: center;
+
+  &__icon {
+    font-size: 56px;
+    display: block;
+    margin-bottom: 20px;
+    animation: bounceIn 0.6s cubic-bezier(0.16,1,0.3,1);
+  }
+
+  h3 {
+    font-family: 'Inter', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    color: $navy;
+    margin: 0 0 10px;
+  }
+
+  p {
+    font-size: 14.5px;
+    color: $muted;
+    line-height: 1.7;
+    margin-bottom: 28px;
+    font-weight: 300;
+  }
+}
+
+@keyframes bounceIn {
+  0% {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+
+  70% {
+    transform: scale(1.12);
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+// Bannière d'erreur
+.pf-error-banner {
+  margin: 0 28px 16px;
+  padding: 12px 14px;
+  background: rgba($red, 0.06);
+  border: 1px solid rgba($red, 0.2);
+  border-radius: 8px;
+  font-size: 13px;
+  color: $red;
+  font-weight: 500;
+}
+
+// Formulaire
+.pf-form {
+  padding: 20px 28px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.pf-field {
+  margin-bottom: 18px;
+
+  label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: $text;
+    margin-bottom: 8px;
+  }
+
+  input, textarea, select {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1.5px solid $border;
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: 'Inter', sans-serif;
+    color: $text;
+    outline: none;
+    background: $white;
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+    box-sizing: border-box;
+
+    &:focus {
+      border-color: $cyan;
+      box-shadow: 0 0 0 3px rgba($cyan, 0.12);
+      background: rgba($cyan, 0.01);
+    }
+
+    &.pf-field--error {
+      border-color: $red;
+      box-shadow: 0 0 0 3px rgba($red, 0.1);
+    }
+
+    &::placeholder {
+      color: lighten($muted, 15%);
+    }
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 110px;
+  }
+}
+
+.pf-field-err {
+  display: block;
+  margin-top: 5px;
+  font-size: 11.5px;
+  color: $red;
+  font-weight: 500;
+}
+
+.pf-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+// Radio homologation
+.pf-radio-group {
+  display: flex;
+  gap: 20px;
+}
+
+.pf-radio {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: $text;
+  cursor: pointer;
+
+  input[type="radio"] {
+    width: 18px;
+    height: 18px;
+    accent-color: $cyan;
+    cursor: pointer;
+    padding: 0;
+  }
+}
+
+// Upload zone
+.pf-upload {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 28px 20px;
+  border: 2px dashed $border;
+  border-radius: 12px;
+  background: $off;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.25s, background 0.25s;
+
+  &:hover {
+    border-color: $cyan;
+    background: rgba($cyan, 0.03);
+  }
+
+  span {
+    font-size: 13.5px;
+    color: $text;
+    font-weight: 500;
+  }
+
+  small {
+    font-size: 11.5px;
+    color: $muted;
+  }
+}
+
+.pf-upload__icon {
+  font-size: 26px;
+  color: $muted;
+}
+
+// ─── Loaders ──────────────────────────────────────────────────────────────────
+.pf-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 64px;
+  color: $muted;
+  font-size: 14px;
+}
+
+.pf-spinner {
+  width: 28px;
+  height: 28px;
+  border: 2.5px solid $border;
+  border-top-color: $cyan;
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.pf-empty {
+  text-align: center;
+  padding: 64px;
+  color: $muted;
+
+  span {
+    font-size: 44px;
+    display: block;
+    margin-bottom: 14px;
+    opacity: 0.5;
+  }
+
+  p {
+    font-size: 15px;
+    line-height: 1.7;
+    font-weight: 300;
+    max-width: 300px;
+    margin: 0 auto;
+  }
+}

@@ -1,0 +1,505 @@
+@{
+    ViewData["Title"] = "Demandes Partenaires";
+    ViewData["ActivePage"] = "PartnerRequests";
+    Layout = "~/Views/Shared/_LayoutBackoffice.cshtml";
+}
+
+<div class="page-header">
+    <h1>Demandes Partenaires</h1>
+    <p>Gerez les demandes recues depuis la page "Devenir Partenaire"</p>
+</div>
+
+<div class="tab-bar">
+    <button class="tab-btn tab-btn--active" id="tabFranchise" onclick="switchPartnerTab('Franchise')">
+        Franchise (<span id="countFranchise">0</span>)
+    </button>
+    <button class="tab-btn" id="tabRevendeur" onclick="switchPartnerTab('Revendeur')">
+        Revendeur (<span id="countRevendeur">0</span>)
+    </button>
+    <button class="tab-btn" id="tabCommissionnaire" onclick="switchPartnerTab('Commissionnaire')">
+        Commissionnaire (<span id="countCommissionnaire">0</span>)
+    </button>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <h2 id="tableTitle">Liste des demandes (<span id="requestCount">0</span>)</h2>
+            <select id="filterStatus" onchange="loadPartnerRequests()"
+                    style="padding:7px 12px;border:1.5px solid #dce4f5;border-radius:8px;font-size:13px;color:#1e2d5a;outline:none">
+                <option value="">Tous les statuts</option>
+                <option value="Nouvelle">Nouvelle</option>
+                <option value="EnCours">En cours</option>
+                <option value="Acceptee">Acceptee</option>
+                <option value="Refusee">Refusee</option>
+            </select>
+            <input type="text"
+                   id="searchInput"
+                   placeholder="Rechercher nom / email / ville..."
+                   oninput="applySearch()"
+                   style="padding:7px 12px;border:1.5px solid #dce4f5;border-radius:8px;font-size:13px;color:#1e2d5a;outline:none;width:240px" />
+        </div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Nom complet</th>
+                <th>Email</th>
+                <th>Telephone</th>
+                <th>Entreprise</th>
+                <th>Ville</th>
+                <th>Type de personne</th>
+                <th>Solutions</th>
+                <th>Date de soumission</th>
+                <th>Statut</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="requestsTable">
+            <tr class="loading-row"><td colspan="10">Chargement...</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="modal-overlay" id="modalDetail" onclick="if(event.target===this)closeDetail()">
+    <div class="modal-box" style="max-width:560px">
+        <h3 style="margin-bottom:4px">Detail de la demande</h3>
+        <p id="detailTypeLabel" style="font-size:12px;color:#6b7db3;margin-bottom:18px;font-weight:500"></p>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+            <div>
+                <div class="detail-label">Nom complet</div>
+                <div id="detailName" class="detail-value"></div>
+            </div>
+            <div>
+                <div class="detail-label">Telephone</div>
+                <div id="detailPhone" class="detail-value"></div>
+            </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+            <div>
+                <div class="detail-label">Email</div>
+                <div id="detailEmail" class="detail-value"></div>
+            </div>
+            <div>
+                <div class="detail-label">Entreprise</div>
+                <div id="detailCompany" class="detail-value"></div>
+            </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+            <div>
+                <div class="detail-label">Ville</div>
+                <div id="detailCity" class="detail-value"></div>
+            </div>
+            <div>
+                <div class="detail-label">Type de personne</div>
+                <div id="detailPersonType" class="detail-value"></div>
+            </div>
+        </div>
+
+        <div style="margin-bottom:14px">
+            <div class="detail-label">Solutions selectionnees</div>
+            <div id="detailSolutions" class="detail-list"></div>
+        </div>
+
+        <div style="margin-bottom:14px">
+            <div class="detail-label">Note interne</div>
+            <div id="detailNote" style="font-size:13px;color:#1e2d5a;background:#fffde7;padding:12px;border-radius:8px;border:1px solid #fff59d;white-space:pre-wrap"></div>
+        </div>
+
+        <div style="display:flex;align-items:center;justify-content:space-between;padding-top:14px;border-top:1px solid #dce4f5">
+            <div id="detailStatusWrap"></div>
+            <div style="display:flex;gap:8px">
+                <button class="btn btn-outline" onclick="closeDetail()">Fermer</button>
+                <button class="btn btn-primary btn-sm" id="btnDetailEditStatus">Modifier le statut</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="modalStatus" onclick="if(event.target===this)closeStatus()">
+    <div class="modal-box" style="max-width:460px">
+        <h3>Mettre a jour la demande</h3>
+        <p id="statusInfo" style="font-size:13px;color:#6b7db3;margin-bottom:18px;padding:10px 14px;background:#f8faff;border-radius:8px;border-left:3px solid #00c8d4"></p>
+        <div class="mfield" style="margin-bottom:14px">
+            <label>Nouveau statut</label>
+            <select id="newStatus">
+                <option value="Nouvelle">Nouvelle</option>
+                <option value="EnCours">En cours</option>
+                <option value="Acceptee">Acceptee</option>
+                <option value="Refusee">Refusee</option>
+            </select>
+        </div>
+        <div class="mfield" style="margin-bottom:20px">
+            <label>Note interne</label>
+            <textarea id="noteField" rows="4" placeholder="Ex : planifier un appel ou valider le profil..."></textarea>
+        </div>
+        <div class="modal-actions">
+            <button class="btn btn-outline" onclick="closeStatus()">Annuler</button>
+            <button class="btn btn-primary" id="btnSaveStatus" onclick="saveStatus()">Enregistrer</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="modalDelete" onclick="if(event.target===this)closeDelete()">
+    <div class="modal-box" style="max-width:400px;text-align:center">
+        <h3 style="margin-bottom:8px">Confirmer la suppression</h3>
+        <p id="deleteMsg" style="font-size:14px;color:#6b7db3;margin-bottom:24px"></p>
+        <div style="display:flex;gap:10px;justify-content:center">
+            <button class="btn btn-outline" onclick="closeDelete()">Annuler</button>
+            <button class="btn btn-danger" id="btnConfirmDelete" onclick="confirmDelete()">Supprimer</button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<style>
+    .tab-bar {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 20px;
+        border-bottom: 2px solid #e8edf8;
+        padding-bottom: 0;
+    }
+
+    .tab-btn {
+        background: none;
+        border: none;
+        padding: 10px 20px;
+        font-size: 14px;
+        font-weight: 500;
+        color: #6b7db3;
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+        margin-bottom: -2px;
+        transition: color .2s, border-color .2s;
+    }
+
+    .tab-btn--active {
+        color: #00c8d4;
+        border-bottom-color: #00c8d4;
+    }
+
+    .tab-btn:hover:not(.tab-btn--active) {
+        color: #1e2d5a;
+    }
+
+    .badge-nouvelle { background: #e3f2fd; color: #1565c0; }
+    .badge-encours { background: #fff3e0; color: #e65100; }
+    .badge-acceptee { background: #e8f5e9; color: #2e7d32; }
+    .badge-refusee { background: #ffebee; color: #c62828; }
+
+    .badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+    }
+
+    .detail-label {
+        font-size: 11px;
+        font-weight: 600;
+        color: #6b7db3;
+        margin-bottom: 4px;
+    }
+
+    .detail-value {
+        font-size: 13px;
+        color: #1e2d5a;
+        white-space: pre-wrap;
+    }
+
+    .detail-list {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        padding: 12px;
+        border: 1px solid #dce4f5;
+        border-radius: 8px;
+        background: #f8faff;
+    }
+
+    .solution-chip {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 10px;
+        border-radius: 999px;
+        background: rgba(0, 200, 212, 0.12);
+        color: #007b84;
+        font-size: 12px;
+        font-weight: 600;
+    }
+</style>
+
+<script>
+    let currentTab = 'Franchise';
+    let allRequests = [];
+    let editingId = null;
+    let deletingId = null;
+
+    const tabTitles = {
+        Franchise: 'Demandes Franchise',
+        Revendeur: 'Demandes Revendeur',
+        Commissionnaire: 'Demandes Commissionnaire'
+    };
+
+    const personTypeLabels = {
+        Physique: 'Personne Physique',
+        Morale: 'Personne Morale'
+    };
+
+    const tabIds = ['Franchise', 'Revendeur', 'Commissionnaire'];
+
+    function statusBadge(status) {
+        const map = {
+            'Nouvelle': ['badge-nouvelle', 'Nouvelle'],
+            'EnCours': ['badge-encours', 'En cours'],
+            'Acceptee': ['badge-acceptee', 'Acceptee'],
+            'Refusee': ['badge-refusee', 'Refusee']
+        };
+
+        const [cls, label] = map[status] || ['badge-nouvelle', status];
+        return `<span class="badge ${cls}">${label}</span>`;
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/&/g, '&amp;')
+                  .replace(/</g, '&lt;')
+                  .replace(/>/g, '&gt;')
+                  .replace(/"/g, '&quot;')
+                  .replace(/'/g, '&#39;');
+    }
+
+    function fmtDate(value) {
+        if (!value) return '—';
+        return new Date(value).toLocaleDateString('fr-FR', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    }
+
+    function renderSolutions(solutions) {
+        if (!Array.isArray(solutions) || !solutions.length) return '—';
+        const text = solutions.join(', ');
+        return `<span title="${escapeHtml(text)}">${escapeHtml(text)}</span>`;
+    }
+
+    function renderSolutionChips(solutions) {
+        if (!Array.isArray(solutions) || !solutions.length) {
+            return '<span style="color:#6b7db3;font-size:13px">Aucune solution.</span>';
+        }
+
+        return solutions.map(solution => `<span class="solution-chip">${escapeHtml(solution)}</span>`).join('');
+    }
+
+    async function loadCounts() {
+        for (const type of tabIds) {
+            try {
+                const res = await fetch('/api/partner-requests?partnerType=' + encodeURIComponent(type), { headers: authHeaders() });
+                if (!res.ok) continue;
+                const list = await res.json();
+                document.getElementById('count' + type).textContent = Array.isArray(list) ? list.length : 0;
+            } catch { }
+        }
+    }
+
+    function switchPartnerTab(type) {
+        currentTab = type;
+        document.getElementById('searchInput').value = '';
+        document.getElementById('filterStatus').value = '';
+
+        for (const tabId of tabIds) {
+            document.getElementById('tab' + tabId).classList.toggle('tab-btn--active', tabId === type);
+        }
+
+        loadPartnerRequests();
+    }
+
+    async function loadPartnerRequests() {
+        const status = document.getElementById('filterStatus').value;
+        let url = '/api/partner-requests?partnerType=' + encodeURIComponent(currentTab);
+        if (status) url += '&status=' + encodeURIComponent(status);
+
+        document.getElementById('requestsTable').innerHTML = '<tr class="loading-row"><td colspan="10">Chargement...</td></tr>';
+
+        try {
+            const res = await fetch(url, { headers: authHeaders() });
+            if (res.status === 401 || res.status === 403) {
+                document.getElementById('requestsTable').innerHTML = '<tr class="empty-row"><td colspan="10">Acces non autorise.</td></tr>';
+                return;
+            }
+
+            const list = await res.json();
+            allRequests = Array.isArray(list) ? list : [];
+            renderTable(allRequests);
+            document.getElementById('requestCount').textContent = allRequests.length;
+            document.getElementById('tableTitle').innerHTML = tabTitles[currentTab] + ' (<span id="requestCount">' + allRequests.length + '</span>)';
+        } catch {
+            document.getElementById('requestsTable').innerHTML = '<tr class="empty-row"><td colspan="10">Erreur de chargement.</td></tr>';
+        }
+    }
+
+    function applySearch() {
+        const query = document.getElementById('searchInput').value.toLowerCase().trim();
+        if (!query) {
+            renderTable(allRequests);
+            return;
+        }
+
+        const filtered = allRequests.filter(request =>
+            (request.fullName || '').toLowerCase().includes(query) ||
+            (request.email || '').toLowerCase().includes(query) ||
+            (request.city || '').toLowerCase().includes(query) ||
+            (request.company || '').toLowerCase().includes(query)
+        );
+
+        renderTable(filtered);
+    }
+
+    function renderTable(list) {
+        document.getElementById('requestsTable').innerHTML = list.length ? list.map(request => `
+            <tr>
+                <td style="font-weight:600">${escapeHtml(request.fullName)}</td>
+                <td><a href="mailto:${escapeHtml(request.email)}" style="color:#00c8d4">${escapeHtml(request.email)}</a></td>
+                <td>${escapeHtml(request.phone || '—')}</td>
+                <td>${escapeHtml(request.company || '—')}</td>
+                <td>${escapeHtml(request.city || '—')}</td>
+                <td>${escapeHtml(personTypeLabels[request.personType] || request.personType || '—')}</td>
+                <td style="max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${renderSolutions(request.selectedSolutions)}</td>
+                <td style="white-space:nowrap">${fmtDate(request.submittedAt)}</td>
+                <td>${statusBadge(request.status)}</td>
+                <td>
+                    <div style="display:flex;gap:5px;flex-wrap:wrap">
+                        <button class="btn btn-outline btn-sm" onclick="openDetail(${request.id})">Detail</button>
+                        <button class="btn btn-outline btn-sm" style="border-color:#00c8d4;color:#00c8d4" onclick="openStatus(${request.id}, '${escapeHtml(request.fullName)}', '${request.status}', '${escapeHtml(request.internalNote || '')}')">Statut</button>
+                        <button class="btn btn-danger btn-sm" onclick="openDelete(${request.id}, '${escapeHtml(request.fullName)}')">Supprimer</button>
+                    </div>
+                </td>
+            </tr>
+        `).join('') : '<tr class="empty-row"><td colspan="10">Aucune demande.</td></tr>';
+    }
+
+    function openDetail(id) {
+        const request = allRequests.find(item => item.id === id);
+        if (!request) return;
+
+        document.getElementById('detailTypeLabel').textContent = 'Type de partenariat : ' + (request.partnerType || '—');
+        document.getElementById('detailName').textContent = request.fullName || '—';
+        document.getElementById('detailPhone').textContent = request.phone || '—';
+        document.getElementById('detailEmail').innerHTML = `<a href="mailto:${escapeHtml(request.email)}" style="color:#00c8d4">${escapeHtml(request.email)}</a>`;
+        document.getElementById('detailCompany').textContent = request.company || '—';
+        document.getElementById('detailCity').textContent = request.city || '—';
+        document.getElementById('detailPersonType').textContent = personTypeLabels[request.personType] || request.personType || '—';
+        document.getElementById('detailSolutions').innerHTML = renderSolutionChips(request.selectedSolutions);
+        document.getElementById('detailNote').textContent = request.internalNote || '—';
+        document.getElementById('detailStatusWrap').innerHTML = statusBadge(request.status);
+        document.getElementById('btnDetailEditStatus').onclick = () => {
+            closeDetail();
+            openStatus(request.id, request.fullName, request.status, request.internalNote || '');
+        };
+
+        document.getElementById('modalDetail').classList.add('show');
+    }
+
+    function closeDetail() {
+        document.getElementById('modalDetail').classList.remove('show');
+    }
+
+    function openStatus(id, name, currentStatus, note) {
+        editingId = id;
+        document.getElementById('statusInfo').textContent = 'Demande de : ' + name;
+        document.getElementById('newStatus').value = currentStatus;
+        document.getElementById('noteField').value = note;
+        document.getElementById('modalStatus').classList.add('show');
+    }
+
+    function closeStatus() {
+        document.getElementById('modalStatus').classList.remove('show');
+        editingId = null;
+    }
+
+    async function saveStatus() {
+        if (!editingId) return;
+
+        const btn = document.getElementById('btnSaveStatus');
+        btn.disabled = true;
+        btn.textContent = 'Enregistrement...';
+
+        try {
+            const status = document.getElementById('newStatus').value;
+            const internalNote = document.getElementById('noteField').value.trim() || null;
+            const res = await fetch('/api/partner-requests/' + editingId + '/status', {
+                method: 'PATCH',
+                headers: authHeaders(),
+                body: JSON.stringify({ status, internalNote })
+            });
+
+            if (res.ok) {
+                closeStatus();
+                await loadPartnerRequests();
+                await loadCounts();
+            } else {
+                alert('Erreur lors de la mise a jour.');
+            }
+        } catch {
+            alert('Erreur reseau.');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Enregistrer';
+        }
+    }
+
+    function openDelete(id, name) {
+        deletingId = id;
+        document.getElementById('deleteMsg').innerHTML = `Voulez-vous vraiment supprimer la demande de <strong>${escapeHtml(name)}</strong> ?<br><span style="color:#d63031">Cette action est irreversible.</span>`;
+        document.getElementById('modalDelete').classList.add('show');
+    }
+
+    function closeDelete() {
+        document.getElementById('modalDelete').classList.remove('show');
+        deletingId = null;
+    }
+
+    async function confirmDelete() {
+        if (!deletingId) return;
+
+        const btn = document.getElementById('btnConfirmDelete');
+        btn.disabled = true;
+        btn.textContent = 'Suppression...';
+
+        try {
+            const res = await fetch('/api/partner-requests/' + deletingId, {
+                method: 'DELETE',
+                headers: authHeaders()
+            });
+
+            if (res.ok || res.status === 204) {
+                closeDelete();
+                await loadPartnerRequests();
+                await loadCounts();
+            } else {
+                alert('Erreur lors de la suppression.');
+            }
+        } catch {
+            alert('Erreur reseau.');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Supprimer';
+        }
+    }
+
+    (async function init() {
+        await loadCounts();
+        await loadPartnerRequests();
+    })();
+</script>
+}

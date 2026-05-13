@@ -1,0 +1,105 @@
+<footer class="footer">
+
+  <!-- NEWSLETTER -->
+  <div class="newsletter-section">
+    <div class="container">
+      <div class="newsletter-tag">
+        <span>📧</span> Newsletter TUNAV
+      </div>
+      <h2>Restez informé de nos actualités</h2>
+      <p>
+        Abonnez-vous à notre newsletter pour recevoir nos dernières news, innovations et success stories
+        directement dans votre boîte mail
+      </p>
+      <div class="newsletter-form">
+        <div class="newsletter-input-wrap">
+          <span class="input-icon">✉️</span>
+          <input type="email" [(ngModel)]="emailInput" placeholder="Votre e-mail" />
+        </div>
+        <div class="newsletter-input-wrap">
+          <span class="input-icon">📱</span>
+          <input type="tel" [(ngModel)]="phoneInput" placeholder="Votre numéro WhatsApp" />
+        </div>
+        <button class="newsletter-btn" (click)="subscribe()">
+          S'abonner ✈
+        </button>
+      </div>
+      <div class="newsletter-badges">
+        <span>✅ Pas de spam</span>
+        <span>✅ Désabonnement facile</span>
+        <span>✅ Vos données sont protégées</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER LINKS -->
+  <div class="footer-main">
+    <div class="container">
+      <div class="footer-grid">
+
+        <!-- Brand avec logo -->
+        <div class="footer-brand">
+          <div class="brand-top">
+            <img src="/assets/tunav_logo.png" alt="TUNAV" class="footer-logo" />
+            <div>
+              <div class="brand-name">TUNAV</div>
+              <div class="brand-sub">GPS leaders, IT experts</div>
+            </div>
+          </div>
+          <p class="brand-desc">
+            Leader en solutions IoT, Tracking GPS et Fleet
+            Management en Tunisie.
+          </p>
+          <div class="social-links">
+            <a href="#" class="social-link">f</a>
+            <a href="#" class="social-link">t</a>
+            <a href="#" class="social-link">in</a>
+            <a href="#" class="social-link">ig</a>
+          </div>
+        </div>
+
+        <!-- Solutions -->
+        <div class="footer-col">
+          <h4>Solutions</h4>
+          <ul>
+            <li><a href="#">Tracking GPS</a></li>
+            <li><a href="#">Solutions IoT</a></li>
+            <li><a href="#">Fleet Management</a></li>
+            <li><a href="#">Smart Monitoring</a></li>
+          </ul>
+        </div>
+
+        <!-- Navigation -->
+        <div class="footer-col">
+          <h4>Navigation</h4>
+          <ul>
+            <li><a routerLink="/about">À propos</a></li>
+            <li><a routerLink="/solutions">Solutions</a></li>
+            <li><a routerLink="/career">Carrière</a></li>
+            <li><a href="#">Avantages</a></li>
+            <li><a routerLink="/contact">Contact</a></li>
+          </ul>
+        </div>
+
+        <!-- Contact -->
+        <div class="footer-col">
+          <h4>Contact</h4>
+          <ul class="contact-list">
+            <li>📍 Tunis, Tunisie</li>
+            <li>📞 +216 XX XXX XXX</li>
+            <li>✉️ contact&#64;tunav.tn</li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- COPYRIGHT -->
+  <div class="footer-bottom">
+    <div class="container">
+      <span>© {{ currentYear }} TUNAV IT Groupe. Tous droits réservés.</span>
+    </div>
+  </div>
+
+</footer>

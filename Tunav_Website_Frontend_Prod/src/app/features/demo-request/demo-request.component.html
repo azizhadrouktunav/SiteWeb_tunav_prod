@@ -1,0 +1,85 @@
+<section class="demo-hero">
+  <div class="demo-hero__bg"></div>
+  <div class="demo-hero__content">
+    <div class="demo-hero__text">
+      <span class="demo-hero__tag">Demonstration Tunav</span>
+      <h1>Demandez une demo adaptee a votre solution.</h1>
+      <p class="demo-hero__subtitle">
+        Choisissez la solution qui vous interesse, laissez vos coordonnees et
+        notre equipe reviendra vers vous pour etudier votre besoin.
+      </p>
+      <div class="demo-hero__cta">
+        <a routerLink="/solutions" class="btn-primary">Voir les solutions</a>
+        <a routerLink="/packs" class="btn-secondary">Voir les packs</a>
+      </div>
+    </div>
+
+    <div class="demo-hero__visual">
+      <div class="demo-hero__card">
+        <h2>Ce que vous obtenez</h2>
+        <ul>
+          <li>Une prise de contact centralisee dans notre equipe commerciale</li>
+          <li>Un suivi clair selon la solution qui vous interesse</li>
+          <li>Un traitement rapide depuis notre backoffice</li>
+        </ul>
+        <div class="demo-hero__badge">
+          <span class="demo-hero__badge-title">Version actuelle</span>
+          <span class="demo-hero__badge-text">
+            Enregistrement de la demande et suivi admin
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="demo-page">
+  <div class="demo-page__container">
+    <div class="demo-page__copy">
+      <p class="demo-page__eyebrow">Formulaire principal</p>
+      <h2>Selectionnez votre solution et envoyez votre demande.</h2>
+      <p class="demo-page__text">
+        Cette page correspond au CTA du menu principal. Toutes les demandes
+        envoyees ici seront stockees en base et visibles dans le backoffice sous
+        <strong>Demandes de Demo</strong>.
+      </p>
+      <div class="demo-page__points">
+        <div class="demo-page__point">
+          <strong>Solution obligatoire</strong>
+          <span>
+            Le formulaire charge uniquement les solutions actives deja publiees.
+          </span>
+        </div>
+        <div class="demo-page__point">
+          <strong>Validation identique</strong>
+          <span>
+            Les memes controles sont utilises ici et dans les modales des pages
+            solutions.
+          </span>
+        </div>
+        <div class="demo-page__point">
+          <strong>Suivi admin</strong>
+          <span>
+            Le statut et la note interne seront geres depuis le panneau
+            d administration.
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="demo-page__panel">
+      <div class="demo-page__panel-head">
+        <h3>Demander une demo</h3>
+        <p>
+          Remplissez ce formulaire et notre equipe examinera votre demande.
+        </p>
+      </div>
+
+      <app-demo-request-form
+        entryPoint="DemoPage"
+        [showSolutionSelector]="true"
+        submitLabel="Envoyer la demande"
+      />
+    </div>
+  </div>
+</section>

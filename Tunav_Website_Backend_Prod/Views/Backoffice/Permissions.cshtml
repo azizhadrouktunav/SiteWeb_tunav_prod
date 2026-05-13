@@ -1,0 +1,530 @@
+@{
+    ViewData["Title"] = "Permissions";
+    ViewData["ActivePage"] = "Permissions";
+    Layout = "~/Views/Shared/_LayoutBackoffice.cshtml";
+}
+
+<div class="page-header">
+    <h1>Permissions</h1>
+    <p>Affectez les autorisations par role avec une vue simplifiee pour les equipes non techniques.</p>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2>Gestion des permissions par role</h2>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <span class="badge badge-navy">Disponibles: <span id="permissionCount">0</span></span>
+            <span class="badge badge-navy">Selectionnees: <span id="assignedCount">0</span></span>
+            <button class="btn btn-outline btn-sm" type="button" onclick="selectAllPermissions()">Tout cocher</button>
+            <button class="btn btn-outline btn-sm" type="button" onclick="clearAllPermissions()">Tout decocher</button>
+            <button class="btn btn-primary btn-sm" id="btnSaveRolePerms" type="button" onclick="saveRolePermissions()" disabled>Enregistrer</button>
+        </div>
+    </div>
+
+    <div class="manage-toolbar">
+        <div class="mfield">
+            <label for="roleSelect">Role cible *</label>
+            <select id="roleSelect" onchange="onRoleChange()"></select>
+        </div>
+        <label class="toggle-tech">
+            <input id="showTechCodes" type="checkbox" onchange="onToggleTechCodes(this.checked)" />
+            <span>Afficher les codes techniques</span>
+        </label>
+        <div id="permManageMsg" class="manage-msg" style="display:none"></div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th style="width:95px">Autoriser</th>
+                <th>Permission</th>
+                <th style="width:200px">Categorie</th>
+            </tr>
+        </thead>
+        <tbody id="rolePermissionsTable">
+            <tr class="loading-row"><td colspan="3">Chargement...</td></tr>
+        </tbody>
+    </table>
+</div>
+
+@section Scripts {
+<style>
+    .manage-toolbar {
+        padding: 16px 20px;
+        border-bottom: 1px solid #dce4f5;
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        gap: 14px;
+        align-items: end;
+    }
+
+    .manage-msg {
+        grid-column: 1 / -1;
+        padding: 10px 12px;
+        border-radius: 8px;
+        font-size: 13px;
+    }
+
+    .mfield label {
+        display: block;
+        font-size: 12px;
+        font-weight: 500;
+        color: #6b7db3;
+        margin-bottom: 5px;
+    }
+
+    .mfield select {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1.5px solid #dce4f5;
+        border-radius: 8px;
+        font-size: 14px;
+        font-family: inherit;
+        outline: none;
+        color: #1e2d5a;
+        background: white;
+    }
+
+    .mfield select:focus {
+        border-color: #00c8d4;
+    }
+
+    .toggle-tech {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        color: #6b7db3;
+        justify-self: end;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .toggle-tech input {
+        width: 16px;
+        height: 16px;
+        accent-color: #1a2a6c;
+    }
+
+    .check-wrap {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 20px;
+        height: 20px;
+    }
+
+    .perm-check {
+        width: 16px;
+        height: 16px;
+        accent-color: #1a2a6c;
+        cursor: pointer;
+    }
+
+    .group-row td {
+        background: #f8faff;
+        color: #1e2d5a;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding-top: 10px;
+        padding-bottom: 10px;
+    }
+
+    .perm-title {
+        color: #1e2d5a;
+        font-weight: 600;
+    }
+
+    .perm-meta {
+        margin-top: 4px;
+        color: #6b7db3;
+        font-size: 12px;
+        font-family: Consolas, Monaco, monospace;
+    }
+
+    .perm-meta.hidden {
+        display: none;
+    }
+
+    .module-pill {
+        display: inline-flex;
+        align-items: center;
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+        background: rgba(0,200,212,.12);
+        color: #008a91;
+    }
+
+    @@media (max-width: 960px) {
+        .manage-toolbar {
+            grid-template-columns: 1fr;
+        }
+
+        .toggle-tech {
+            justify-self: start;
+        }
+    }
+</style>
+
+<script>
+    let allPermissions = [];
+    let roles = [];
+    let selectedRoleId = null;
+    let selectedRoleName = '';
+    let assignedPermissionIds = new Set();
+    let isDirty = false;
+    let showTechnicalCodes = false;
+
+    function esc(value) {
+        if (value === null || value === undefined) return '';
+        return String(value)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    function setManageMessage(message, isSuccess) {
+        const el = document.getElementById('permManageMsg');
+        if (!message) {
+            el.style.display = 'none';
+            el.textContent = '';
+            return;
+        }
+
+        el.style.display = 'block';
+        el.textContent = message;
+        el.style.background = isSuccess ? '#e6faf0' : '#fff0f0';
+        el.style.border = isSuccess ? '1px solid #b2dfdb' : '1px solid #ffc5c5';
+        el.style.color = isSuccess ? '#00b894' : '#d63031';
+    }
+
+    function setSaveState() {
+        document.getElementById('btnSaveRolePerms').disabled = !selectedRoleId || !isDirty;
+    }
+
+    function updateAssignedCount() {
+        document.getElementById('assignedCount').textContent = assignedPermissionIds.size;
+    }
+
+    function moduleLabelFromCode(code) {
+        const first = (code || '').split('.')[0]?.toLowerCase();
+        const map = {
+            blog: 'Blog',
+            event: 'Evenements',
+            solution: 'Solutions',
+            team: 'Equipe',
+            job: 'Emploi',
+            contact: 'Contact',
+            system: 'Administration',
+            newsletter: 'Newsletters',
+            training: 'Formation',
+            role: 'Roles',
+            user: 'Utilisateurs'
+        };
+        if (map[first]) return map[first];
+        if (!first) return 'General';
+        return first.charAt(0).toUpperCase() + first.slice(1);
+    }
+
+    function descriptionWithoutStoryPrefix(description) {
+        if (!description) return '';
+        return description.replace(/^US-[A-Z]{2}\d+\s*[–-]\s*/i, '').trim();
+    }
+
+    function friendlyLabel(permission) {
+        const fromDescription = descriptionWithoutStoryPrefix(permission.description);
+        if (fromDescription) return fromDescription;
+
+        const code = permission.code || '';
+        const raw = code.split('.').pop() || code;
+        const clean = raw.replace(/[-_]/g, ' ');
+        return clean.charAt(0).toUpperCase() + clean.slice(1);
+    }
+
+    function renderRoleOptions() {
+        const select = document.getElementById('roleSelect');
+        select.innerHTML = '';
+
+        if (!roles.length) {
+            const option = document.createElement('option');
+            option.value = '';
+            option.textContent = 'Aucun role actif';
+            select.appendChild(option);
+            select.disabled = true;
+            selectedRoleId = null;
+            selectedRoleName = '';
+            setSaveState();
+            return;
+        }
+
+        roles.forEach(r => {
+            const option = document.createElement('option');
+            option.value = String(r.id);
+            option.textContent = r.name;
+            select.appendChild(option);
+        });
+
+        select.disabled = false;
+    }
+
+    function groupedPermissions() {
+        const groups = {};
+
+        [...allPermissions]
+            .sort((a, b) => {
+                const moduleA = moduleLabelFromCode(a.code);
+                const moduleB = moduleLabelFromCode(b.code);
+                if (moduleA !== moduleB) return moduleA.localeCompare(moduleB, 'fr');
+                return friendlyLabel(a).localeCompare(friendlyLabel(b), 'fr');
+            })
+            .forEach(p => {
+                const module = moduleLabelFromCode(p.code);
+                if (!groups[module]) groups[module] = [];
+                groups[module].push(p);
+            });
+
+        return groups;
+    }
+
+    function renderRolePermissionsTable() {
+        const table = document.getElementById('rolePermissionsTable');
+
+        if (!selectedRoleId) {
+            table.innerHTML = '<tr class="empty-row"><td colspan="3">Selectionnez un role pour modifier ses permissions.</td></tr>';
+            updateAssignedCount();
+            setSaveState();
+            return;
+        }
+
+        if (!allPermissions.length) {
+            table.innerHTML = '<tr class="empty-row"><td colspan="3">Aucune permission disponible.</td></tr>';
+            updateAssignedCount();
+            setSaveState();
+            return;
+        }
+
+        const groups = groupedPermissions();
+        let html = '';
+
+        Object.keys(groups).forEach(module => {
+            html += `<tr class="group-row"><td colspan="3">${esc(module)}</td></tr>`;
+
+            groups[module].forEach(p => {
+                const checked = assignedPermissionIds.has(p.id) ? 'checked' : '';
+                const technicalClass = showTechnicalCodes ? 'perm-meta' : 'perm-meta hidden';
+
+                html += `
+                    <tr>
+                        <td>
+                            <label class="check-wrap" title="Activer la permission">
+                                <input class="perm-check" type="checkbox" ${checked} onchange="togglePermission(${p.id}, this.checked)" />
+                            </label>
+                        </td>
+                        <td>
+                            <div class="perm-title">${esc(friendlyLabel(p))}</div>
+                            <div class="${technicalClass}">${esc(p.code || '-')}</div>
+                        </td>
+                        <td><span class="module-pill">${esc(moduleLabelFromCode(p.code))}</span></td>
+                    </tr>
+                `;
+            });
+        });
+
+        table.innerHTML = html;
+        updateAssignedCount();
+        setSaveState();
+    }
+
+    async function loadRolePermissions(roleId) {
+        const table = document.getElementById('rolePermissionsTable');
+        table.innerHTML = '<tr class="loading-row"><td colspan="3">Chargement des permissions du role...</td></tr>';
+
+        const res = await fetch(`/api/permissions/roles/${roleId}`, { headers: authHeaders() });
+
+        if (res.status === 401) {
+            window.location.href = '/auth/login';
+            return false;
+        }
+
+        if (res.status === 403) {
+            table.innerHTML = '<tr class="empty-row"><td colspan="3">Acces refuse. Cette action est reservee aux administrateurs.</td></tr>';
+            return false;
+        }
+
+        if (!res.ok) {
+            const msg = res.status === 404
+                ? 'Role introuvable.'
+                : `Erreur lors du chargement des permissions du role (${res.status}).`;
+            table.innerHTML = `<tr class="empty-row"><td colspan="3">${msg}</td></tr>`;
+            return false;
+        }
+
+        const roleData = await res.json();
+        assignedPermissionIds = new Set((roleData.permissions || []).map(p => p.id));
+        selectedRoleName = roleData.roleName || selectedRoleName;
+        isDirty = false;
+        setManageMessage('', true);
+        renderRolePermissionsTable();
+        return true;
+    }
+
+    function togglePermission(permissionId, checked) {
+        if (checked) assignedPermissionIds.add(permissionId);
+        else assignedPermissionIds.delete(permissionId);
+
+        isDirty = true;
+        updateAssignedCount();
+        setSaveState();
+    }
+
+    function selectAllPermissions() {
+        if (!selectedRoleId || !allPermissions.length) return;
+        assignedPermissionIds = new Set(allPermissions.map(p => p.id));
+        isDirty = true;
+        renderRolePermissionsTable();
+    }
+
+    function clearAllPermissions() {
+        if (!selectedRoleId) return;
+        assignedPermissionIds = new Set();
+        isDirty = true;
+        renderRolePermissionsTable();
+    }
+
+    function onToggleTechCodes(checked) {
+        showTechnicalCodes = checked;
+        renderRolePermissionsTable();
+    }
+
+    async function onRoleChange() {
+        const roleIdRaw = document.getElementById('roleSelect').value;
+        selectedRoleId = roleIdRaw ? Number(roleIdRaw) : null;
+        selectedRoleName = roles.find(r => r.id === selectedRoleId)?.name || '';
+        setManageMessage('', true);
+
+        if (!selectedRoleId) {
+            assignedPermissionIds = new Set();
+            isDirty = false;
+            renderRolePermissionsTable();
+            return;
+        }
+
+        await loadRolePermissions(selectedRoleId);
+    }
+
+    async function saveRolePermissions() {
+        if (!selectedRoleId) {
+            setManageMessage('Selectionnez un role avant d\'enregistrer.', false);
+            return;
+        }
+
+        const payload = {
+            permissionIds: Array.from(assignedPermissionIds).sort((a, b) => a - b)
+        };
+
+        const res = await fetch(`/api/permissions/roles/${selectedRoleId}`, {
+            method: 'PUT',
+            headers: authHeaders(),
+            body: JSON.stringify(payload)
+        });
+
+        if (res.status === 401) {
+            window.location.href = '/auth/login';
+            return;
+        }
+
+        if (res.status === 403) {
+            setManageMessage('Acces refuse. Cette action est reservee aux administrateurs.', false);
+            return;
+        }
+
+        if (!res.ok) {
+            let message = `Erreur lors de l'enregistrement (${res.status}).`;
+            try {
+                const errorBody = await res.json();
+                if (errorBody?.message) message = errorBody.message;
+            } catch {}
+            setManageMessage(message, false);
+            return;
+        }
+
+        isDirty = false;
+        setSaveState();
+        setManageMessage(`Permissions du role "${selectedRoleName || selectedRoleId}" enregistrees avec succes.`, true);
+    }
+
+    async function loadPermissionsPage() {
+        const roleTable = document.getElementById('rolePermissionsTable');
+
+        try {
+            const [permissionsRes, rolesRes] = await Promise.all([
+                fetch('/api/permissions', { headers: authHeaders() }),
+                fetch('/api/roles?isActive=true', { headers: authHeaders() })
+            ]);
+
+            if (permissionsRes.status === 401 || rolesRes.status === 401) {
+                window.location.href = '/auth/login';
+                return;
+            }
+
+            if (permissionsRes.status === 403) {
+                roleTable.innerHTML = '<tr class="empty-row"><td colspan="3">Acces refuse. Cette page est reservee aux administrateurs.</td></tr>';
+                document.getElementById('permissionCount').textContent = '0';
+                setSaveState();
+                return;
+            }
+
+            if (!permissionsRes.ok) {
+                roleTable.innerHTML = `<tr class="empty-row"><td colspan="3">Erreur lors du chargement des permissions (${permissionsRes.status}).</td></tr>`;
+                document.getElementById('permissionCount').textContent = '0';
+                setSaveState();
+                return;
+            }
+
+            if (!rolesRes.ok) {
+                roleTable.innerHTML = `<tr class="empty-row"><td colspan="3">Erreur lors du chargement des roles (${rolesRes.status}).</td></tr>`;
+                document.getElementById('permissionCount').textContent = '0';
+                setSaveState();
+                return;
+            }
+
+            const [perms, roleList] = await Promise.all([permissionsRes.json(), rolesRes.json()]);
+
+            allPermissions = Array.isArray(perms) ? perms : [];
+            document.getElementById('permissionCount').textContent = allPermissions.length;
+
+            roles = (Array.isArray(roleList) ? roleList : [])
+                .filter(r => r && r.id && r.name)
+                .sort((a, b) => String(a.name).localeCompare(String(b.name), 'fr'));
+
+            renderRoleOptions();
+
+            if (!roles.length) {
+                roleTable.innerHTML = '<tr class="empty-row"><td colspan="3">Aucun role actif disponible.</td></tr>';
+                assignedPermissionIds = new Set();
+                updateAssignedCount();
+                setSaveState();
+                return;
+            }
+
+            document.getElementById('roleSelect').value = String(roles[0].id);
+            selectedRoleId = roles[0].id;
+            selectedRoleName = roles[0].name;
+            await loadRolePermissions(selectedRoleId);
+        } catch (e) {
+            console.error(e);
+            roleTable.innerHTML = '<tr class="empty-row"><td colspan="3">Erreur reseau lors du chargement des roles et permissions.</td></tr>';
+            document.getElementById('permissionCount').textContent = '0';
+            setSaveState();
+        }
+    }
+
+    loadPermissionsPage();
+</script>
+}

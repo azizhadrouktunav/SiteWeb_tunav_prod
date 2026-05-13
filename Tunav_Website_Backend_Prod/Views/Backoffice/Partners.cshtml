@@ -1,0 +1,356 @@
+@{
+    Layout = "_LayoutBackoffice";
+    ViewData["Title"] = "Gestion des Partenaires";
+    ViewData["ActivePage"] = "Partners";
+}
+
+<div class="page-header">
+    <h1>Gestion des Partenaires</h1>
+    <p>Ajoutez, modifiez et gérez les partenaires TUNAV</p>
+</div>
+
+
+<div class="card">
+    <div class="card-header">
+        <h2>Liste des partenaires</h2>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+            <input type="text" id="searchInput" placeholder="Rechercher..." class="search-input" oninput="filterTable()" />
+            <button class="btn btn-primary btn-sm" onclick="openAddModal()">+ Ajouter un partenaire</button>
+        </div>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Logo</th>
+                <th>Nom</th>
+                <th>Type</th>
+                <th>Pays</th>
+                <th>Contact</th>
+                <th>Ordre</th>
+                <th>Statut</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="partnersBody">
+            <tr class="loading-row"><td colspan="8">Chargement...</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- MODAL AJOUTER / MODIFIER -->
+<div class="modal-overlay" id="partnerModal">
+    <div class="modal-box" style="max-width:600px">
+        <button class="modal-close-btn" onclick="closeModal()" title="Fermer">✕</button>
+        <h3 id="modalTitle">Ajouter un partenaire</h3>
+
+        <div id="formError" style="display:none;background:#fff0f0;border:1px solid #ffc5c5;color:#d63031;padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:14px"></div>
+
+        <input type="hidden" id="editId" />
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+            <div class="mfield">
+                <label>Nom <span style="color:#d63031">*</span></label>
+                <input type="text" id="fName" placeholder="Nom de l'entreprise" />
+            </div>
+            <div class="mfield">
+                <label>Type de partenaire</label>
+                <select id="fType">
+                    <option value="">— Choisir —</option>
+                    <option>Revendeur</option>
+                    <option>Intégrateur</option>
+                    <option>Distributeur</option>
+                    <option>Partenaire Technologique</option>
+                    <option>Partenaire Formation</option>
+                </select>
+            </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+            <div class="mfield">
+                <label>Pays</label>
+                <input type="text" id="fCountry" placeholder="Ex: Tunisie" />
+            </div>
+            <div class="mfield">
+                <label>Site Web</label>
+                <input type="url" id="fWebsite" placeholder="https://..." />
+            </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+            <div class="mfield">
+                <label>Personne de contact</label>
+                <input type="text" id="fContact" placeholder="Nom du contact" />
+            </div>
+            <div class="mfield">
+                <label>Email de contact</label>
+                <input type="email" id="fContactEmail" placeholder="contact@@..." />
+            </div>
+        </div>
+
+        <div class="mfield" style="margin-bottom:14px">
+            <label>Témoignage / Description</label>
+            <textarea id="fDescription" rows="3" placeholder="Ce que ce partenaire dit de TUNAV..."></textarea>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+            <div class="mfield">
+                <label>URL Logo</label>
+                <input type="url" id="fLogoUrl" placeholder="https://... ou /uploads/partners/..." />
+            </div>
+            <div class="mfield">
+                <label>Ordre d'affichage</label>
+                <input type="number" id="fOrder" value="0" min="0" />
+            </div>
+        </div>
+
+        <div class="mfield" style="margin-bottom:20px">
+            <label class="checkbox-label">
+                <input type="checkbox" id="fIsActive" checked />
+                <span>Partenaire actif (visible sur le site)</span>
+            </label>
+        </div>
+
+        <div class="modal-actions">
+            <button class="btn btn-outline" onclick="closeModal()">Annuler</button>
+            <button class="btn btn-primary" onclick="savePartner()">Enregistrer</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL UPLOAD LOGO -->
+<div class="modal-overlay" id="logoModal">
+    <div class="modal-box" style="max-width:400px">
+        <button class="modal-close-btn" onclick="closeLogoModal()" title="Fermer">✕</button>
+        <h3>Uploader un logo</h3>
+
+        <input type="hidden" id="logoPartnerId" />
+
+        <div class="mfield" style="margin-bottom:20px">
+            <label>Fichier image (PNG, JPG, SVG)</label>
+            <input type="file" id="logoFile" accept="image/*" />
+        </div>
+
+        <div id="logoUploadMsg" style="display:none;padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:14px"></div>
+
+        <div class="modal-actions">
+            <button class="btn btn-outline" onclick="closeLogoModal()">Annuler</button>
+            <button class="btn btn-primary" onclick="uploadLogo()">Uploader</button>
+        </div>
+    </div>
+</div>
+
+@@section Scripts {
+<style>
+    .page-header { margin-bottom: 24px; }
+    .page-header h1 { font-size: 26px; font-weight: 700; color: #1e2d5a; margin: 0 0 6px 0; letter-spacing: -0.3px; }
+    .page-header p { font-size: 14px; color: #6b7db3; margin: 0; }
+
+    .stats-row { display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
+    .stat-card { flex: 1; min-width: 100px; text-align: center; padding: 16px 24px !important; }
+    .stat-card strong { display: block; font-size: 28px; font-weight: 700; color: #1e2d5a; margin-bottom: 4px; }
+    .stat-card span { font-size: 13px; color: #6b7db3; font-weight: 500; }
+
+    .search-input { padding: 8px 12px; border: 1.5px solid #dce4f5; border-radius: 8px; font-size: 13px; color: #1e2d5a; outline: none; width: 200px; font-family: 'Inter', sans-serif; }
+    .search-input:focus { border-color: #00c8d4; }
+
+    .modal-close-btn { position: absolute; top: 16px; right: 16px; background: none; border: none; font-size: 20px; cursor: pointer; color: #6b7db3; line-height: 1; padding: 4px 8px; border-radius: 6px; transition: background 0.2s; }
+    .modal-close-btn:hover { background: #f0f4ff; color: #1e2d5a; }
+    .modal-box { position: relative; }
+
+    .mfield label { display: block; font-size: 12px; font-weight: 500; color: #6b7db3; margin-bottom: 5px; }
+    .mfield input, .mfield textarea, .mfield select {
+        width: 100%; padding: 10px 12px; border: 1.5px solid #dce4f5; border-radius: 8px;
+        font-size: 14px; font-family: 'Inter', sans-serif; outline: none; color: #1e2d5a;
+        transition: border-color 0.2s; background: white; box-sizing: border-box;
+    }
+    .mfield input:focus, .mfield textarea:focus, .mfield select:focus { border-color: #00c8d4; }
+    .mfield input[type="file"] { padding: 7px 12px; }
+    .mfield textarea { resize: vertical; }
+    .checkbox-label { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; color: #1e2d5a; font-weight: 500; }
+    .checkbox-label input[type="checkbox"] { width: auto; accent-color: #00c8d4; }
+
+    .logo-av {
+        width: 38px; height: 38px; border-radius: 8px; background: #e8edf8;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 14px; font-weight: 700; color: #1e2d5a; flex-shrink: 0;
+    }
+</style>
+<script>
+const API_P = '/api/partners';
+const token = localStorage.getItem('tunav_token') || '';
+const headers = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token };
+let allPartners = [];
+
+async function loadPartners() {
+    try {
+        const res = await fetch(API_P, { headers });
+        allPartners = await res.json();
+        renderTable(allPartners);
+        document.getElementById('totalCount').textContent = allPartners.length;
+        document.getElementById('activeCount').textContent = allPartners.filter(p => p.isActive).length;
+        document.getElementById('inactiveCount').textContent = allPartners.filter(p => !p.isActive).length;
+    } catch(e) {
+        document.getElementById('partnersBody').innerHTML = '<tr class="empty-row"><td colspan="8">Erreur de chargement.</td></tr>';
+    }
+}
+
+function renderTable(partners) {
+    const tbody = document.getElementById('partnersBody');
+    if (!partners.length) {
+        tbody.innerHTML = '<tr class="empty-row"><td colspan="8">Aucun partenaire. Cliquez sur "+ Ajouter un partenaire".</td></tr>';
+        return;
+    }
+    tbody.innerHTML = partners.map(p => `
+        <tr>
+            <td>
+                ${p.logoUrl
+                    ? `<img src="${p.logoUrl}" style="height:36px;max-width:70px;object-fit:contain;border-radius:4px" onerror="this.style.display='none'" />`
+                    : `<div class="logo-av">${escapeHtml(p.name.charAt(0))}</div>`
+                }
+            </td>
+            <td><strong style="color:#1e2d5a">${escapeHtml(p.name)}</strong></td>
+            <td style="color:#6b7db3">${escapeHtml(p.partnerType) || '—'}</td>
+            <td style="color:#6b7db3">${escapeHtml(p.country) || '—'}</td>
+            <td>
+                <div style="color:#1e2d5a">${escapeHtml(p.contactPerson) || '—'}</div>
+                <div style="font-size:11px;color:#6b7db3">${escapeHtml(p.contactEmail) || ''}</div>
+            </td>
+            <td style="color:#6b7db3">${p.displayOrder}</td>
+            <td>
+                <span style="display:inline-block;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;${p.isActive ? 'background:#e8f5e9;color:#2e7d32' : 'background:#f5f5f5;color:#757575'}">
+                    ${p.isActive ? 'Actif' : 'Inactif'}
+                </span>
+            </td>
+            <td>
+                <div style="display:flex;gap:6px;flex-wrap:wrap">
+                    <button class="btn btn-outline btn-sm" onclick="openLogoModal(${p.id})" title="Uploader logo">🖼️</button>
+                    <button class="btn btn-outline btn-sm" onclick="openEdit(${p.id})">Modifier</button>
+                    <button class="btn btn-outline btn-sm"
+                        style="${p.isActive ? 'border-color:#ffc107;color:#856404' : 'border-color:#00b894;color:#00704a'}"
+                        onclick="togglePartner(${p.id})">
+                        ${p.isActive ? 'Désactiver' : 'Activer'}
+                    </button>
+                    <button class="btn btn-danger btn-sm" onclick="deletePartner(${p.id})">Supprimer</button>
+                </div>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function filterTable() {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    renderTable(allPartners.filter(p =>
+        p.name.toLowerCase().includes(q) ||
+        (p.country || '').toLowerCase().includes(q) ||
+        (p.partnerType || '').toLowerCase().includes(q)
+    ));
+}
+
+function openAddModal() {
+    document.getElementById('modalTitle').textContent = 'Ajouter un partenaire';
+    document.getElementById('editId').value = '';
+    ['fName','fCountry','fWebsite','fContact','fContactEmail','fDescription','fLogoUrl'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('fType').value = '';
+    document.getElementById('fOrder').value = 0;
+    document.getElementById('fIsActive').checked = true;
+    document.getElementById('formError').style.display = 'none';
+    document.getElementById('partnerModal').classList.add('show');
+}
+
+function openEdit(id) {
+    const p = allPartners.find(x => x.id === id);
+    if (!p) return;
+    document.getElementById('modalTitle').textContent = 'Modifier le partenaire';
+    document.getElementById('editId').value = p.id;
+    document.getElementById('fName').value = p.name;
+    document.getElementById('fType').value = p.partnerType || '';
+    document.getElementById('fCountry').value = p.country || '';
+    document.getElementById('fWebsite').value = p.website || '';
+    document.getElementById('fContact').value = p.contactPerson || '';
+    document.getElementById('fContactEmail').value = p.contactEmail || '';
+    document.getElementById('fDescription').value = p.description || '';
+    document.getElementById('fLogoUrl').value = p.logoUrl || '';
+    document.getElementById('fOrder').value = p.displayOrder;
+    document.getElementById('fIsActive').checked = p.isActive;
+    document.getElementById('formError').style.display = 'none';
+    document.getElementById('partnerModal').classList.add('show');
+}
+
+function closeModal() { document.getElementById('partnerModal').classList.remove('show'); }
+
+async function savePartner() {
+    document.getElementById('formError').style.display = 'none';
+    const id = document.getElementById('editId').value;
+    const body = {
+        name: document.getElementById('fName').value.trim(),
+        partnerType: document.getElementById('fType').value,
+        country: document.getElementById('fCountry').value.trim(),
+        website: document.getElementById('fWebsite').value.trim(),
+        contactPerson: document.getElementById('fContact').value.trim(),
+        contactEmail: document.getElementById('fContactEmail').value.trim(),
+        description: document.getElementById('fDescription').value.trim(),
+        logoUrl: document.getElementById('fLogoUrl').value.trim() || null,
+        displayOrder: parseInt(document.getElementById('fOrder').value) || 0,
+        isActive: document.getElementById('fIsActive').checked
+    };
+    if (!body.name) { showErr('Le nom est obligatoire.'); return; }
+    const url = id ? API_P + '/' + id : API_P;
+    const method = id ? 'PUT' : 'POST';
+    try {
+        const res = await fetch(url, { method, headers, body: JSON.stringify(body) });
+        if (res.ok) { closeModal(); loadPartners(); }
+        else { const d = await res.json(); showErr(d.message || 'Erreur lors de la sauvegarde.'); }
+    } catch(e) { showErr('Erreur réseau.'); }
+}
+
+async function togglePartner(id) {
+    await fetch(API_P + '/' + id + '/toggle', { method: 'PATCH', headers });
+    loadPartners();
+}
+
+async function deletePartner(id) {
+    if (!confirm('Supprimer ce partenaire ?')) return;
+    await fetch(API_P + '/' + id, { method: 'DELETE', headers });
+    loadPartners();
+}
+
+function openLogoModal(id) {
+    document.getElementById('logoPartnerId').value = id;
+    document.getElementById('logoFile').value = '';
+    document.getElementById('logoUploadMsg').style.display = 'none';
+    document.getElementById('logoModal').classList.add('show');
+}
+function closeLogoModal() { document.getElementById('logoModal').classList.remove('show'); }
+
+async function uploadLogo() {
+    const id = document.getElementById('logoPartnerId').value;
+    const file = document.getElementById('logoFile').files[0];
+    if (!file) { alert('Veuillez choisir un fichier.'); return; }
+    const formData = new FormData();
+    formData.append('file', file);
+    const res = await fetch(API_P + '/' + id + '/logo', { method: 'POST', headers: { 'Authorization': 'Bearer ' + token }, body: formData });
+    const msg = document.getElementById('logoUploadMsg');
+    msg.style.display = 'block';
+    if (res.ok) {
+        msg.style.cssText = 'display:block;background:#f0fff4;border:1px solid #b7ebc4;color:#1e7e34;padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:14px';
+        msg.textContent = '✅ Logo uploadé avec succès !';
+        setTimeout(() => { closeLogoModal(); loadPartners(); }, 1200);
+    } else {
+        msg.style.cssText = 'display:block;background:#fff0f0;border:1px solid #ffc5c5;color:#d63031;padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:14px';
+        msg.textContent = '❌ Erreur lors de l\'upload.';
+    }
+}
+
+function showErr(msg) {
+    const el = document.getElementById('formError');
+    el.textContent = msg; el.style.display = 'block';
+}
+
+function escapeHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+loadPartners();
+</script>
+}

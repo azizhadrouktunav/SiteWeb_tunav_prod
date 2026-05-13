@@ -1,0 +1,435 @@
+<!-- ═══════════════════════════════════════════════════════════════════════
+     PÔLE FORMATION — Page publique
+     Deux boutons → deux modals → deux CollaborationType différents
+════════════════════════════════════════════════════════════════════════ -->
+
+<!-- ── HERO ──────────────────────────────────────────────────────────────── -->
+<section class="pf-hero">
+  <div class="pf-hero-pattern"></div>
+  <div class="pf-hero__inner">
+    <span class="pf-badge">Pôle Formation Professionnelle</span>
+    <h1 class="pf-hero__title">Pôle Formation<br>TUNAV</h1>
+    <p class="pf-hero__sub">
+      Devenez notre partenaire formation et contribuez au développement
+      des compétences de nos employés. Ensemble, bâtissons les talents de demain.
+    </p>
+    <div class="pf-hero-cta">
+      <button class="pf-btn pf-btn--outline" (click)="openCollabModal()">
+        👥 Devenir Partenaire Formation
+      </button>
+      <button class="pf-btn pf-btn--outline-light" (click)="openFormationModal()">
+        🎓 Demander une Formation
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- ── ÉTABLISSEMENTS PARTENAIRES (depuis API) ──────────────────────────── -->
+<div class="pf-section-wrap pf-section-wrap--partners">
+  <section class="pf-section">
+    <div class="pf-section__badge">👥 Nos Partenaires</div>
+    <h2 class="pf-section__title">Établissements Partenaires</h2>
+    <p class="pf-section__sub">Découvrez nos centres et établissements de formation partenaires</p>
+
+    @if (isLoadingPartners()) {
+      <div class="pf-loading">
+        <div class="pf-spinner"></div>
+        <span>Chargement des partenaires...</span>
+      </div>
+    } @else if (partners().length === 0) {
+      <div class="pf-empty">
+        <span>🤝</span>
+        <p>Aucun partenaire pour le moment.</p>
+      </div>
+    } @else {
+      <!-- Ticker infini : les cartes sont dupliquées pour un défilement sans fin -->
+      <div class="pf-partners-ticker">
+        <div class="pf-partners-track">
+
+          <!-- ── Première copie ── -->
+          @for (p of partners(); track p.id) {
+            <div class="pf-partner-card">
+              <div class="pf-partner-card__img"
+                   [style.backgroundImage]="'url(' + getPartnerImage(p) + ')'">
+                <div class="pf-partner-card__overlay"></div>
+                <div class="pf-partner-card__top">
+                  <span class="pf-partner-card__icon">{{ p.icon || '🎓' }}</span>
+                </div>
+                <div class="pf-partner-card__bottom">
+                  <div class="pf-partner-card__name">{{ p.name }}</div>
+                  <div class="pf-partner-card__domain">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+                    </svg>
+                    {{ p.domain }}
+                  </div>
+                  <div class="pf-partner-card__certified">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                      <polyline points="20,6 9,17 4,12"/>
+                    </svg>
+                    Partenaire certifié
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+
+          <!-- ── Deuxième copie (pour le seamless loop) ── -->
+          @for (p of partners(); track p.id + '_dup') {
+            <div class="pf-partner-card" aria-hidden="true">
+              <div class="pf-partner-card__img"
+                   [style.backgroundImage]="'url(' + getPartnerImage(p) + ')'">
+                <div class="pf-partner-card__overlay"></div>
+                <div class="pf-partner-card__top">
+                  <span class="pf-partner-card__icon">{{ p.icon || '🎓' }}</span>
+                </div>
+                <div class="pf-partner-card__bottom">
+                  <div class="pf-partner-card__name">{{ p.name }}</div>
+                  <div class="pf-partner-card__domain">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+                    </svg>
+                    {{ p.domain }}
+                  </div>
+                  <div class="pf-partner-card__certified">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                      <polyline points="20,6 9,17 4,12"/>
+                    </svg>
+                    Partenaire certifié
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+
+        </div>
+      </div>
+    }
+  </section>
+</div>
+
+<!-- ── TÉMOIGNAGES (depuis API) ────────────────────────────────────────────── -->
+<div class="pf-testi-section">
+
+  <!-- Header centré -->
+  <div class="pf-testi-section__header pf-reveal">
+    <h2 class="pf-testi-section__title">Ce Que Disent <span>Nos Employés</span></h2>
+    <p class="pf-testi-section__sub">
+      Découvrez les retours d'expérience de ceux qui ont bénéficié de nos programmes de formation
+    </p>
+  </div>
+
+  @if (isLoadingTestimonials()) {
+    <div class="pf-loading">
+      <div class="pf-spinner"></div>
+      <span>Chargement des témoignages...</span>
+    </div>
+  } @else if (testimonials().length === 0) {
+    <div class="pf-empty">
+      <span>💬</span>
+      <p>Aucun témoignage pour le moment.</p>
+    </div>
+  } @else {
+    <div class="pf-testi-grid2">
+      @for (t of testimonials(); track t.id; let i = $index) {
+        <article class="pf-tc2 pf-reveal"
+                 [class.pf-reveal-delay-1]="i % 3 === 0"
+                 [class.pf-reveal-delay-2]="i % 3 === 1"
+                 [class.pf-reveal-delay-3]="i % 3 === 2">
+
+          <!-- Avatar rond en haut centré -->
+          <div class="pf-tc2__avatar-wrap">
+            <div class="pf-tc2__avatar">
+              @if (t.avatar && t.avatar.startsWith('http')) {
+                <img [src]="t.avatar" [alt]="t.authorName" />
+              } @else {
+                <span>{{ t.authorName.charAt(0).toUpperCase() }}</span>
+              }
+            </div>
+          </div>
+
+          <!-- Badge TÉMOIGNAGE CLIENTS avec lignes -->
+          <div class="pf-tc2__badge">
+            <span class="pf-tc2__badge-line"></span>
+            <span class="pf-tc2__badge-text">Témoignage<br>Employé</span>
+            <span class="pf-tc2__badge-line"></span>
+          </div>
+
+          <!-- Nom en majuscules -->
+          <h3 class="pf-tc2__name">{{ t.authorName }}</h3>
+
+          <!-- Étoiles dorées -->
+          <div class="pf-tc2__stars">
+            @for (s of [1,2,3,4,5]; track s) {
+              <svg [class.filled]="s <= t.rating"
+                   width="18" height="18" viewBox="0 0 24 24" stroke-width="1.5">
+                <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/>
+              </svg>
+            }
+          </div>
+
+          <!-- Texte -->
+          <blockquote class="pf-tc2__content">{{ t.content }}</blockquote>
+
+          <!-- Rôle + entreprise en bas -->
+          <div class="pf-tc2__footer">
+            <span class="pf-tc2__role">{{ t.authorRole }}</span>
+            @if (t.company) {
+              <span class="pf-tc2__company">{{ t.company }}</span>
+            }
+          </div>
+
+        </article>
+      }
+    </div>
+  }
+
+</div>
+
+<!-- ── CTA BAS DE PAGE ────────────────────────────────────────────────────── -->
+<section class="pf-cta">
+  <div class="pf-cta__icon">🎓</div>
+  <h2>Rejoignez Notre Réseau de Partenaires</h2>
+  <p>Collaborez avec TUNAV IT Groupe pour offrir des formations d'excellence à nos employés</p>
+
+  <div class="pf-cta__actions">
+   
+    <!-- Formulaire 2 : Demande de formation -->
+    <button class="pf-btn pf-btn--outline-light" (click)="openFormationModal()">
+      📋 Proposer une formation
+    </button>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     MODAL 1 — FORMULAIRE DE COLLABORATION
+     CollaborationType = "Collaboration"
+     → backoffice onglet "Demandes de collaboration"
+════════════════════════════════════════════════════════════════════════════ -->
+<div class="pf-modal-overlay" *ngIf="showCollabModal()" (click)="closeCollabModal()">
+  <div class="pf-modal" (click)="$event.stopPropagation()">
+
+    <button class="pf-modal__close" (click)="closeCollabModal()">✕</button>
+
+    <!-- Succès -->
+    <div class="pf-success" *ngIf="collabSuccess()">
+      <div class="pf-success__icon">✅</div>
+      <h3>Demande envoyée !</h3>
+      <p>Votre demande de collaboration a bien été reçue. Nous vous contacterons prochainement.</p>
+      <button class="pf-btn pf-btn--primary" (click)="closeCollabModal()">Fermer</button>
+    </div>
+
+    <!-- Formulaire -->
+    <ng-container *ngIf="!collabSuccess()">
+      <div class="pf-modal__header">
+        <span class="pf-modal__icon">🎓</span>
+        <div>
+          <h3>Formulaire de Collaboration</h3>
+          <p>Remplissez ce formulaire pour devenir notre partenaire formation</p>
+        </div>
+      </div>
+
+      <div class="pf-error-banner" *ngIf="collabError()">{{ collabError() }}</div>
+
+      <div class="pf-form">
+
+        <!-- Nom de l'établissement -->
+        <div class="pf-field">
+          <label>🏢 Nom de l'établissement *</label>
+          <input type="text" [(ngModel)]="collabForm.organization"
+                 placeholder="Ex: Centre de Formation Professionnelle XYZ"
+                 [class.pf-field--error]="collabErrors['organization']" />
+          <span class="pf-field-err" *ngIf="collabErrors['organization']">{{ collabErrors['organization'] }}</span>
+        </div>
+
+        <!-- Responsable -->
+        <div class="pf-field">
+          <label>👤 Responsable *</label>
+          <input type="text" [(ngModel)]="collabForm.fullName"
+                 placeholder="Nom complet du responsable"
+                 [class.pf-field--error]="collabErrors['fullName']" />
+          <span class="pf-field-err" *ngIf="collabErrors['fullName']">{{ collabErrors['fullName'] }}</span>
+        </div>
+
+        <!-- Téléphone + Email -->
+        <div class="pf-row">
+          <div class="pf-field">
+            <label>📞 Téléphone *</label>
+            <input type="tel" [(ngModel)]="collabForm.phone"
+                   placeholder="+216 XX XXX XXX"
+                   [class.pf-field--error]="collabErrors['phone']" />
+            <span class="pf-field-err" *ngIf="collabErrors['phone']">{{ collabErrors['phone'] }}</span>
+          </div>
+          <div class="pf-field">
+            <label>✉ Email *</label>
+            <input type="email" [(ngModel)]="collabForm.email"
+                   placeholder="contact@exemple.com"
+                   [class.pf-field--error]="collabErrors['email']" />
+            <span class="pf-field-err" *ngIf="collabErrors['email']">{{ collabErrors['email'] }}</span>
+          </div>
+        </div>
+
+        <!-- Adresse -->
+        <div class="pf-field">
+          <label>📍 Adresse</label>
+          <input type="text" [(ngModel)]="collabForm.address"
+                 placeholder="Adresse complète de l'établissement" />
+        </div>
+
+        <!-- Description -->
+        <div class="pf-field">
+          <label>📄 Description de la formation proposée *</label>
+          <textarea rows="4" [(ngModel)]="collabForm.message"
+                    placeholder="Décrivez les formations que vous proposez (domaines, durée, public cible, etc.)"
+                    [class.pf-field--error]="collabErrors['message']"></textarea>
+          <span class="pf-field-err" *ngIf="collabErrors['message']">{{ collabErrors['message'] }}</span>
+        </div>
+
+        <!-- Pièces jointes -->
+        <div class="pf-field">
+          <label>📎 Pièces jointes</label>
+          <label class="pf-upload">
+            <input type="file" multiple accept=".pdf,.doc,.docx,.jpg,.png"
+                   (change)="onCollabFileChange($event)" style="display:none" />
+            <span class="pf-upload__icon">⬆</span>
+            <span *ngIf="collabFiles.length === 0">Cliquez pour télécharger vos documents</span>
+            <span *ngIf="collabFiles.length > 0">{{ collabFiles.length }} fichier(s) sélectionné(s)</span>
+            <small>PDF, DOC, DOCX, JPG, PNG (max. 10MB par fichier)</small>
+          </label>
+        </div>
+
+        <button class="pf-btn pf-btn--primary pf-btn--full"
+                (click)="submitCollab()"
+                [disabled]="isSubmittingCollab()">
+          {{ isSubmittingCollab() ? 'Envoi en cours...' : 'Envoyer la Demande ✈' }}
+        </button>
+      </div>
+    </ng-container>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     MODAL 2 — FORMULAIRE DE FORMATION
+     CollaborationType = "DemandeFormation"
+     → backoffice onglet "Demandes de formation"
+════════════════════════════════════════════════════════════════════════════ -->
+<div class="pf-modal-overlay" *ngIf="showFormationModal()" (click)="closeFormationModal()">
+  <div class="pf-modal" (click)="$event.stopPropagation()">
+
+    <button class="pf-modal__close" (click)="closeFormationModal()">✕</button>
+
+    <!-- Succès -->
+    <div class="pf-success" *ngIf="formationSuccess()">
+      <div class="pf-success__icon">✅</div>
+      <h3>Demande envoyée !</h3>
+      <p>Votre demande de formation a bien été reçue. Nous vous contacterons prochainement.</p>
+      <button class="pf-btn pf-btn--primary" (click)="closeFormationModal()">Fermer</button>
+    </div>
+
+    <!-- Formulaire -->
+    <ng-container *ngIf="!formationSuccess()">
+      <div class="pf-modal__header">
+        <span class="pf-modal__icon">📋</span>
+        <div>
+          <h3>Demande de Formation</h3>
+          <p>Proposez un programme de formation à nos équipes RH</p>
+        </div>
+      </div>
+
+      <div class="pf-error-banner" *ngIf="formationError()">{{ formationError() }}</div>
+
+      <div class="pf-form">
+
+        <!-- Nom de l'établissement -->
+        <div class="pf-field">
+          <label>🏢 Nom de l'établissement *</label>
+          <input type="text" [(ngModel)]="formationForm.organization"
+                 placeholder="Ex: Centre de Formation Professionnelle XYZ"
+                 [class.pf-field--error]="formationErrors['organization']" />
+          <span class="pf-field-err" *ngIf="formationErrors['organization']">{{ formationErrors['organization'] }}</span>
+        </div>
+
+        <!-- Responsable -->
+        <div class="pf-field">
+          <label>👤 Responsable *</label>
+          <input type="text" [(ngModel)]="formationForm.fullName"
+                 placeholder="Nom complet du responsable"
+                 [class.pf-field--error]="formationErrors['fullName']" />
+          <span class="pf-field-err" *ngIf="formationErrors['fullName']">{{ formationErrors['fullName'] }}</span>
+        </div>
+
+        <!-- Téléphone + Email -->
+        <div class="pf-row">
+          <div class="pf-field">
+            <label>📞 Téléphone *</label>
+            <input type="tel" [(ngModel)]="formationForm.phone"
+                   placeholder="+216 XX XXX XXX"
+                   [class.pf-field--error]="formationErrors['phone']" />
+            <span class="pf-field-err" *ngIf="formationErrors['phone']">{{ formationErrors['phone'] }}</span>
+          </div>
+          <div class="pf-field">
+            <label>✉ Email *</label>
+            <input type="email" [(ngModel)]="formationForm.email"
+                   placeholder="contact@exemple.com"
+                   [class.pf-field--error]="formationErrors['email']" />
+            <span class="pf-field-err" *ngIf="formationErrors['email']">{{ formationErrors['email'] }}</span>
+          </div>
+        </div>
+
+        <!-- Adresse -->
+        <div class="pf-field">
+          <label>📍 Adresse</label>
+          <input type="text" [(ngModel)]="formationForm.address"
+                 placeholder="Adresse complète de l'établissement" />
+        </div>
+
+        <!-- Description de la formation -->
+        <div class="pf-field">
+          <label>📄 Description de la formation proposée *</label>
+          <textarea rows="4" [(ngModel)]="formationForm.message"
+                    placeholder="Décrivez les formations que vous proposez (domaines, durée, public cible, etc.)"
+                    [class.pf-field--error]="formationErrors['message']"></textarea>
+          <span class="pf-field-err" *ngIf="formationErrors['message']">{{ formationErrors['message'] }}</span>
+        </div>
+
+        <!-- Homologation MALEK – CNFCPP (spécifique form 2) -->
+        <div class="pf-field">
+          <label>🏅 Homologation MALEK – CNFCPP *</label>
+          <div class="pf-radio-group">
+            <label class="pf-radio">
+              <input type="radio" name="homologue" [value]="true"
+                     [(ngModel)]="formationForm.isHomologueMalek" />
+              Oui
+            </label>
+            <label class="pf-radio">
+              <input type="radio" name="homologue" [value]="false"
+                     [(ngModel)]="formationForm.isHomologueMalek" />
+              Non
+            </label>
+          </div>
+        </div>
+
+        <!-- Pièces jointes -->
+        <div class="pf-field">
+          <label>📎 Pièces jointes</label>
+          <label class="pf-upload">
+            <input type="file" multiple accept=".pdf,.doc,.docx,.jpg,.png"
+                   (change)="onFormationFileChange($event)" style="display:none" />
+            <span class="pf-upload__icon">⬆</span>
+            <span *ngIf="formationFiles.length === 0">Cliquez pour télécharger vos documents</span>
+            <span *ngIf="formationFiles.length > 0">{{ formationFiles.length }} fichier(s) sélectionné(s)</span>
+            <small>PDF, DOC, DOCX, JPG, PNG (max. 10MB par fichier)</small>
+          </label>
+        </div>
+
+        <button class="pf-btn pf-btn--primary pf-btn--full"
+                (click)="submitFormation()"
+                [disabled]="isSubmittingFormation()">
+          {{ isSubmittingFormation() ? 'Envoi en cours...' : 'Envoyer la Demande ✈' }}
+        </button>
+      </div>
+    </ng-container>
+  </div>
+</div>

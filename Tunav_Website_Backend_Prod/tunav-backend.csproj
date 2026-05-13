@@ -1,0 +1,73 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<UseAppHost>false</UseAppHost>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<NoWarn>$(NoWarn);1591</NoWarn> <!-- Suppress warnings for missing XML comments -->
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="MailKit" Version="4.15.1" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.0">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.0" />
+		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+
+		<!-- JWT Authentication — US-A06 -->
+		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0" />
+		<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.3.1" />
+		<PackageReference Include="Microsoft.IdentityModel.Tokens" Version="7.3.1" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<!-- Nested copy of the repo under Tunav_Website_Backend_Prod\; must not compile with this project (CS8802). -->
+		<Compile Remove="obj\**\*.cs" />
+		<Compile Remove="obj_build\**\*.cs" />
+		<Compile Remove="obj_temp\**\*.cs" />
+		<Compile Remove="bin\**\*.cs" />
+		<Compile Remove="bin_alt\**\*.cs" />
+		<Compile Remove="bin_build\**\*.cs" />
+		<Compile Remove="obj_cursor\**\*.cs" />
+		<Compile Remove="bin_cursor\**\*.cs" />
+		<Compile Remove="Migrations_Archive_Postgres_*\**\*.cs" />
+		<Compile Remove="artifacts\**\*.cs" />
+		<Content Remove="artifacts\**\*" />
+		<EmbeddedResource Remove="artifacts\**\*" />
+		<None Remove="artifacts\**\*" />
+		<Content Remove="obj\**\*" />
+		<Content Remove="obj_build\**\*" />
+		<EmbeddedResource Remove="obj\**\*" />
+		<EmbeddedResource Remove="obj_build\**\*" />
+		<None Remove="obj\**\*" />
+		<None Remove="obj_build\**\*" />
+		<Content Remove="obj_temp\**\*" />
+		<EmbeddedResource Remove="obj_temp\**\*" />
+		<None Remove="obj_temp\**\*" />
+		<Content Remove="bin_alt\**\*" />
+		<EmbeddedResource Remove="bin_alt\**\*" />
+		<None Remove="bin_alt\**\*" />
+		<Content Remove="bin_build\**\*" />
+		<EmbeddedResource Remove="bin_build\**\*" />
+		<None Remove="bin_build\**\*" />
+		<Content Remove="obj_cursor\**\*" />
+		<EmbeddedResource Remove="obj_cursor\**\*" />
+		<None Remove="obj_cursor\**\*" />
+		<Content Remove="bin_cursor\**\*" />
+		<EmbeddedResource Remove="bin_cursor\**\*" />
+		<None Remove="bin_cursor\**\*" />
+		<Compile Remove="obj_verify\**\*.cs" />
+		<Content Remove="obj_verify\**\*" />
+		<EmbeddedResource Remove="obj_verify\**\*" />
+		<None Remove="obj_verify\**\*" />
+		<Compile Remove="bin_verify\**\*.cs" />
+		<Content Remove="bin_verify\**\*" />
+		<EmbeddedResource Remove="bin_verify\**\*" />
+		<None Remove="bin_verify\**\*" />
+	</ItemGroup>
+
+</Project>

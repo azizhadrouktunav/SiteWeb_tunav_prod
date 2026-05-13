@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36717.8 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "tunav-backend", "tunav-backend.csproj", "{9B024324-33CA-4BFD-A847-E1E53C7E92DE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9B024324-33CA-4BFD-A847-E1E53C7E92DE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9B024324-33CA-4BFD-A847-E1E53C7E92DE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9B024324-33CA-4BFD-A847-E1E53C7E92DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9B024324-33CA-4BFD-A847-E1E53C7E92DE}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D9DB4563-90B6-4D59-A033-F2D566C6B992}
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,202 @@
+<!-- ═══════════════════════════════════════════════════════════
+     NEWSLETTERS TUNAV — Frontoffice
+════════════════════════════════════════════════════════════ -->
+
+<!-- ── HERO ─────────────────────────────────────────────────── -->
+<section class="nl-hero">
+  <div class="nl-hero__grid"></div>
+  <div class="nl-hero__orb nl-hero__orb--1"></div>
+  <div class="nl-hero__orb nl-hero__orb--2"></div>
+
+  <div class="nl-hero__content">
+    <div class="nl-hero__icon">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5">
+        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+        <polyline points="22,6 12,13 2,6"/>
+      </svg>
+      <span class="nl-hero__badge">⚡ Newsletter Mensuelle</span>
+    </div>
+
+    <h1 class="nl-hero__title">Newsletters <span>TUNAV</span></h1>
+    <p class="nl-hero__sub">
+      Restez informé des dernières actualités, innovations et tendances<br>en GPS tracking et IoT
+    </p>
+
+    <!-- Formulaire abonnement -->
+    @if (subSuccess()) {
+      <div class="nl-sub-success">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+        Merci ! Vous êtes abonné à la newsletter TUNAV.
+      </div>
+    } @else {
+      <div class="nl-sub-form">
+        <div class="nl-sub-input-wrap">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+            <polyline points="22,6 12,13 2,6"/>
+          </svg>
+          <input type="email" [(ngModel)]="email" placeholder="Votre adresse email" />
+        </div>
+        <div class="nl-sub-input-wrap">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91A16 16 0 0 0 15 17l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+          </svg>
+          <input type="tel" [(ngModel)]="phone" placeholder="Numéro WhatsApp" />
+        </div>
+        <button class="nl-sub-btn" (click)="subscribe()" [disabled]="isSubscribing()">
+          @if (isSubscribing()) { <span class="nl-spinner"></span> } @else { S'abonner ✈ }
+        </button>
+      </div>
+      @if (subError()) {
+        <p class="nl-sub-error">{{ subError() }}</p>
+      }
+      <div class="nl-hero__badges">
+        <span>✅ Pas de spam</span>
+        <span>✅ 1 newsletter par mois</span>
+        <span>✅ Désabonnement en 1 clic</span>
+        <span>✅ Données protégées</span>
+      </div>
+    }
+  </div>
+</section>
+
+<!-- ── POURQUOI S'ABONNER ─────────────────────────────────────── -->
+<section class="nl-why">
+  <div class="nl-container">
+    <h2 class="nl-why__title nl-reveal">Pourquoi S'abonner ?</h2>
+    <div class="nl-why__grid">
+      <div class="nl-why__card nl-reveal">
+        <div class="nl-why__icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#00c8d4" stroke-width="1.8">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+            <polyline points="22,6 12,13 2,6"/>
+          </svg>
+        </div>
+        <h3>Contenu Exclusif</h3>
+        <p>Accédez en avant-première à nos analyses et insights technologiques</p>
+      </div>
+      <div class="nl-why__card nl-reveal">
+        <div class="nl-why__icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#00c8d4" stroke-width="1.8">
+            <rect x="3" y="4" width="18" height="18" rx="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/>
+            <line x1="8" y1="2" x2="8" y2="6"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+        </div>
+        <h3>Actualités Mensuelles</h3>
+        <p>Recevez chaque mois les dernières nouvelles et tendances du secteur</p>
+      </div>
+      <div class="nl-why__card nl-reveal">
+        <div class="nl-why__icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#00c8d4" stroke-width="1.8">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+        </div>
+        <h3>Ressources Gratuites</h3>
+        <p>Téléchargez nos guides, whitepapers et études de cas</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── ARCHIVES ───────────────────────────────────────────────── -->
+<section class="nl-archives">
+  <div class="nl-container">
+    <div class="nl-archives__header nl-reveal">
+      <h2>Archives des Newsletters</h2>
+      <p>Consultez et téléchargez nos précédentes éditions</p>
+    </div>
+
+    @if (isLoading()) {
+      <div class="nl-loading">
+        <div class="nl-spinner-lg"></div>
+        <span>Chargement des newsletters...</span>
+      </div>
+    } @else if (newsletters().length === 0) {
+      <div class="nl-empty">
+        <span>📭</span>
+        <p>Aucune newsletter disponible pour le moment.<br>Revenez bientôt !</p>
+      </div>
+    } @else {
+      <div class="nl-grid">
+        @for (nl of newsletters(); track nl.id; let i = $index) {
+          <div class="nl-card nl-reveal">
+
+            <!-- Image -->
+            <div class="nl-card__img-wrap">
+              @if (nl.coverImageUrl) {
+                <img [src]="nl.coverImageUrl" [alt]="nl.title" class="nl-card__img" />
+              } @else {
+                <div class="nl-card__img-placeholder">
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                    <polyline points="22,6 12,13 2,6"/>
+                  </svg>
+                </div>
+              }
+              <div class="nl-card__date-badge">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="4" width="18" height="18" rx="2"/>
+                  <line x1="16" y1="2" x2="16" y2="6"/>
+                  <line x1="8" y1="2" x2="8" y2="6"/>
+                  <line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
+                {{ formatDate(nl.publishedAt) }}
+              </div>
+            </div>
+
+            <!-- Corps -->
+            <div class="nl-card__body">
+              <h3 class="nl-card__title">{{ nl.title }}</h3>
+              @if (nl.summary) {
+                <p class="nl-card__summary">{{ nl.summary }}</p>
+              }
+
+              @if (nl.tocLines && nl.tocLines.length > 0) {
+                <div class="nl-card__toc">
+                  <strong>Au sommaire :</strong>
+                  <ul>
+                    @for (line of nl.tocLines; track $index) {
+                      <li>
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#00c8d4" stroke-width="2.5">
+                          <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                        {{ line }}
+                      </li>
+                    }
+                  </ul>
+                </div>
+              }
+            </div>
+
+            <!-- Footer -->
+            @if (nl.pdfUrl) {
+              <button class="nl-card__download" (click)="downloadPdf(nl.pdfUrl, nl.title)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="7 10 12 15 17 10"/>
+                  <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                Télécharger (PDF)
+              </button>
+            } @else {
+              <div class="nl-card__download nl-card__download--disabled">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="7 10 12 15 17 10"/>
+                  <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                PDF bientôt disponible
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+  </div>
+</section>

@@ -1,0 +1,546 @@
+<section class="packs-page">
+  <header class="packs-hero">
+    <div class="packs-hero__inner">
+      <h1>Nos Packs</h1>
+      <p>
+        Comparez nos packs et trouvez celui qui correspond à vos besoins
+      </p>
+    </div>
+  </header>
+
+  @if (catalog().length > 0) {
+    <section class="packs-selector" aria-label="Sélection de solution">
+      <div class="packs-selector__inner">
+        @for (solution of catalog(); track solution.solutionId) {
+          <button
+            type="button"
+            class="packs-selector__pill"
+            [class.packs-selector__pill--active]="isSolutionSelected(solution)"
+            [style.--solution-start]="getSolutionTheme(solution.packThemeKey).start"
+            [style.--solution-end]="getSolutionTheme(solution.packThemeKey).end"
+            (click)="selectSolution(solution)"
+          >
+            <span class="packs-selector__icon" aria-hidden="true">
+              <app-pack-icon [iconKey]="solution.packIconKey" />
+            </span>
+            <span class="packs-selector__label">{{ solution.solutionTitle }}</span>
+          </button>
+        }
+      </div>
+    </section>
+  }
+
+  <div class="packs-shell">
+    @if (flashMessage(); as flash) {
+      <div
+        class="packs-alert"
+        [class.packs-alert--success]="flash.type === 'success'"
+        [class.packs-alert--error]="flash.type === 'error'"
+      >
+        <p>{{ flash.text }}</p>
+        <button
+          type="button"
+          class="packs-alert__close"
+          aria-label="Fermer le message"
+          (click)="closeFlashMessage()"
+        >
+          &times;
+        </button>
+      </div>
+    }
+
+    @if (loading()) {
+      <section class="packs-state">
+        <div class="packs-state__spinner" aria-hidden="true"></div>
+        <p>Chargement du catalogue des packs...</p>
+      </section>
+    } @else if (error()) {
+      <section class="packs-state packs-state--error">
+        <h2>Catalogue indisponible</h2>
+        <p>{{ error() }}</p>
+      </section>
+    } @else if (selectedSolution(); as solution) {
+      <section class="packs-comparison">
+        <div class="packs-comparison__intro">
+          <div
+            class="packs-comparison__badge"
+            [style.--solution-start]="getSolutionTheme(solution.packThemeKey).start"
+            [style.--solution-end]="getSolutionTheme(solution.packThemeKey).end"
+          >
+            <span class="packs-comparison__badge-icon" aria-hidden="true">
+              <app-pack-icon [iconKey]="solution.packIconKey" />
+            </span>
+            <span class="packs-comparison__badge-label">{{ solution.solutionTitle }}</span>
+          </div>
+
+          <p>Comparez les {{ solution.packs.length }} packs disponibles</p>
+        </div>
+
+        <div class="packs-table-wrap">
+          <table class="packs-table">
+            <thead>
+              <tr>
+                <th class="packs-table__feature-head">
+                  <div class="packs-table__feature-head-content">
+                    <span class="packs-table__feature-kicker">Fonctionnalités</span>
+                    <p>Comparez les options disponibles</p>
+                  </div>
+                </th>
+
+                @for (pack of selectedPacks(); track pack.id) {
+                  <th
+                    class="packs-table__pack-head"
+                    [style.--pack-start]="getPackTheme(pack.themeKey).start"
+                    [style.--pack-end]="getPackTheme(pack.themeKey).end"
+                  >
+                    <div class="packs-table__pack-card">
+                      <div class="packs-table__pack-title">
+                        {{ formatPackName(pack.name) }}
+                      </div>
+                      <p class="packs-table__pack-description">
+                        {{ pack.description }}
+                      </p>
+                      <button
+                        type="button"
+                        class="packs-table__pack-cta"
+                        (click)="openDemoModal(pack)"
+                      >
+                        Demander une Démo
+                      </button>
+                    </div>
+                  </th>
+                }
+              </tr>
+            </thead>
+
+            <tbody>
+              @for (feature of comparisonFeatures(); track feature) {
+                <tr>
+                  <th scope="row" class="packs-table__feature-cell">
+                    <div class="packs-table__feature-cell-content">
+                      <span class="packs-table__feature-dot" aria-hidden="true"></span>
+                      <span>{{ feature }}</span>
+                    </div>
+                  </th>
+
+                  @for (pack of selectedPacks(); track pack.id) {
+                    <td class="packs-table__availability-cell">
+                      @if (hasFeature(pack, feature)) {
+                        <span class="packs-table__availability packs-table__availability--yes">
+                          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                            <path
+                              d="M6 12.5 10 16.5 18 8.5"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2.6"
+                            />
+                          </svg>
+                        </span>
+                      } @else {
+                        <span class="packs-table__availability packs-table__availability--no">
+                          <span></span>
+                        </span>
+                      }
+                    </td>
+                  }
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="packs-custom-cta">
+        <div class="packs-custom-cta__spark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" focusable="false">
+            <path
+              d="M12 2.5 14.2 9l6.3 2.2L14.2 13.4 12 20l-2.2-6.6-6.3-2.2L9.8 9 12 2.5Zm7.1 1.7.8 2.4 2.3.8-2.3.8-.8 2.4-.8-2.4-2.3-.8 2.3-.8.8-2.4Z"
+              fill="currentColor"
+            />
+          </svg>
+        </div>
+
+        <div class="packs-custom-cta__content">
+          <h2>Créez Votre Pack Personnalisé</h2>
+          <p>
+            Aucun pack ne correspond exactement à vos besoins ? Sélectionnez
+            uniquement les fonctionnalités que vous souhaitez et nous créerons
+            une offre sur mesure pour vous.
+          </p>
+
+          <button
+            type="button"
+            class="packs-custom-cta__button"
+            (click)="openCustomPackModal()"
+          >
+            <span aria-hidden="true">
+              <svg viewBox="0 0 24 24" focusable="false">
+                <path
+                  d="M7 3.5h10A1.5 1.5 0 0 1 18.5 5v14A1.5 1.5 0 0 1 17 20.5H7A1.5 1.5 0 0 1 5.5 19V5A1.5 1.5 0 0 1 7 3.5Zm2 4h6M9 11h6M9 14.5h4"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="1.8"
+                />
+              </svg>
+            </span>
+            Personnaliser Mon Pack
+          </button>
+        </div>
+
+        <div class="packs-custom-cta__spark packs-custom-cta__spark--right" aria-hidden="true">
+          <svg viewBox="0 0 24 24" focusable="false">
+            <path
+              d="M12 2.5 14.2 9l6.3 2.2L14.2 13.4 12 20l-2.2-6.6-6.3-2.2L9.8 9 12 2.5Zm7.1 1.7.8 2.4 2.3.8-2.3.8-.8 2.4-.8-2.4-2.3-.8 2.3-.8.8-2.4Z"
+              fill="currentColor"
+            />
+          </svg>
+        </div>
+      </section>
+    }
+  </div>
+</section>
+
+@if (demoModalOpen() && selectedPack(); as pack) {
+  <div class="packs-modal-backdrop" (click)="closeDemoModal()">
+    <section
+      class="packs-modal packs-modal--demo"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="packs-demo-title"
+      (click)="$event.stopPropagation()"
+    >
+      <button
+        type="button"
+        class="packs-modal__close"
+        aria-label="Fermer la fenêtre"
+        (click)="closeDemoModal()"
+      >
+        &times;
+      </button>
+
+      <div class="packs-modal__header">
+        <h2 id="packs-demo-title">Demander une Démo</h2>
+
+        @if (selectedSolution(); as solution) {
+          <p class="packs-modal__subtitle">
+            {{ solution.solutionTitle }} - {{ pack.name }}
+          </p>
+        }
+      </div>
+
+      <form class="packs-modal__form" novalidate (ngSubmit)="submitDemoRequest()">
+        @if (demoSubmitError()) {
+          <div class="packs-modal__submit-error">{{ demoSubmitError() }}</div>
+        }
+
+        <div class="packs-modal__grid packs-modal__grid--two">
+          <label class="packs-modal__field">
+            <span>Nom *</span>
+            <input
+              type="text"
+              name="demoLastName"
+              [(ngModel)]="demoForm.lastName"
+              [class.is-invalid]="demoErrors.lastName"
+            />
+            @if (demoErrors.lastName) {
+              <small>{{ demoErrors.lastName }}</small>
+            }
+          </label>
+
+          <label class="packs-modal__field">
+            <span>Prénom *</span>
+            <input
+              type="text"
+              name="demoFirstName"
+              [(ngModel)]="demoForm.firstName"
+              [class.is-invalid]="demoErrors.firstName"
+            />
+            @if (demoErrors.firstName) {
+              <small>{{ demoErrors.firstName }}</small>
+            }
+          </label>
+        </div>
+
+        <label class="packs-modal__field">
+          <span>Adresse Email *</span>
+          <input
+            type="email"
+            name="demoEmail"
+            [(ngModel)]="demoForm.email"
+            [class.is-invalid]="demoErrors.email"
+          />
+          @if (demoErrors.email) {
+            <small>{{ demoErrors.email }}</small>
+          }
+        </label>
+
+        <fieldset class="packs-modal__choice-group">
+          <legend>Est-ce que vous avez un numéro WhatsApp ? *</legend>
+
+          <div class="packs-modal__choice-options">
+            <label
+              class="packs-modal__choice"
+              [class.packs-modal__choice--active]="demoForm.hasWhatsapp === 'yes'"
+            >
+              <input
+                type="radio"
+                name="demoWhatsapp"
+                [checked]="demoForm.hasWhatsapp === 'yes'"
+                (change)="setDemoWhatsapp('yes')"
+              />
+              <span class="packs-modal__choice-indicator"></span>
+              <span>Oui</span>
+            </label>
+
+            <label
+              class="packs-modal__choice"
+              [class.packs-modal__choice--active]="demoForm.hasWhatsapp === 'no'"
+            >
+              <input
+                type="radio"
+                name="demoWhatsapp"
+                [checked]="demoForm.hasWhatsapp === 'no'"
+                (change)="setDemoWhatsapp('no')"
+              />
+              <span class="packs-modal__choice-indicator"></span>
+              <span>Non</span>
+            </label>
+          </div>
+
+          @if (demoErrors.hasWhatsapp) {
+            <small class="packs-modal__choice-error">{{ demoErrors.hasWhatsapp }}</small>
+          }
+        </fieldset>
+
+        @if (demoForm.hasWhatsapp === 'yes') {
+          <label class="packs-modal__field">
+            <span>Numéro WhatsApp *</span>
+            <input
+              type="tel"
+              name="demoWhatsappNumber"
+              placeholder="+216 XX XXX XXX"
+              [(ngModel)]="demoForm.whatsappNumber"
+              [class.is-invalid]="demoErrors.whatsappNumber"
+            />
+            @if (demoErrors.whatsappNumber) {
+              <small>{{ demoErrors.whatsappNumber }}</small>
+            }
+          </label>
+        }
+
+        <div class="packs-modal__actions">
+          <button
+            type="button"
+            class="packs-modal__button packs-modal__button--ghost"
+            (click)="closeDemoModal()"
+          >
+            Annuler
+          </button>
+
+          <button
+            type="submit"
+            class="packs-modal__button packs-modal__button--primary"
+            [disabled]="submittingDemo()"
+          >
+            @if (submittingDemo()) {
+              Envoi...
+            } @else {
+              Envoyer
+            }
+          </button>
+        </div>
+      </form>
+    </section>
+  </div>
+}
+
+@if (customModalOpen() && selectedSolution(); as solution) {
+  <div class="packs-modal-backdrop" (click)="closeCustomPackModal()">
+    <section
+      class="packs-modal packs-modal--custom"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="packs-custom-title"
+      (click)="$event.stopPropagation()"
+    >
+      <button
+        type="button"
+        class="packs-modal__close"
+        aria-label="Fermer la fenêtre"
+        (click)="closeCustomPackModal()"
+      >
+        &times;
+      </button>
+
+      <div class="packs-modal__header">
+        <h2 id="packs-custom-title">Pack Personnalisé - {{ solution.solutionTitle }}</h2>
+        <p class="packs-modal__subtitle packs-modal__subtitle--compact">
+          Sélectionnez les fonctionnalités souhaitées et remplissez vos
+          informations pour recevoir un devis personnalisé.
+        </p>
+      </div>
+
+      <form class="packs-modal__form packs-modal__form--custom" novalidate (ngSubmit)="submitCustomPackRequest()">
+        @if (customSubmitError()) {
+          <div class="packs-modal__submit-error">{{ customSubmitError() }}</div>
+        }
+
+        <section class="packs-feature-picker">
+          <div class="packs-feature-picker__header">
+            <div class="packs-feature-picker__title">
+              <span class="packs-feature-picker__title-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" focusable="false">
+                  <path
+                    d="M6.5 12.5 10 16l7.5-7.5"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2.2"
+                  />
+                </svg>
+              </span>
+              <span>Fonctionnalités sélectionnées ({{ selectedCustomFeatures().length }})</span>
+            </div>
+          </div>
+
+          <div class="packs-feature-picker__list">
+            @for (feature of comparisonFeatures(); track feature) {
+              <button
+                type="button"
+                class="packs-feature-option"
+                [class.packs-feature-option--selected]="isCustomFeatureSelected(feature)"
+                (click)="toggleCustomFeature(feature)"
+              >
+                <span class="packs-feature-option__checkbox" aria-hidden="true">
+                  @if (isCustomFeatureSelected(feature)) {
+                    <svg viewBox="0 0 24 24" focusable="false">
+                      <path
+                        d="M6.5 12.5 10 16l7.5-7.5"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2.4"
+                      />
+                    </svg>
+                  }
+                </span>
+                <span>{{ feature }}</span>
+              </button>
+            }
+          </div>
+
+          @if (customFeatureError) {
+            <p class="packs-feature-picker__warning">{{ customFeatureError }}</p>
+          }
+        </section>
+
+        <section class="packs-contact-block">
+          <h3>Vos informations de contact</h3>
+
+          <div class="packs-modal__grid packs-modal__grid--two">
+            <label class="packs-modal__field">
+              <span>Nom *</span>
+              <input
+                type="text"
+                name="customContactName"
+                placeholder="Votre nom complet"
+                [(ngModel)]="customPackForm.contactName"
+                [class.is-invalid]="customPackErrors.contactName"
+              />
+              @if (customPackErrors.contactName) {
+                <small>{{ customPackErrors.contactName }}</small>
+              }
+            </label>
+
+            <label class="packs-modal__field">
+              <span>Entreprise *</span>
+              <input
+                type="text"
+                name="customCompany"
+                placeholder="Nom de votre entreprise"
+                [(ngModel)]="customPackForm.company"
+                [class.is-invalid]="customPackErrors.company"
+              />
+              @if (customPackErrors.company) {
+                <small>{{ customPackErrors.company }}</small>
+              }
+            </label>
+          </div>
+
+          <div class="packs-modal__grid packs-modal__grid--two">
+            <label class="packs-modal__field">
+              <span>Email *</span>
+              <input
+                type="email"
+                name="customEmail"
+                placeholder="votre.email@exemple.com"
+                [(ngModel)]="customPackForm.email"
+                [class.is-invalid]="customPackErrors.email"
+              />
+              @if (customPackErrors.email) {
+                <small>{{ customPackErrors.email }}</small>
+              }
+            </label>
+
+            <label class="packs-modal__field">
+              <span>Téléphone *</span>
+              <input
+                type="tel"
+                name="customPhone"
+                placeholder="+216 XX XXX XXX"
+                [(ngModel)]="customPackForm.phone"
+                [class.is-invalid]="customPackErrors.phone"
+              />
+              @if (customPackErrors.phone) {
+                <small>{{ customPackErrors.phone }}</small>
+              }
+            </label>
+          </div>
+
+          <label class="packs-modal__field">
+            <span>Message ou besoins spécifiques (optionnel)</span>
+            <textarea
+              rows="4"
+              name="customMessage"
+              placeholder="Décrivez vos besoins spécifiques ou posez vos questions..."
+              [(ngModel)]="customPackForm.message"
+              [class.is-invalid]="customPackErrors.message"
+            ></textarea>
+            @if (customPackErrors.message) {
+              <small>{{ customPackErrors.message }}</small>
+            }
+          </label>
+        </section>
+
+        <div class="packs-modal__actions packs-modal__actions--split">
+          <button
+            type="button"
+            class="packs-modal__button packs-modal__button--ghost"
+            [disabled]="submittingCustom()"
+            (click)="closeCustomPackModal()"
+          >
+            Annuler
+          </button>
+
+          <button
+            type="submit"
+            class="packs-modal__button packs-modal__button--primary"
+            [disabled]="submittingCustom() || selectedCustomFeatures().length === 0"
+          >
+            @if (submittingCustom()) {
+              Envoi en cours...
+            } @else {
+              Envoyer Ma Demande
+            }
+          </button>
+        </div>
+      </form>
+    </section>
+  </div>
+}

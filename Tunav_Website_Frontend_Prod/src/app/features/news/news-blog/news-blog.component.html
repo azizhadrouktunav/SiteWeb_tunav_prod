@@ -1,0 +1,108 @@
+<div class="blog-page">
+
+  <!-- HERO FILTRES -->
+  <div class="blog-hero">
+    <div class="hero-pattern"></div>
+    <div class="container">
+      <div class="blog-hero__tag">Blog TUNAV</div>
+      <h1>Actualités & Insights</h1>
+      <p>Découvrez nos derniers articles, tendances technologiques et success stories</p>
+
+      <div class="blog-filters">
+        <div class="search-wrap">
+          <span class="search-icon">🔍</span>
+          <input
+            type="text"
+            [(ngModel)]="searchText"
+            placeholder="Rechercher un article..."
+            class="search-input"
+          />
+        </div>
+
+        <div class="category-filters">
+          <button
+            class="cat-btn"
+            [class.cat-btn--active]="selectedCategory === ''"
+            (click)="selectedCategory = ''; loadArticles()">
+            <span class="cat-icon">⬆</span> Tout
+          </button>
+          @for (cat of categories(); track cat.id) {
+            <button
+              class="cat-btn"
+              [class.cat-btn--active]="selectedCategory === cat.id.toString()"
+              (click)="selectedCategory = cat.id.toString(); loadArticles()">
+              {{ cat.name }}
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+
+    @if (isLoading()) {
+      <div class="blog-loading">
+        <div class="spinner"></div>
+        <p>Chargement des articles...</p>
+      </div>
+    } @else if (filteredArticles().length === 0) {
+      <div class="blog-empty">
+        <p>Aucun article trouvé.</p>
+      </div>
+    } @else {
+      <!-- GRILLE ARTICLES -->
+      <div class="articles-grid blog-section-reveal">
+        @for (article of filteredArticles(); track article.id; let i = $index) {
+          <div
+            class="article-card blog-reveal"
+            [class]="'article-card blog-reveal blog-reveal-delay-' + ((i % 3) + 1)"
+            (click)="navigateToArticle(article.id)"
+            style="cursor:pointer"
+            role="button"
+            [attr.aria-label]="'Lire l\'article : ' + article.title">
+
+            <!-- IMAGE + BADGE CATÉGORIE + DATE -->
+            <div class="article-card__img">
+              @if (article.coverImageUrl) {
+                <img [src]="article.coverImageUrl" [alt]="article.title" />
+              } @else {
+                <div class="article-card__placeholder"></div>
+              }
+              @if (article.categoryName) {
+                <span class="article-card__cat">{{ article.categoryName }}</span>
+              }
+              <div class="article-card__date">
+                <span class="date-icon">📅</span>
+                {{ formatDate(article.publishedAt || article.createdAt) }}
+              </div>
+            </div>
+
+            <!-- BODY -->
+            <div class="article-card__body">
+              <h3>{{ article.title }}</h3>
+
+              @if (article.summary) {
+                <p class="article-card__summary">{{ article.summary }}</p>
+              }
+
+              <!-- TAGS -->
+              @if (article.sector) {
+                <div class="article-card__tags">
+                  @for (tag of getSectorTags(article.sector); track tag) {
+                    <span class="article-tag">🏷️ {{ tag }}</span>
+                  }
+                </div>
+              }
+
+              <div class="article-card__footer">
+                <span class="read-more">Lire la suite →</span>
+              </div>
+            </div>
+
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>

@@ -1,0 +1,505 @@
+@{
+    ViewData["Title"] = "Gestion des Newsletters";
+    ViewData["ActivePage"] = "Newsletters";
+    Layout = "~/Views/Shared/_LayoutBackoffice.cshtml";
+}
+
+<div class="page-header">
+    <h1>Newsletters</h1>
+    <p>Gérez les éditions de la newsletter TUNAV Insights</p>
+</div>
+
+<style>
+    .modal-close-btn { position:absolute; top:16px; right:16px; background:none; border:none; font-size:20px; cursor:pointer; color:#6b7db3; line-height:1; padding:4px 8px; border-radius:6px; transition:background 0.2s; }
+    .modal-close-btn:hover { background:#f0f4ff; color:#1e2d5a; }
+    .modal-box { position:relative; }
+    .nl-tab-bar {
+        display: flex;
+        gap: 0;
+        border-bottom: 2px solid #e8edf8;
+        margin-bottom: 24px;
+    }
+    .nl-tab-btn {
+        background: none;
+        border: none;
+        border-bottom: 2px solid transparent;
+        margin-bottom: -2px;
+        padding: 12px 24px;
+        font-size: 14px;
+        font-weight: 500;
+        color: #6b7db3;
+        cursor: pointer;
+        transition: color .2s, border-color .2s;
+        white-space: nowrap;
+    }
+    .nl-tab-btn:hover { color: #1e2d5a; }
+    .nl-tab-btn--active {
+        color: #00c8d4;
+        border-bottom-color: #00c8d4;
+        font-weight: 600;
+    }
+</style>
+
+<div class="nl-tab-bar">
+    <button class="nl-tab-btn nl-tab-btn--active" id="tabNewsletters" onclick="switchTab('newsletters')">
+        Newsletters (<span id="nlCount">0</span>)
+    </button>
+    <button class="nl-tab-btn" id="tabSubscribers" onclick="switchTab('subscribers')">
+        Abonnés (<span id="subCount">0</span>)
+    </button>
+</div>
+
+<!-- ── PANEL NEWSLETTERS ──────────────────────────────────────────────────── -->
+<div id="panelNewsletters">
+<div class="card">
+    <div class="card-header">
+        <h2>Archives</h2>
+        <button class="btn btn-primary" onclick="openAdd()">+ Nouvelle édition</button>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Titre</th>
+                <th>Date de publication</th>
+                <th>Sommaire</th>
+                <th>PDF</th>
+                <th>Statut</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="nlTable">
+            <tr class="loading-row"><td colspan="6">Chargement...</td></tr>
+        </tbody>
+    </table>
+</div>
+</div>
+
+<!-- ── PANEL ABONNÉS ─────────────────────────────────────────────────────── -->
+<div id="panelSubscribers" style="display:none">
+<div class="card">
+    <div class="card-header">
+        <h2>Liste des abonnés</h2>
+        <span style="font-size:13px;color:#6b7db3">Personnes abonnées depuis le site public</span>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Email</th>
+                <th>WhatsApp</th>
+                <th>Date d'abonnement</th>
+                <th>Statut</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="subTable">
+            <tr class="loading-row"><td colspan="5">Chargement...</td></tr>
+        </tbody>
+    </table>
+</div>
+</div>
+
+<!-- ── MODAL NEWSLETTER ──────────────────────────────────────────────────────── -->
+<div class="modal-overlay" id="modalNl">
+    <div class="modal-box" style="max-width:600px;max-height:90vh;overflow-y:auto">
+        <button class="modal-close-btn" onclick="closeModal()" title="Fermer">✕</button>
+        <h3 id="modalTitle">Nouvelle Newsletter</h3>
+        <div id="nlMsg" style="display:none;padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:14px"></div>
+
+        <div class="modal-field">
+            <label>Titre <span style="color:#e53e3e">*</span></label>
+            <input type="text" id="nlTitle" placeholder="Ex: TUNAV Insights - Avril 2026" />
+        </div>
+        <div class="modal-field">
+            <label>Résumé / Description</label>
+            <textarea id="nlSummary" rows="2"
+                style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:'Inter',sans-serif;outline:none;color:var(--text);resize:vertical"
+                placeholder="Courte description de l'édition..."></textarea>
+        </div>
+        <div class="modal-field">
+            <label>Sommaire <span style="font-size:11px;color:var(--muted)">(un item par ligne)</span></label>
+            <textarea id="nlToc" rows="5"
+                style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:'Inter',sans-serif;outline:none;color:var(--text);resize:vertical"
+                placeholder="Nouvelle solution Fleet Management&#10;Success Story client&#10;Tendances IoT 2026&#10;..."></textarea>
+        </div>
+        <div class="modal-field">
+            <label>URL Image de couverture</label>
+            <input type="text" id="nlCover" placeholder="https://..." />
+        </div>
+        <div class="modal-field">
+            <label>Fichier PDF</label>
+            <!-- Zone d'upload -->
+            <div id="nlPdfUploadZone" style="border:2px dashed var(--border);border-radius:10px;padding:18px;text-align:center;cursor:pointer;transition:border-color .2s;background:var(--off)"
+                 onclick="document.getElementById('nlPdfFile').click()"
+                 ondragover="event.preventDefault();this.style.borderColor='var(--cyan)'"
+                 ondragleave="this.style.borderColor='var(--border)'"
+                 ondrop="handleDrop(event)">
+                <div id="nlPdfLabel" style="font-size:13px;color:var(--muted)">
+                    📄 Cliquez ou glissez votre PDF ici <br>
+                    <span style="font-size:11px">(Max 20 MB)</span>
+                </div>
+                <div id="nlPdfProgress" style="display:none;margin-top:10px">
+                    <div style="height:4px;background:var(--border);border-radius:4px;overflow:hidden">
+                        <div id="nlPdfBar" style="height:100%;width:0%;background:linear-gradient(90deg,#1a2a6c,#00c8d4);transition:width .3s"></div>
+                    </div>
+                    <span id="nlPdfStatus" style="font-size:11px;color:var(--muted);margin-top:4px;display:block">Upload en cours...</span>
+                </div>
+            </div>
+            <input type="file" id="nlPdfFile" accept=".pdf" style="display:none" onchange="uploadPdf(this.files[0])" />
+            <!-- URL résultante (cachée, remplie automatiquement après upload) -->
+            <input type="hidden" id="nlPdf" />
+            <!-- Affichage de l'URL actuelle si edition -->
+            <div id="nlPdfCurrent" style="display:none;margin-top:8px;font-size:12px;color:var(--muted)"></div>
+        </div>
+        <div class="modal-field">
+            <label>Date de publication</label>
+            <input type="date" id="nlDate" />
+        </div>
+        <div class="modal-field" style="display:flex;align-items:center;gap:10px">
+            <input type="checkbox" id="nlActive" style="width:auto;margin:0" />
+            <label style="margin:0;cursor:pointer" for="nlActive">Visible sur le site (active)</label>
+        </div>
+
+        <div class="modal-actions">
+            <button class="btn btn-outline" onclick="closeModal()">Annuler</button>
+            <button class="btn btn-primary" id="btnSave" onclick="save()">Enregistrer</button>
+        </div>
+    </div>
+</div>
+
+<!-- ── MODAL SUPPRESSION ─────────────────────────────────────────────────────── -->
+<div class="modal-overlay" id="modalDelete">
+    <div class="modal-box" style="max-width:400px;text-align:center">
+        <button class="modal-close-btn" onclick="closeDelete()" title="Fermer">✕</button>
+        <h3>Confirmer la suppression</h3>
+        <p id="deleteMsg" style="font-size:14px;color:var(--muted);margin:14px 0 24px"></p>
+        <div style="display:flex;gap:10px;justify-content:center">
+            <button class="btn btn-outline" onclick="closeDelete()">Annuler</button>
+            <button class="btn btn-danger" id="btnDelete" onclick="confirmDelete()">Supprimer</button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    const API = 'http://localhost:5057';
+    let editingId = null;
+    let deletingId = null;
+
+    /* ── ONGLETS ─────────────────────────────────────────────────────────── */
+    function switchTab(tab) {
+        document.getElementById('panelNewsletters').style.display = tab === 'newsletters' ? '' : 'none';
+        document.getElementById('panelSubscribers').style.display = tab === 'subscribers'  ? '' : 'none';
+        document.getElementById('tabNewsletters').classList.toggle('nl-tab-btn--active', tab === 'newsletters');
+        document.getElementById('tabSubscribers').classList.toggle('nl-tab-btn--active',  tab === 'subscribers');
+        if (tab === 'subscribers') loadSubscribers();
+    }
+
+    /* ── ABONNÉS ──────────────────────────────────────────────────────────── */
+    async function loadSubscribers() {
+        document.getElementById('subTable').innerHTML = '<tr class="loading-row"><td colspan="5">Chargement...</td></tr>';
+        try {
+            const res  = await fetch(`${API}/api/newsletter-subscribers`, { headers: authHeaders() });
+            if (!res.ok) { document.getElementById('subTable').innerHTML = '<tr class="empty-row"><td colspan="5">Erreur ' + res.status + '</td></tr>'; return; }
+            const list = await res.json();
+            document.getElementById('subCount').textContent = list.length;
+            document.getElementById('subTable').innerHTML = list.length
+                ? list.map(s => `
+                    <tr style="${!s.isActive ? 'opacity:0.5' : ''}">
+                        <td style="font-weight:600;color:#1e2d5a">${esc(s.email)}</td>
+                        <td style="color:#6b7db3">${s.phone ? esc(s.phone) : '<span style="color:#b0bdd8">—</span>'}</td>
+                        <td style="font-size:12px;color:#6b7db3">${fmtDate(s.subscribedAt)}</td>
+                        <td><span class="badge ${s.isActive ? 'badge-success' : 'badge-danger'}">${s.isActive ? 'Actif' : 'Désabonné'}</span></td>
+                        <td>
+                            <button class="btn btn-outline btn-sm"
+                                style="${s.isActive ? 'border-color:#e17055;color:#b3412a' : 'border-color:#00b894;color:#00704a'}"
+                                onclick="toggleSubscriber(${s.id}, ${s.isActive ? 'true' : 'false'}, '${esc(s.email)}')">
+                                ${s.isActive ? 'Désactiver' : 'Activer'}
+                            </button>
+                        </td>
+                    </tr>`).join('')
+                : '<tr class="empty-row"><td colspan="5">Aucun abonné pour le moment.</td></tr>';
+        } catch(e) {
+            document.getElementById('subTable').innerHTML = '<tr class="empty-row"><td colspan="5">Erreur réseau.</td></tr>';
+        }
+    }
+
+    function fmtDate(d) {
+        return new Date(d).toLocaleDateString('fr-FR', { day:'2-digit', month:'long', year:'numeric' });
+    }
+
+    function esc(str) {
+        return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    async function load() {
+        document.getElementById('nlTable').innerHTML = '<tr class="loading-row"><td colspan="6">Chargement...</td></tr>';
+        try {
+            const res  = await fetch(`${API}/api/newsletters`, { headers: authHeaders() });
+            const list = await res.json();
+            document.getElementById('nlCount').textContent = list.length;
+            document.getElementById('nlTable').innerHTML = list.length
+                ? list.map(n => `
+                    <tr>
+                        <td>
+                            <div style="display:flex;align-items:center;gap:10px">
+                                ${n.coverImageUrl
+                                    ? `<img src="${n.coverImageUrl}" style="width:48px;height:36px;object-fit:cover;border-radius:6px;border:1px solid var(--border)" onerror="this.style.display='none'" />`
+                                    : `<div style="width:48px;height:36px;background:var(--bg);border-radius:6px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:18px">📧</div>`}
+                                <div style="font-weight:600;color:var(--text)">${esc(n.title)}</div>
+                            </div>
+                        </td>
+                        <td style="white-space:nowrap;color:var(--muted);font-size:13px">${fmtDate(n.publishedAt)}</td>
+                        <td style="font-size:12px;color:var(--muted);max-width:200px">
+                            ${n.tocLines?.length
+                                ? n.tocLines.slice(0,3).map(l => `<div>• ${esc(l)}</div>`).join('') + (n.tocLines.length > 3 ? `<div style="color:var(--cyan)">+${n.tocLines.length - 3} autres</div>` : '')
+                                : '—'}
+                        </td>
+                        <td>
+                            ${n.pdfUrl
+                                ? `<a href="${n.pdfUrl}" target="_blank" class="btn btn-outline btn-sm" style="border-color:var(--cyan);color:var(--cyan)">📄 PDF</a>`
+                                : '<span style="color:var(--muted);font-size:12px">—</span>'}
+                        </td>
+                        <td>
+                            <span class="badge ${n.isActive ? 'badge-success' : 'badge-draft'}">
+                                ${n.isActive ? 'Active' : 'Masquée'}
+                            </span>
+                        </td>
+                        <td>
+                            <div style="display:flex;gap:5px;flex-wrap:wrap">
+                                <button class="btn btn-outline btn-sm" style="border-color:var(--cyan);color:var(--cyan)"
+                                    onclick="notifyEdition(${n.id},'${esc(n.title)}')">🔔 Notifier</button>
+                                <button class="btn btn-outline btn-sm" onclick="openEdit(${n.id})">Modifier</button>
+                                <button class="btn btn-outline btn-sm" style="${n.isActive ? 'border-color:#ffc107;color:#856404' : 'border-color:#00b894;color:#00704a'}"
+                                    onclick="toggle(${n.id})">${n.isActive ? 'Masquer' : 'Activer'}</button>
+                                <button class="btn btn-danger btn-sm" onclick="openDelete(${n.id},'${esc(n.title)}')">Suppr.</button>
+                            </div>
+                        </td>
+                    </tr>`).join('')
+                : '<tr class="empty-row"><td colspan="6">Aucune newsletter.</td></tr>';
+        } catch {
+            document.getElementById('nlTable').innerHTML = '<tr class="empty-row"><td colspan="6">Erreur de chargement.</td></tr>';
+        }
+    }
+
+    function openAdd() {
+        editingId = null;
+        document.getElementById('modalTitle').textContent = 'Nouvelle Newsletter';
+        document.getElementById('btnSave').textContent = 'Enregistrer';
+        ['nlTitle','nlSummary','nlToc','nlCover'].forEach(id => document.getElementById(id).value = '');
+        document.getElementById('nlPdf').value = '';
+        document.getElementById('nlDate').value = new Date().toISOString().split('T')[0];
+        document.getElementById('nlActive').checked = true;
+        resetPdfZone();
+        hideMsg();
+        document.getElementById('modalNl').classList.add('show');
+    }
+
+    async function openEdit(id) {
+        try {
+            const res = await fetch(`${API}/api/newsletters/${id}`, { headers: authHeaders() });
+            const n = await res.json();
+            editingId = id;
+            document.getElementById('modalTitle').textContent = 'Modifier la Newsletter';
+            document.getElementById('btnSave').textContent = 'Mettre à jour';
+            document.getElementById('nlTitle').value   = n.title || '';
+            document.getElementById('nlSummary').value = n.summary || '';
+            document.getElementById('nlToc').value     = n.tableOfContents || '';
+            document.getElementById('nlCover').value   = n.coverImageUrl || '';
+            document.getElementById('nlPdf').value     = n.pdfUrl || '';
+            document.getElementById('nlDate').value    = n.publishedAt ? n.publishedAt.split('T')[0] : '';
+            document.getElementById('nlActive').checked = n.isActive;
+            resetPdfZone();
+            // Afficher l'URL existante
+            if (n.pdfUrl) {
+                document.getElementById('nlPdfLabel').innerHTML = `✅ PDF actuel : <a href="${API}${n.pdfUrl.startsWith('/') ? '' : '/'}${esc(n.pdfUrl)}" target="_blank" style="color:var(--cyan)">${esc(n.pdfUrl.split('/').pop())}</a><br><span style="font-size:11px;color:var(--muted)">Cliquez pour remplacer</span>`;
+                const cur = document.getElementById('nlPdfCurrent');
+                cur.style.display = 'block';
+                cur.innerHTML = `📄 <a href="${API}${n.pdfUrl.startsWith('/') ? '' : '/'}${esc(n.pdfUrl)}" target="_blank" style="color:var(--cyan)">${esc(n.pdfUrl)}</a>`;
+            }
+            hideMsg();
+            document.getElementById('modalNl').classList.add('show');
+        } catch { alert("Erreur lors du chargement."); }
+    }
+
+    function resetPdfZone() {
+        document.getElementById('nlPdfLabel').innerHTML = '📄 Cliquez ou glissez votre PDF ici <br><span style="font-size:11px">(Max 20 MB)</span>';
+        document.getElementById('nlPdfProgress').style.display = 'none';
+        document.getElementById('nlPdfBar').style.width = '0%';
+        document.getElementById('nlPdfUploadZone').style.borderColor = 'var(--border)';
+        document.getElementById('nlPdfCurrent').style.display = 'none';
+    }
+
+    function handleDrop(event) {
+        event.preventDefault();
+        document.getElementById('nlPdfUploadZone').style.borderColor = 'var(--border)';
+        const file = event.dataTransfer.files[0];
+        if (file) uploadPdf(file);
+    }
+
+    async function uploadPdf(file) {
+        if (!file) return;
+        if (!file.name.endsWith('.pdf')) { showMsg('Seuls les fichiers PDF sont acceptés.', false); return; }
+        if (file.size > 20 * 1024 * 1024) { showMsg('Le fichier ne doit pas dépasser 20 MB.', false); return; }
+
+        // Afficher la barre de progression
+        document.getElementById('nlPdfProgress').style.display = 'block';
+        document.getElementById('nlPdfLabel').innerHTML = `📄 Upload de <strong>${esc(file.name)}</strong>...`;
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        // Upload avec XMLHttpRequest pour avoir la progression
+        return new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', `${API}/api/newsletters/upload-pdf`);
+
+            // Ajouter le token JWT
+            const token = localStorage.getItem('tunav_token');
+            if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+
+            xhr.upload.onprogress = (e) => {
+                if (e.lengthComputable) {
+                    const pct = Math.round((e.loaded / e.total) * 100);
+                    document.getElementById('nlPdfBar').style.width = pct + '%';
+                    document.getElementById('nlPdfStatus').textContent = `Upload en cours... ${pct}%`;
+                }
+            };
+
+            xhr.onload = () => {
+                if (xhr.status === 200) {
+                    const data = JSON.parse(xhr.responseText);
+                    document.getElementById('nlPdf').value = data.url;
+                    document.getElementById('nlPdfBar').style.width = '100%';
+                    document.getElementById('nlPdfStatus').textContent = '✅ Upload réussi !';
+                    document.getElementById('nlPdfLabel').innerHTML = `✅ <strong>${esc(file.name)}</strong> uploadé avec succès<br><span style="font-size:11px;color:var(--muted)">Cliquez pour changer</span>`;
+                    document.getElementById('nlPdfUploadZone').style.borderColor = '#00b894';
+                    resolve(data.url);
+                } else {
+                    let msg = 'Erreur upload.';
+                    try { msg = JSON.parse(xhr.responseText).message || msg; } catch {}
+                    showMsg(msg, false);
+                    resetPdfZone();
+                    reject(msg);
+                }
+            };
+
+            xhr.onerror = () => { showMsg('Erreur réseau lors de l\'upload.', false); resetPdfZone(); reject(); };
+            xhr.send(formData);
+        });
+    }
+
+    function closeModal() {
+        document.getElementById('modalNl').classList.remove('show');
+        editingId = null;
+    }
+
+    async function save() {
+        const title = document.getElementById('nlTitle').value.trim();
+        if (!title) { showMsg('Le titre est obligatoire.', false); return; }
+
+        const btn = document.getElementById('btnSave');
+        btn.disabled = true; btn.textContent = 'Enregistrement...';
+
+        const body = {
+            title,
+            summary:        document.getElementById('nlSummary').value.trim() || null,
+            tableOfContents:document.getElementById('nlToc').value.trim() || null,
+            coverImageUrl:  document.getElementById('nlCover').value.trim() || null,
+            pdfUrl:         document.getElementById('nlPdf').value.trim() || null,
+            publishedAt:    document.getElementById('nlDate').value || null,
+            isActive:       document.getElementById('nlActive').checked
+        };
+
+        const u = JSON.parse(localStorage.getItem('tunav_user') || '{}');
+        const url    = editingId ? `${API}/api/newsletters/${editingId}` : `${API}/api/newsletters?userId=${u.userId || 1}`;
+        const method = editingId ? 'PUT' : 'POST';
+
+        try {
+            const res = await fetch(url, { method, headers: authHeaders(), body: JSON.stringify(body) });
+            if (res.ok) { closeModal(); load(); }
+            else { const d = await res.json(); showMsg(d.message || 'Erreur.', false); }
+        } catch { showMsg('Erreur réseau.', false); }
+        finally { btn.disabled = false; btn.textContent = editingId ? 'Mettre à jour' : 'Enregistrer'; }
+    }
+
+    async function toggle(id) {
+        await fetch(`${API}/api/newsletters/${id}/toggle`, { method: 'PATCH', headers: authHeaders() });
+        load();
+    }
+
+    async function notifyEdition(id, title) {
+        if (!confirm(`Notifier tous les abonnés avec l'édition : ${title} ?`)) return;
+        showMsg('Envoi en cours de démarrage...', true);
+        try {
+            const res = await fetch(`${API}/api/newsletters/${id}/notify`, { method: 'POST', headers: authHeaders() });
+            const d = await res.json().catch(() => ({}));
+            if (res.status === 202 || res.ok) showMsg(d.message || 'Envoi démarré.', true);
+            else showMsg(d.message || `Erreur ${res.status}`, false);
+        } catch {
+            showMsg('Erreur réseau.', false);
+        }
+    }
+
+    async function toggleSubscriber(id, isActive, email) {
+        const action = isActive ? 'désactiver' : 'activer';
+        if (!confirm(`Voulez-vous ${action} l'abonné : ${email} ?`)) return;
+        try {
+            const res = await fetch(`${API}/api/newsletter-subscribers/${id}/toggle`, { method: 'PATCH', headers: authHeaders() });
+            const d = await res.json().catch(() => ({}));
+            if (!res.ok) {
+                showMsg(d.message || `Erreur ${res.status}`, false);
+                return;
+            }
+            showMsg(d.message || 'Statut mis à jour.', true);
+            loadSubscribers();
+        } catch {
+            showMsg('Erreur réseau.', false);
+        }
+    }
+
+    function openDelete(id, title) {
+        deletingId = id;
+        document.getElementById('deleteMsg').innerHTML = `Supprimer <strong>${esc(title)}</strong> ? Cette action est irréversible.`;
+        document.getElementById('modalDelete').classList.add('show');
+    }
+
+    function closeDelete() {
+        document.getElementById('modalDelete').classList.remove('show');
+        deletingId = null;
+    }
+
+    async function confirmDelete() {
+        if (!deletingId) return;
+        const btn = document.getElementById('btnDelete');
+        btn.disabled = true; btn.textContent = 'Suppression...';
+        try {
+            const res = await fetch(`${API}/api/newsletters/${deletingId}`, { method: 'DELETE', headers: authHeaders() });
+            if (res.ok || res.status === 204) { closeDelete(); load(); }
+            else alert('Erreur lors de la suppression.');
+        } catch { alert('Erreur réseau.'); }
+        finally { btn.disabled = false; btn.textContent = 'Supprimer'; }
+    }
+
+    function showMsg(text, ok) {
+        const el = document.getElementById('nlMsg');
+        el.textContent = text; el.style.display = 'block';
+        el.style.background = ok ? '#e6faf0' : '#fff0f0';
+        el.style.border = ok ? '1px solid #b2dfdb' : '1px solid #ffc5c5';
+        el.style.color  = ok ? '#00b894' : '#d63031';
+    }
+
+    function hideMsg() { document.getElementById('nlMsg').style.display = 'none'; }
+
+    function fmtDate(d) {
+        if (!d) return '—';
+        return new Date(d).toLocaleDateString('fr-FR', { day:'2-digit', month:'long', year:'numeric' });
+    }
+
+    function esc(str) {
+        if (!str) return '';
+        return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+
+    load();
+</script>
+}

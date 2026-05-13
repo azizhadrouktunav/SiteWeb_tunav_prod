@@ -1,0 +1,862 @@
+<!-- ══════════════════════════════════════════════════════════════════════
+     SECTION 1 — HERO CINÉMATIQUE (vidéo + slides auto)
+     ══════════════════════════════════════════════════════════════════════ -->
+<section class="hero-section">
+  <!-- Vidéo de fond -->
+  <video class="hero-video" autoplay muted loop playsinline poster="assets/hero-poster.jpg"
+    style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;opacity:.70">
+    <source src="assets/7021970_Smart_Transportation_3840x2160.mp4" type="video/mp4" />
+  </video>
+
+  <!-- Overlay gradient -->
+  <div class="hero-overlay"></div>
+
+  <!-- Grille décorative -->
+  <div class="hero-grid-lines"></div>
+
+  <!-- Orbes lumineux -->
+  <div class="hero-orb hero-orb--1"></div>
+  <div class="hero-orb hero-orb--2"></div>
+
+  <!-- Contenu principal -->
+  <div class="hero-content container">
+    <div class="hero-left hero-left--fullwidth">
+      <div class="hero-eyebrow">
+        <span class="hero-eyebrow-dot"></span>
+        {{ slides[activeSlide].tag }}
+      </div>
+      <h1 class="hero-title" [innerHTML]="slides[activeSlide].title"></h1>
+      <p class="hero-subtitle">{{ slides[activeSlide].subtitle }}</p>
+      <div class="hero-cta-row">
+        <a href="#contact" (click)="scrollToContact($event)" class="hero-btn hero-btn--primary">
+          Contactez-nous
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+        <a routerLink="/solutions" class="hero-btn hero-btn--ghost">Découvrir nos solutions</a>
+      </div>
+      <!-- Dots navigation -->
+      <div class="hero-dots">
+        @for (slide of slides; track $index; let i = $index) {
+          <button class="hero-dot" [class.hero-dot--active]="i === activeSlide" (click)="activeSlide = i"></button>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Scroll indicator -->
+  <div class="hero-scroll-hint">
+    <div class="hero-scroll-line"></div>
+    <span>Défiler</span>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     SECTION 2 — À PROPOS COMPLET (contenu de la page about sans hero/navbar)
+     ══════════════════════════════════════════════════════════════════════ -->
+
+<!-- NOTRE HISTOIRE -->
+<section class="history-section">
+  <div class="container">
+    <div class="section-header reveal">
+      <h2 class="section-title blue">Notre Histoire</h2>
+      <p class="section-sub">Une décennie d'innovation et de croissance au service de nos clients</p>
+    </div>
+
+    <div class="history-content">
+      <div class="history-text reveal-left">
+        <p>
+          <strong>TUNAV IT Groupe</strong> est né en 2004 de la vision de révolutionner la
+          gestion des flottes et des actifs en Tunisie grâce aux technologies IoT de pointe.
+        </p>
+        <p>
+          Depuis notre création, nous avons accompagné des centaines
+          d'entreprises dans leur transformation digitale, en proposant des
+          solutions innovantes adaptées aux besoins spécifiques du marché
+          tunisien et africain.
+        </p>
+        <p>
+          Notre équipe d'experts passionnés travaille chaque jour pour développer
+          des technologies qui simplifient la vie des entreprises et optimisent leurs
+          opérations. Nous combinons expertise technique, innovation continue et
+          service client d'excellence.
+        </p>
+        <p>
+          Aujourd'hui, TUNAV est reconnu comme le
+          <a href="#" class="link-cyan">leader des solutions IoT en Afrique du Nord</a>,
+          avec plus de 500 clients satisfaits et 10 000+ appareils déployés sur le terrain.
+        </p>
+        <div class="history-divider"></div>
+        <div class="history-stats">
+          <div class="h-stat"><strong>500+</strong><span>Clients satisfaits</span></div>
+          <div class="h-stat"><strong>10K+</strong><span>Appareils déployés</span></div>
+          <div class="h-stat"><strong>20+</strong><span>Années d'expérience</span></div>
+          <div class="h-stat"><strong>98%</strong><span>Satisfaction client</span></div>
+        </div>
+      </div>
+      <div class="history-image reveal-right">
+        <img
+          class="img-main"
+          src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=700&h=450&fit=crop"
+          alt="Equipe TUNAV"
+        />
+        <div class="img-badge">
+          <div class="badge-icon">🏆</div>
+          <div>
+            <strong>20+</strong>
+            <span>Années d'excellence</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MISSION & VISION -->
+<section class="mv-section">
+  <div class="container">
+    <div class="mv-grid">
+
+      <div class="mv-card reveal reveal-delay-1">
+        <div class="mv-icon-wrap" style="background: linear-gradient(135deg, #1a2a6c, #00c8d4)">
+          <span>🎯</span>
+        </div>
+        <h3>Notre Mission</h3>
+        <p>
+          Fournir des <strong class="text-cyan">solutions technologiques de pointe</strong>,
+          fiables et personnalisées qui permettent à nos clients d'optimiser leurs
+          opérations, réduire leurs coûts et améliorer leur efficacité opérationnelle.
+        </p>
+        <p>
+          Nous nous engageons à être le partenaire technologique de confiance
+          qui accompagne les entreprises tunisiennes et africaines dans leur
+          transformation digitale, en offrant un support client exceptionnel et
+          des innovations continues.
+        </p>
+      </div>
+
+      <div class="mv-card reveal reveal-delay-2">
+        <div class="mv-icon-wrap" style="background: linear-gradient(135deg, #00c8d4, #17d5e8)">
+          <span>👁️</span>
+        </div>
+        <h3>Notre Vision</h3>
+        <p>
+          Devenir le <a href="#" class="link-cyan">leader incontesté</a> des solutions
+          IoT et de tracking en Afrique du Nord et subsaharienne, en proposant des
+          technologies innovantes qui transforment la façon dont les entreprises gèrent
+          leurs actifs et leurs opérations.
+        </p>
+        <p>
+          Nous aspirons à créer un écosystème technologique où chaque
+          entreprise, quelle que soit sa taille, peut bénéficier de solutions IoT
+          avancées, accessibles et adaptées à ses besoins spécifiques.
+        </p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- VALEURS -->
+<section class="values-section">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-tag-pill">
+        <span>🏅</span> Nos Valeurs
+      </div>
+      <h2 class="section-title-large">
+        Les Piliers de Notre <span class="text-cyan">Engagement</span>
+      </h2>
+      <p class="section-sub">
+        Des valeurs fortes qui guident chacune de nos actions et définissent notre culture
+        d'entreprise.
+      </p>
+    </div>
+
+    <div class="values-grid">
+      @for (value of values; track value.title) {
+        <div class="value-card reveal-scale">
+          <div class="value-card-img">
+            <img [src]="value.image" [alt]="value.title" />
+          </div>
+          <div class="value-card-body">
+            <div class="value-icon-wrap" [style.background]="value.iconBg">
+              {{ value.icon }}
+            </div>
+            <h4>{{ value.title }}</h4>
+            <p>{{ value.description }}</p>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- EQUIPE -->
+<section class="team-section">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-eyebrow">Notre Équipe</div>
+      <h2 class="section-title-large">
+        Une Équipe d'<span class="text-cyan">Experts Passionnés</span>
+      </h2>
+      <p class="section-sub">
+        Des professionnels dévoués qui mettent leur expertise au service de votre réussite et
+        de votre transformation digitale.
+      </p>
+    </div>
+
+    <!-- STATS -->
+    <div class="team-stats reveal">
+      @for (stat of teamStats; track stat.label; let i = $index) {
+        <div class="team-stat-card">
+          <strong [class]="i % 2 === 0 ? 'stat-blue' : 'stat-cyan'">{{ stat.value }}</strong>
+          <span>{{ stat.label }}</span>
+        </div>
+      }
+    </div>
+
+    <!-- MEMBRES depuis le backoffice -->
+    @if (isLoadingTeam()) {
+      <div class="team-loading">
+        <div class="spinner"></div>
+        <p>Chargement de l'équipe...</p>
+      </div>
+    } @else if (teamMembers().length === 0) {
+      <div class="team-empty">
+        <p>L'équipe sera présentée prochainement.</p>
+      </div>
+    } @else {
+      <div class="team-slider">
+        <div class="team-slider-inner">
+        <button class="slider-btn slider-btn--prev" (click)="prevTeamSlide()" [disabled]="teamMembers().length <= 3">
+          &#8249;
+        </button>
+
+        <div class="team-cards">
+          @for (member of getVisibleMembers(); track member.id) {
+            <div class="team-card">
+              <div class="team-card-photo">
+                @if (member.photoUrl) {
+                  <img [src]="member.photoUrl" [alt]="member.fullName" />
+                } @else {
+                  <div class="team-initials">
+                    {{ getMemberInitials(member.firstName, member.lastName) }}
+                  </div>
+                }
+              </div>
+              <div class="team-card-info">
+                <h4>{{ member.fullName | uppercase }}</h4>
+                <span class="team-position">{{ member.position }}</span>
+                @if (member.description) {
+                  <p class="team-desc">{{ member.description }}</p>
+                }
+                <div class="team-socials">
+                  @if (member.linkedInUrl) {
+                    <a [href]="member.linkedInUrl" target="_blank" class="social-icon" title="LinkedIn">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/>
+                        <rect x="2" y="9" width="4" height="12"/>
+                        <circle cx="4" cy="4" r="2"/>
+                      </svg>
+                    </a>
+                  }
+                  @if (member.email) {
+                    <a [href]="'mailto:' + member.email" class="social-icon" title="Email">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                        <polyline points="22,6 12,13 2,6"/>
+                      </svg>
+                    </a>
+                  }
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+
+        <button class="slider-btn slider-btn--next" (click)="nextTeamSlide()" [disabled]="teamMembers().length <= 3">
+          &#8250;
+        </button>
+        </div>
+      </div>
+
+      <!-- Dots -->
+      @if (teamMembers().length > 3) {
+        <div class="slider-dots">
+          @for (member of teamMembers(); track member.id; let i = $index) {
+            <button
+              class="dot"
+              [class.dot--active]="i === currentTeamSlide()"
+              (click)="currentTeamSlide.set(i)">
+            </button>
+          }
+        </div>
+      }
+    }
+  </div>
+</section>
+
+<!-- JOIN TEAM CTA -->
+<section class="join-section">
+  <div class="container">
+    <div class="join-box reveal">
+      <div class="join-inner">
+        <div class="join-text">
+          <h2>Rejoignez Notre Équipe</h2>
+          <p>
+            Nous sommes toujours à la recherche de talents passionnés pour renforcer
+            notre équipe et participer à nos projets innovants.
+          </p>
+        </div>
+        <a routerLink="/career" class="btn-join">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Voir nos Offres d'Emploi
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     SECTION — SOLUTIONS ADAPTÉES À VOTRE INDUSTRIE
+     (après About, avant Nos Solutions — données depuis backoffice)
+     ══════════════════════════════════════════════════════════════════════ -->
+<section class="industry-sector-section">
+  <div class="container">
+    <div class="is-header reveal">
+      <h2 class="is-title">
+        Solutions Adaptées à <span class="text-cyan">Votre Industrie</span>
+      </h2>
+      <p class="is-sub">
+        Des solutions technologiques sur mesure pour répondre aux défis spécifiques
+        de chaque secteur d'activité
+      </p>
+    </div>
+
+    @if (isLoadingSectors()) {
+      <div style="text-align:center;padding:60px 0;color:#6b7db3;">
+        <div class="spinner"></div>
+        <p style="margin-top:12px;">Chargement des secteurs...</p>
+      </div>
+    } @else if (sectors().length > 0) {
+      <div class="is-carousel-wrapper">
+        <button class="is-arrow is-arrow--left" (click)="prevSector()" aria-label="Précédent">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <path d="M15 18l-6-6 6-6"/>
+          </svg>
+        </button>
+
+        <div class="is-cards-track">
+          @for (s of getVisibleSectors(); track s.title) {
+            <div class="is-card reveal-scale">
+              <div class="is-card-img">
+                <img [src]="s.image" [alt]="s.title" loading="lazy" />
+              </div>
+              <div class="is-card-body">
+                <h4 class="is-card-title">{{ s.title }}</h4>
+                <p  class="is-card-desc">{{ s.desc }}</p>
+              </div>
+            </div>
+          }
+        </div>
+
+        <button class="is-arrow is-arrow--right" (click)="nextSector()" aria-label="Suivant">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <path d="M9 18l6-6-6-6"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Indicateurs de position -->
+      <div class="is-dots">
+        @for (s of sectors(); track $index; let i = $index) {
+          <span class="is-dot" [class.is-dot--active]="i === activeSector"
+                (click)="activeSector = i"></span>
+        }
+      </div>
+    }
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     SECTION 3 — NOS SOLUTIONS (depuis API)
+     ══════════════════════════════════════════════════════════════════════ -->
+<section class="solutions-placeholder-section">
+  <div class="container">
+    <div class="sp-header reveal">
+      <div class="sp-tag-pill">⚙️ Nos Solutions</div>
+      <h2>Des technologies <span class="text-cyan">qui transforment</span> votre entreprise</h2>
+      <p>Fleet Management, Tracking GPS, IoT avancé — des outils puissants pour chaque secteur</p>
+    </div>
+
+    @if (solutions().length > 0) {
+      <div class="sp-sol-grid">
+        @for (sol of solutions().slice(0, 6); track sol.id) {
+          <article class="sp-sol-card reveal-scale">
+
+            <!-- ── Zone image ── -->
+            <a
+              class="sp-sol-card__media"
+              [routerLink]="['/solutions', sol.id]"
+              [attr.aria-label]="'Voir la solution ' + sol.title"
+            >
+              @if (sol.coverImageUrl) {
+                <img [src]="sol.coverImageUrl" [alt]="sol.title" loading="lazy" />
+              } @else {
+                <div class="sp-sol-card__img-placeholder">
+                  <span>{{ getSolutionIcon(sol.title) }}</span>
+                </div>
+              }
+              <div class="sp-sol-card__overlay"></div>
+              <div class="sp-sol-card__headline">
+                <h3>{{ sol.title }}</h3>
+              </div>
+            </a>
+
+            <!-- ── Corps ── -->
+            <div class="sp-sol-card__body">
+              <p class="sp-sol-card__desc">{{ sol.description }}</p>
+
+              <div class="sp-sol-card__actions">
+                <a
+                  [routerLink]="['/solutions', sol.id]"
+                  class="sp-sol-btn"
+                >
+                  Voir Plus
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                       stroke="currentColor" stroke-width="2">
+                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                  </svg>
+                </a>
+              </div>
+            </div>
+
+          </article>
+        }
+      </div>
+    } @else {
+      <div class="sp-grid">
+        @for (sol of solutionsPlaceholder; track sol.icon) {
+          <div class="sp-card reveal-scale">
+            <div class="sp-card-icon">{{ sol.icon }}</div>
+            <h4>{{ sol.title }}</h4>
+            <p>{{ sol.desc }}</p>
+          </div>
+        }
+      </div>
+    }
+
+    <div class="sp-cta reveal">
+      <a routerLink="/solutions" class="sp-btn">
+        Voir toutes nos solutions
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     SECTION 4 — NOS CLIENTS (backoffice)
+     ══════════════════════════════════════════════════════════════════════ -->
+<section class="clients-section">
+  <div class="container">
+    <div class="cl-header reveal">
+      <div class="cl-eyebrow">🌟 Ils nous font confiance</div>
+      <h2 class="cl-title">Nos <span class="cl-title-hl">Clients</span></h2>
+      <p class="cl-subtitle">Découvrez les entreprises qui nous font confiance. Notre portfolio inclut des partenariats avec des leaders industriels et des innovateurs de premier plan, unis par notre engagement commun envers l'excellence et la qualité.</p>
+    </div>
+
+    @if (isLoadingClients()) {
+      <div class="cl-loading">
+        <div class="spinner"></div>
+        <p>Chargement des clients...</p>
+      </div>
+    } @else if (clients().length === 0) {
+      <div class="cl-empty">
+        <p>Nos clients seront présentés prochainement.</p>
+      </div>
+    } @else {
+      <!-- Marquee / infinite scroll logos -->
+      <div class="cl-marquee-wrap reveal">
+        <div class="cl-marquee">
+          <div class="cl-marquee-track" [class.cl-marquee-track--static]="clients().length < 6">
+            @for (client of clients(); track client.id) {
+              <div class="cl-logo-card">
+                @if (client.logoUrl) {
+                  <img [src]="client.logoUrl" [alt]="client.name" class="cl-logo-img" />
+                } @else {
+                  <div class="cl-logo-initials">{{ getInitials(client.name) }}</div>
+                }
+                <span class="cl-logo-name">{{ client.name }}</span>
+              </div>
+            }
+            <!-- Duplicate for seamless loop (only when list is large enough) -->
+            @if (clients().length >= 6) {
+              @for (client of clients(); track 'dup-' + client.id) {
+                <div class="cl-logo-card" aria-hidden="true">
+                  @if (client.logoUrl) {
+                    <img [src]="client.logoUrl" [alt]="client.name" class="cl-logo-img" />
+                  } @else {
+                    <div class="cl-logo-initials">{{ getInitials(client.name) }}</div>
+                  }
+                  <span class="cl-logo-name">{{ client.name }}</span>
+                </div>
+              }
+            }
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     SECTION 5 — NOS PARTENAIRES (backoffice)
+     ══════════════════════════════════════════════════════════════════════ -->
+<section class="partners-section">
+  <div class="container">
+    <div class="pt-layout">
+
+      <!-- Gauche : texte + bouton -->
+      <div class="pt-left reveal-left">
+        <div class="pt-tag-pill">🤝 Partenaires</div>
+        <h2>Ce que nos partenaires<br><strong>disent de TUNAV</strong></h2>
+        <p>Découvrez les témoignages de nos partenaires — intégrateurs, revendeurs et fabricants qui font confiance à TUNAV pour digitaliser la gestion de flotte à travers le monde.</p>
+        <a routerLink="/partners" class="pt-btn-become">
+          Devenir un partenaire
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+
+      <!-- Droite : carousel partenaires depuis backoffice -->
+      <div class="pt-right reveal-right">
+        <div class="pt-carousel-card">
+          @if (isLoadingPartners()) {
+            <div class="pt-loading">
+              <div class="spinner"></div>
+            </div>
+          } @else if (partners().length === 0) {
+            <div class="pt-empty">
+              <p>Partenaires à venir.</p>
+            </div>
+          } @else {
+            <div class="pt-testimonial">
+              <!-- Quote icon -->
+              <div class="pt-quote-icon">❝</div>
+
+              @if (partners()[activePartner].description) {
+                <p class="pt-quote-text">"{{ partners()[activePartner].description }}"</p>
+              }
+
+              <div class="pt-testimonial-footer">                <div class="pt-avatar">
+                  @if (partners()[activePartner].logoUrl) {
+                    <img [src]="partners()[activePartner].logoUrl" [alt]="partners()[activePartner].name" />
+                  } @else {
+                    <div class="pt-avatar-initials">{{ getInitials(partners()[activePartner].name) }}</div>
+                  }
+                </div>
+                <div class="pt-partner-info">
+                  <strong>{{ partners()[activePartner].name }}</strong>
+                  @if (partners()[activePartner].contactPerson) {
+                    <span class="pt-position">{{ partners()[activePartner].contactPerson }}</span>
+                  }
+                  @if (partners()[activePartner].country) {
+                    <span class="pt-country">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                      {{ partners()[activePartner].country }}
+                    </span>
+                  }
+                </div>
+              </div>
+            </div>
+
+            <!-- Navigation -->
+            <div class="pt-nav">
+              <div class="pt-dots">
+                @for (p of partners(); track p.id; let i = $index) {
+                  <button class="pt-dot" [class.pt-dot--active]="i === activePartner" (click)="activePartner = i"></button>
+                }
+              </div>
+              <div class="pt-arrows">
+                <button class="pt-arrow" (click)="prevPartner()">&#8249;</button>
+                <button class="pt-arrow" (click)="nextPartner()">&#8250;</button>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     SECTION 6 — POURQUOI CHOISIR TUNAV ? (layout 2 colonnes)
+     ══════════════════════════════════════════════════════════════════════ -->
+<section class="why-section">
+  <div class="container">
+    <div class="why-two-col reveal">
+
+      <!-- Colonne gauche : texte + liste -->
+      <div class="why-left">
+        <h2>Pourquoi Choisir <span class="text-cyan">TUNAV ?</span></h2>
+        <p class="why-left-sub">
+          Nous combinons expertise technologique, expérience terrain et
+          service client d'excellence pour vous garantir les meilleures solutions.
+        </p>
+        <div class="why-checklist">
+          @for (reason of whyReasons; track reason.title) {
+            <div class="why-check-item">
+              <span class="why-check-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><path d="M20 6L9 17l-5-5"/></svg>
+              </span>
+              <span>{{ reason.title }}</span>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Colonne droite : image -->
+      <div class="why-right">
+        <div class="why-img-wrap">
+          <img
+            src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&h=420&fit=crop"
+            alt="Solutions IoT TUNAV"
+          />
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     SECTION 7 — BLOG (même style que news-blog.component)
+     ══════════════════════════════════════════════════════════════════════ -->
+<section class="home-blog-section">
+
+  <div class="container">
+    <div class="home-blog-simple-header reveal">
+      <h2>Actualités <span class="home-blog-cyan">&amp; Blog</span></h2>
+    </div>
+  </div>
+
+  <div class="container">
+    @if (isLoadingBlog()) {
+      <div class="home-blog-loading">
+        <div class="home-blog-spinner"></div>
+        <p>Chargement des articles...</p>
+      </div>
+    } @else if (blogArticles().length === 0) {
+      <div class="home-blog-empty">
+        <p>Aucun article disponible pour le moment.</p>
+      </div>
+    } @else {
+      <div class="home-articles-grid home-blog-section-reveal">
+        @for (article of blogArticles(); track article.id; let i = $index) {
+          <div
+            class="home-article-card home-blog-reveal"
+            [class]="'home-article-card home-blog-reveal home-blog-reveal-delay-' + ((i % 3) + 1)"
+            (click)="navigateToBlog(article.id)"
+            style="cursor:pointer"
+            role="button"
+            [attr.aria-label]="'Lire l\'article : ' + article.title">
+
+            <div class="home-article-card__img">
+              @if (article.coverImageUrl) {
+                <img [src]="article.coverImageUrl" [alt]="article.title" />
+              } @else {
+                <div class="home-article-card__placeholder"></div>
+              }
+              @if (article.categoryName) {
+                <span class="home-article-card__cat">{{ article.categoryName }}</span>
+              }
+              <div class="home-article-card__date">
+                <span>📅</span>
+                {{ formatBlogDate(article.publishedAt || article.createdAt) }}
+              </div>
+            </div>
+
+            <div class="home-article-card__body">
+              <h3>{{ article.title }}</h3>
+              @if (article.coverImageUrl) {
+                <p class="home-article-card__summary">{{ article.title }}</p>
+              }
+              <div class="home-article-card__footer">
+                <span class="home-read-more">Lire la suite →</span>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="home-blog-cta reveal">
+        <a routerLink="/news/blog" class="home-blog-btn-all">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h7"/></svg>
+          Voir tous les articles
+        </a>
+      </div>
+    }
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     SECTION 8 — CONTACT (même style que contact.component)
+     ══════════════════════════════════════════════════════════════════════ -->
+<section class="home-ct-page" id="contact">
+
+  <!-- SIMPLE CONTACT HEADER -->
+  <div class="home-ct-simple-header">
+    <div class="home-ct-header-eyebrow">Nous contacter</div>
+    <h2>Contactez-<span>nous</span></h2>
+    <p class="home-ct-header-sub">Notre équipe est disponible pour répondre à toutes vos questions et vous accompagner.</p>
+    <div class="home-ct-header-divider"></div>
+  </div>
+
+  <!-- BODY : grille 2 colonnes — formulaire gauche, infos droite -->
+  <div class="home-ct-body container">
+
+    <!-- Colonne gauche : formulaire -->
+    <main class="home-ct-form-wrap">
+
+      @if (homeContactSuccess()) {
+        <div class="home-ct-success">
+          <div class="home-ct-success-icon">
+            <svg viewBox="0 0 52 52" class="home-ct-checkmark-svg">
+              <circle class="home-ct-checkmark-circle" cx="26" cy="26" r="25" fill="none"/>
+              <path class="home-ct-checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+            </svg>
+          </div>
+          <h3>Message envoyé avec succès !</h3>
+          <p>Nous avons bien reçu votre demande. Notre équipe vous répondra dans les plus brefs délais.</p>
+          <button class="home-ct-btn home-ct-btn--primary" (click)="homeContactSuccess.set(false)">Envoyer un autre message</button>
+        </div>
+      } @else {
+
+          @if (homeContactError()) {
+            <div class="home-ct-error-banner">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+              {{ homeContactError() }}
+            </div>
+          }
+
+          <div class="home-ct-row">
+            <div class="home-ct-field">
+              <label>Prénom <span class="home-ct-req">*</span></label>
+              <div class="home-ct-input-wrap">
+                <svg class="home-ct-input-icon" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                <input type="text" [(ngModel)]="homeForm.firstName" placeholder="Votre prénom" />
+              </div>
+            </div>
+            <div class="home-ct-field">
+              <label>Nom <span class="home-ct-req">*</span></label>
+              <div class="home-ct-input-wrap">
+                <svg class="home-ct-input-icon" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                <input type="text" [(ngModel)]="homeForm.lastName" placeholder="Votre nom" />
+              </div>
+            </div>
+          </div>
+
+          <div class="home-ct-row">
+            <div class="home-ct-field">
+              <label>Email <span class="home-ct-req">*</span></label>
+              <div class="home-ct-input-wrap">
+                <svg class="home-ct-input-icon" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                <input type="email" [(ngModel)]="homeForm.email" placeholder="votre&#64;email.com" />
+              </div>
+            </div>
+            <div class="home-ct-field">
+              <label>Téléphone</label>
+              <div class="home-ct-input-wrap">
+                <svg class="home-ct-input-icon" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.11 12 19.79 19.79 0 0 1 1.09 3.18 2 2 0 0 1 3.06 1h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.09 8.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                <input type="tel" [(ngModel)]="homeForm.phone" placeholder="+216 XX XXX XXX" />
+              </div>
+            </div>
+          </div>
+
+          <div class="home-ct-field">
+            <label>Sujet <span class="home-ct-req">*</span></label>
+            <div class="home-ct-select-wrap">
+              <svg class="home-ct-input-icon" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+              <select [(ngModel)]="homeForm.subject">
+                <option value="" disabled>Sélectionnez un sujet...</option>
+                <option>Demande d'information</option>
+                <option>Demande de démo</option>
+                <option>Support technique</option>
+                <option>Partenariat</option>
+                <option>Autre</option>
+              </select>
+              <svg class="home-ct-select-arrow" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+          </div>
+
+          <div class="home-ct-field">
+            <label>Message <span class="home-ct-req">*</span></label>
+            <textarea [(ngModel)]="homeForm.message" rows="4" placeholder="Décrivez votre besoin en détail..."></textarea>
+          </div>
+
+          <label class="home-ct-checkbox">
+            <input type="checkbox" [(ngModel)]="homeForm.consent" />
+            <span class="home-ct-checkbox__box"></span>
+            <span>J'accepte que mes données soient utilisées pour répondre à ma demande. <span class="home-ct-req">*</span></span>
+          </label>
+
+          <button class="home-ct-btn home-ct-btn--submit" [disabled]="homeContactSubmitting()" (click)="submitHomeContact()">
+            @if (homeContactSubmitting()) {
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="home-ct-spin"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4"/></svg>
+              Envoi en cours...
+            } @else {
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              Envoyer ma demande
+            }
+          </button>
+
+      }
+    </main>
+
+    <!-- Colonne droite : infos de contact -->
+    <aside class="home-ct-info">
+
+      <div class="home-ct-contact-row">
+        <div class="home-ct-row-icon home-ct-row-icon--blue">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.11 12 19.79 19.79 0 0 1 1.09 3.18 2 2 0 0 1 3.06 1h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.09 8.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        </div>
+        <div class="home-ct-row-body">
+          <a href="tel:+21671807667" class="home-ct-row-val">+216 71 807 667</a>
+        </div>
+      </div>
+
+      <div class="home-ct-contact-row">
+        <div class="home-ct-row-icon home-ct-row-icon--cyan">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        </div>
+        <div class="home-ct-row-body">
+          <a href="mailto:tunav@tunav.com" class="home-ct-row-val">tunav&#64;tunav.com</a>
+        </div>
+      </div>
+
+      <a href="https://www.google.com/maps/place/Tunav+it+group" target="_blank" rel="noopener" class="home-ct-contact-row home-ct-contact-row--link">
+        <div class="home-ct-row-icon home-ct-row-icon--green">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        </div>
+        <div class="home-ct-row-body">
+          <span class="home-ct-row-val">Mosquée Charguia 1, 14, 1, 2035 rue 8609</span>
+          <span class="home-ct-row-meta">Tunis, Tunisie — 8609</span>
+        </div>
+        <svg class="home-ct-row-arrow" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      </a>
+
+    </aside>
+
+  </div>
+</section>

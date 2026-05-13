@@ -1,0 +1,136 @@
+@{
+    ViewData["Title"] = "Dashboard";
+    ViewData["ActivePage"] = "Dashboard";
+    Layout = "~/Views/Shared/_LayoutBackoffice.cshtml";
+}
+
+<div class="page-header">
+    <h1>Dashboard</h1>
+    <p>Bienvenue ! Voici un apercu de votre activite</p>
+</div>
+
+<div class="stat-grid">
+    <div class="stat-card">
+        <div class="stat-label">Utilisateurs</div>
+        <div class="stat-value" id="statUsers">—</div>
+        <div class="stat-sub">comptes enregistres</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Roles</div>
+        <div class="stat-value" id="statRoles">—</div>
+        <div class="stat-sub">roles configures</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Permissions</div>
+        <div class="stat-value" id="statPerms">—</div>
+        <div class="stat-sub">permissions definies</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Solutions</div>
+        <div class="stat-value" id="statSolutions">—</div>
+        <div class="stat-sub">solutions publiees</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Articles Blog</div>
+        <div class="stat-value" id="statBlogs">—</div>
+        <div class="stat-sub">articles publiés</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label"> Événements</div>
+        <div class="stat-value" id="statEvents">—</div>
+        <div class="stat-sub">événements actifs</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label"> Collaborations</div>
+        <div class="stat-value" id="statCollabs">—</div>
+        <div class="stat-sub">demandes reçues</div>
+    </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+
+    <div class="card">
+        <div class="card-header">
+            <h2>Derniers utilisateurs</h2>
+            <a href="/backoffice/users" class="btn btn-outline btn-sm">Voir tout</a>
+        </div>
+        <table>
+            <thead>
+                <tr><th>Nom</th><th>Role</th><th>Statut</th></tr>
+            </thead>
+            <tbody id="recentUsers">
+                <tr class="loading-row"><td colspan="3">Chargement...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h2>Dernieres solutions</h2>
+            <a href="/backoffice/solutions" class="btn btn-outline btn-sm">Voir tout</a>
+        </div>
+        <table>
+            <thead>
+                <tr><th>Titre</th><th>Type</th><th>Statut</th></tr>
+            </thead>
+            <tbody id="recentSolutions">
+                <tr class="loading-row"><td colspan="3">Chargement...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+@section Scripts {
+<script>
+    async function fetchJsonOk(url) {
+        const h = authHeaders();
+        const r = await fetch(url, { headers: h });
+        if (r.status === 401) { window.location.href = '/auth/login'; return null; }
+        if (!r.ok) return null;
+        return r.json();
+    }
+
+    async function loadDashboard() {
+        try {
+            const [users, roles, perms, solutions, blogs, events, collabs] = await Promise.all([
+                fetchJsonOk('/api/users'),
+                fetchJsonOk('/api/roles'),
+                fetchJsonOk('/api/permissions'),
+                fetchJsonOk('/api/solutions'),
+                fetchJsonOk('/api/blog-articles?isActive=true'),
+                fetchJsonOk('/api/events?status=Published'),
+                fetchJsonOk('/api/collaborations'),
+            ]);
+
+            document.getElementById('statUsers').textContent     = Array.isArray(users)     ? users.length     : '—';
+            document.getElementById('statRoles').textContent     = Array.isArray(roles)     ? roles.length     : '—';
+            document.getElementById('statPerms').textContent     = Array.isArray(perms)     ? perms.length     : '—';
+            document.getElementById('statSolutions').textContent = Array.isArray(solutions) ? solutions.length : '—';
+            document.getElementById('statBlogs').textContent     = Array.isArray(blogs)     ? blogs.length     : '—';
+            document.getElementById('statEvents').textContent    = Array.isArray(events)    ? events.length    : '—';
+            document.getElementById('statCollabs').textContent   = Array.isArray(collabs)   ? collabs.length   : '—';
+
+            const u5 = Array.isArray(users) ? users.slice(0, 5) : [];
+            document.getElementById('recentUsers').innerHTML = u5.length
+                ? u5.map(u => `<tr>
+                    <td>${u.firstName} ${u.lastName}</td>
+                    <td><span class="badge badge-navy">${u.role?.name || '—'}</span></td>
+                    <td><span class="badge ${u.isActive ? 'badge-success' : 'badge-danger'}">${u.isActive ? 'Actif' : 'Inactif'}</span></td>
+                  </tr>`).join('')
+                : '<tr class="empty-row"><td colspan="3">' + (users === null ? 'Non autorise ou indisponible' : 'Aucun utilisateur') + '</td></tr>';
+
+            const s5 = Array.isArray(solutions) ? solutions.slice(0, 5) : [];
+            document.getElementById('recentSolutions').innerHTML = s5.length
+                ? s5.map(s => `<tr>
+                    <td>${s.title}</td>
+                    <td><span class="badge badge-cyan">${s.type}</span></td>
+                    <td><span class="badge ${s.isActive ? 'badge-success' : 'badge-danger'}">${s.isActive ? 'Active' : 'Inactive'}</span></td>
+                  </tr>`).join('')
+                : '<tr class="empty-row"><td colspan="3">' + (solutions === null ? 'Non autorise ou indisponible' : 'Aucune solution') + '</td></tr>';
+
+        } catch(e) { console.error(e); }
+    }
+    loadDashboard();
+</script>
+}

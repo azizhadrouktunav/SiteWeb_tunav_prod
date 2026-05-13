@@ -1,0 +1,690 @@
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     NEWS-EVENT — Design Premium · EY / Energy-Park inspired
+     Animations CSS : scroll-reveal, line-draw, orb-float, hero-zoom
+════════════════════════════════════════════════════════════════════════════ -->
+
+<!-- ── HERO ─────────────────────────────────────────────────────────────────── -->
+<section class="ev-hero">
+  <div class="ev-hero-grid"></div>
+  <div class="ev-hero-orb ev-hero-orb--1"></div>
+  <div class="ev-hero-orb ev-hero-orb--2"></div>
+  <div class="ev-hero-line"></div>
+
+  <div class="ev-hero-content">
+    <div class="ev-hero-eyebrow">Actualités TUNAV</div>
+    <h1 class="ev-hero-title">Événements &<br><span>Rencontres</span></h1>
+    <p class="ev-hero-sub">
+      Rejoignez-nous lors de nos salons, conférences et webinars pour découvrir
+      les dernières innovations en GPS et IoT
+    </p>
+
+    <!-- Stats hero -->
+    <div class="ev-hero-stats">
+      <div class="ev-hero-stat">
+        <strong>50+</strong>
+        <span>Événements organisés</span>
+      </div>
+      <div class="ev-hero-stat">
+        <strong>5 000+</strong>
+        <span>Participants cumulés</span>
+      </div>
+      <div class="ev-hero-stat">
+        <strong>20+</strong>
+        <span>Ans d'expérience</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── ÉVÉNEMENTS À VENIR ──────────────────────────────────────────────────── -->
+<section class="ev-section ev-section--upcoming">
+  <div class="ev-container">
+
+    <div class="ev-section-header ev-reveal">
+      <div class="ev-section-eyebrow">Agenda</div>
+      <h2 class="ev-section-title">Événements <span>à Venir</span></h2>
+      <p class="ev-section-sub">Inscrivez-vous dès maintenant à nos prochains événements</p>
+    </div>
+
+    @if (isLoadingUpcoming()) {
+      <div class="ev-loading">
+        <div class="ev-spinner"></div>
+        <span>Chargement des événements...</span>
+      </div>
+    } @else if (upcomingEvents().length === 0) {
+      <div class="ev-empty">
+        <span>📅</span>
+        <p>Aucun événement à venir pour le moment.<br>Revenez bientôt !</p>
+      </div>
+    } @else {
+      <div class="ev-upcoming-list">
+        @for (ev of upcomingEvents(); track ev.id; let i = $index) {
+          <div class="ev-card-horizontal ev-reveal ev-delay-{{i+1}}"
+               [class.ev-card-horizontal--featured]="ev.isFeatured">
+
+            <!-- Image -->
+            <div class="ev-card-img-wrap">
+              @if (ev.coverImageUrl) {
+                <img [src]="ev.coverImageUrl" [alt]="ev.title" class="ev-card-img" />
+              } @else {
+                <div class="ev-card-img-placeholder">
+                  <svg width="56" height="56" viewBox="0 0 24 24" fill="none"
+                       stroke="currentColor" stroke-width="1"><rect x="3" y="4" width="18" height="18" rx="2"/>
+                    <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+                    <line x1="3" y1="10" x2="21" y2="10"/></svg>
+                </div>
+              }
+              <!-- Numéro discret -->
+              <div class="ev-card-number">0{{i+1}}</div>
+              <span class="ev-badge-type" [ngClass]="getTypeBadgeClass(ev.type)">
+                {{ getTypeLabel(ev.type) }}
+              </span>
+              @if (ev.isFeatured) {
+                <span class="ev-badge-featured">À la Une</span>
+              }
+            </div>
+
+            <!-- Contenu -->
+            <div class="ev-card-body">
+              <h3 class="ev-card-title">{{ ev.title }}</h3>
+              <p class="ev-card-desc">{{ ev.description }}</p>
+
+              <div class="ev-card-meta">
+                <div class="ev-meta-item">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="4" width="18" height="18" rx="2"/>
+                    <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+                    <line x1="3" y1="10" x2="21" y2="10"/>
+                  </svg>
+                  <span>{{ formatDate(ev.startDate) }}</span>
+                </div>
+                @if (ev.startDate && ev.endDate) {
+                  <div class="ev-meta-item">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/>
+                    </svg>
+                    <span>{{ formatTime(ev.startDate) }} – {{ formatTime(ev.endDate) }}</span>
+                  </div>
+                }
+                @if (ev.location) {
+                  <div class="ev-meta-item">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                      <circle cx="12" cy="10" r="3"/>
+                    </svg>
+                    <span>{{ ev.location }}</span>
+                  </div>
+                }
+                @if (ev.onlineLink) {
+                  <a [href]="ev.onlineLink" target="_blank" class="ev-meta-online">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="10"/>
+                      <line x1="2" y1="12" x2="22" y2="12"/>
+                      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                    </svg>
+                    Événement en ligne
+                  </a>
+                }
+                @if (ev.participantCount && ev.participantCount > 0) {
+                  <div class="ev-meta-item">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                      <circle cx="9" cy="7" r="4"/>
+                      <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                    <span>{{ ev.participantCount }}+ participants</span>
+                  </div>
+                }
+              </div>
+
+              <div class="ev-card-actions">
+                <button class="ev-btn ev-btn--primary" (click)="openRegisterModal(ev)">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <polyline points="20,6 9,17 4,12"/>
+                  </svg>
+                  S'inscrire
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <line x1="5" y1="12" x2="19" y2="12"/>
+                    <polyline points="12,5 19,12 12,19"/>
+                  </svg>
+                </button>
+                @if (ev.externalUrl) {
+                  <a [href]="ev.externalUrl" target="_blank" class="ev-btn ev-btn--ghost">
+                    Plus d'infos →
+                  </a>
+                }
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</section>
+
+<!-- ── ÉVÉNEMENTS PASSÉS ───────────────────────────────────────────────────── -->
+<section class="ev-section ev-section--past">
+  <div class="ev-container">
+
+    <div class="ev-section-header ev-reveal">
+      <div class="ev-section-eyebrow">Archives</div>
+      <h2 class="ev-section-title">Événements <span>Passés</span></h2>
+      <p class="ev-section-sub">Découvrez nos événements récents et leurs temps forts</p>
+    </div>
+
+    @if (isLoadingPast()) {
+      <div class="ev-loading">
+        <div class="ev-spinner"></div>
+        <span>Chargement...</span>
+      </div>
+    } @else if (pastEvents().length === 0) {
+      <div class="ev-empty">
+        <span>🗃️</span>
+        <p>Aucun événement passé à afficher.</p>
+      </div>
+    } @else {
+      <div class="ev-past-grid">
+        @for (ev of pastEvents(); track ev.id; let i = $index) {
+          <div class="ev-card-vertical ev-reveal ev-delay-{{(i%3)+1}}">
+            <div class="ev-card-vertical-img">
+              @if (ev.coverImageUrl) {
+                <img [src]="ev.coverImageUrl" [alt]="ev.title" />
+              } @else {
+                <div class="ev-card-vertical-placeholder">📅</div>
+              }
+              <span class="ev-badge-type ev-badge-type--dark" [ngClass]="getTypeBadgeClass(ev.type)">
+                {{ getTypeLabel(ev.type) }}
+              </span>
+            </div>
+            <div class="ev-card-vertical-body">
+              <div class="ev-past-date">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="4" width="18" height="18" rx="2"/>
+                  <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+                  <line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
+                {{ formatDate(ev.startDate) }}
+              </div>
+              <h3>{{ ev.title }}</h3>
+              <p>{{ ev.description }}</p>
+              @if (ev.location) {
+                <div class="ev-past-location">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                    <circle cx="12" cy="10" r="3"/>
+                  </svg>
+                  {{ ev.location }}
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</section>
+
+<!-- ── COLLABORATION ───────────────────────────────────────────────────────── -->
+<section class="ev-section ev-section--collab">
+  <div class="ev-container ev-collab-inner">
+
+    <!-- Eyebrow -->
+    <div class="ev-collab-eyebrow ev-reveal">
+      <span class="ev-collab-eyebrow__dot"></span>
+      Collaboration Événementielle
+    </div>
+
+    <!-- Title -->
+    <h2 class="ev-collab-title ev-reveal ev-delay-1">
+      Organisateurs<br>
+      <span class="ev-collab-title__accent">d'Événements</span>
+    </h2>
+
+    <p class="ev-collab-sub ev-reveal ev-delay-2">
+      Vous êtes un club, une association ou une boîte événementielle ?<br>
+      Collaborez avec <strong>TUNAV IT Groupe</strong> pour votre prochain événement.
+    </p>
+
+    <!-- 3 Feature cards -->
+    <div class="ev-collab-features ev-reveal ev-delay-3">
+
+      <div class="ev-collab-feat">
+        <div class="ev-collab-feat__num">01</div>
+        <div class="ev-collab-feat-icon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+            <rect x="2" y="3" width="20" height="14" rx="2"/>
+            <line x1="8" y1="21" x2="16" y2="21"/>
+            <line x1="12" y1="17" x2="12" y2="21"/>
+          </svg>
+        </div>
+        <h4>Clubs &amp; Associations</h4>
+        <p>Événements étudiants et professionnels à fort impact avec TUNAV comme partenaire stratégique.</p>
+        
+      </div>
+
+      <div class="ev-collab-feat ev-collab-feat--dark">
+        <div class="ev-collab-feat__num">02</div>
+        <div class="ev-collab-feat-icon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+            <rect x="3" y="4" width="18" height="18" rx="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/>
+            <line x1="8" y1="2" x2="8" y2="6"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+        </div>
+        <h4>Boîtes Événementielles</h4>
+        <p>Salons, conférences, forums et séminaires — une présence TUNAV qui valorise votre événement.</p>
+        
+      </div>
+
+      <div class="ev-collab-feat">
+        <div class="ev-collab-feat__num">03</div>
+        <div class="ev-collab-feat-icon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        </div>
+        <h4>Présence TUNAV</h4>
+        <p>Stand, sponsoring et interventions d'experts IoT &amp; GPS pour enrichir votre programme.</p>
+        
+      </div>
+
+    </div>
+
+    <!-- Trust + CTA -->
+    <div class="ev-collab-bottom ev-reveal ev-delay-4">
+      <div class="ev-collab-trust">
+        <span>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+            <polyline points="22,4 12,14.01 9,11.01"/>
+          </svg>
+          Réponse sous 48h
+        </span>
+        <span>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12,6 12,12 16,14"/>
+          </svg>
+          20+ ans d'expérience
+        </span>
+        <span>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+          </svg>
+          50+ événements réalisés
+        </span>
+      </div>
+
+      <button class="ev-btn ev-btn--collab" (click)="openCollabModal(null)">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+        Proposer une Collaboration
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="5" y1="12" x2="19" y2="12"/>
+          <polyline points="12,5 19,12 12,19"/>
+        </svg>
+      </button>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     MODAL — COLLABORATION
+════════════════════════════════════════════════════════════════════════════ -->
+@if (showModal()) {
+  <div class="ev-modal-backdrop" (click)="closeModal()">
+    <div class="ev-modal" (click)="$event.stopPropagation()">
+
+      <div class="ev-modal-header">
+        <div class="ev-modal-header-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1a2a6c" stroke-width="1.8">
+            <rect x="3" y="4" width="18" height="18" rx="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+        </div>
+        <div>
+          <h3>Collaboration Événementielle</h3>
+          <p>Proposez une collaboration avec TUNAV IT Groupe</p>
+        </div>
+        <button class="ev-modal-close" (click)="closeModal()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      @if (submitSuccess()) {
+        <div class="ev-modal-success">
+          <div class="ev-success-icon">✅</div>
+          <h4>Demande envoyée !</h4>
+          <p>Notre équipe vous contactera prochainement.</p>
+          <button class="ev-btn ev-btn--primary" (click)="closeModal()">Fermer</button>
+        </div>
+      } @else {
+        <div class="ev-modal-body">
+          @if (submitError()) {
+            <div class="ev-form-error">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+              {{ submitError() }}
+            </div>
+          }
+
+          @if (selectedEvent()) {
+            <div class="ev-form-linked-event">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+              Événement : <strong>{{ selectedEvent()!.title }}</strong>
+            </div>
+          }
+
+          <div class="ev-form-field">
+            <label>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="3" width="20" height="14" rx="2"/>
+                <line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
+              </svg>
+              Nom de l'organisme <span class="req">*</span>
+            </label>
+            <input type="text" [(ngModel)]="form.organization"
+                   placeholder="Club Tech Innovators, ISET..."
+                   [class.invalid]="fieldErrors['organization']" />
+            @if (fieldErrors['organization']) {
+              <span class="field-err">{{ fieldErrors['organization'] }}</span>
+            }
+          </div>
+
+          <div class="ev-form-field">
+            <label>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+              Responsable <span class="req">*</span>
+            </label>
+            <input type="text" [(ngModel)]="form.fullName"
+                   placeholder="Nom complet du responsable"
+                   [class.invalid]="fieldErrors['fullName']" />
+            @if (fieldErrors['fullName']) {
+              <span class="field-err">{{ fieldErrors['fullName'] }}</span>
+            }
+          </div>
+
+          <div class="ev-form-row">
+            <div class="ev-form-field">
+              <label>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91A16 16 0 0 0 15 17l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+                </svg>
+                Téléphone <span class="req">*</span>
+              </label>
+              <input type="tel" [(ngModel)]="form.phone"
+                     placeholder="+216 XX XXX XXX"
+                     [class.invalid]="fieldErrors['phone']" />
+              @if (fieldErrors['phone']) {
+                <span class="field-err">{{ fieldErrors['phone'] }}</span>
+              }
+            </div>
+            <div class="ev-form-field">
+              <label>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                  <polyline points="22,6 12,13 2,6"/>
+                </svg>
+                Email <span class="req">*</span>
+              </label>
+              <input type="email" [(ngModel)]="form.email"
+                     placeholder="contact@exemple.com"
+                     [class.invalid]="fieldErrors['email']" />
+              @if (fieldErrors['email']) {
+                <span class="field-err">{{ fieldErrors['email'] }}</span>
+              }
+            </div>
+          </div>
+
+          <div class="ev-form-field">
+            <label>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                <circle cx="12" cy="10" r="3"/>
+              </svg>
+              Adresse
+            </label>
+            <input type="text" [(ngModel)]="form.address"
+                   placeholder="Adresse de l'événement" />
+          </div>
+
+          <div class="ev-form-field">
+            <label>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14,2 14,8 20,8"/>
+              </svg>
+              Description de l'événement <span class="req">*</span>
+            </label>
+            <textarea [(ngModel)]="form.message" rows="4"
+                      placeholder="Objectifs, thème, date prévue, participants attendus..."
+                      [class.invalid]="fieldErrors['message']"></textarea>
+            @if (fieldErrors['message']) {
+              <span class="field-err">{{ fieldErrors['message'] }}</span>
+            }
+          </div>
+
+          <div class="ev-form-field">
+            <label>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17,8 12,3 7,8"/><line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+              Pièces jointes
+            </label>
+            <label class="ev-file-drop" for="fileInput" style="cursor:pointer">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#b0bdd8" stroke-width="1.5">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17,8 12,3 7,8"/><line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+              <p><strong>Cliquez pour télécharger vos documents</strong></p>
+              <span id="fileName">PDF, DOC, DOCX, JPG, PNG — max. 10MB</span>
+              <input type="file" id="fileInput" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" multiple
+                     style="display:none" (change)="onFileChange($event)" />
+            </label>
+          </div>
+        </div>
+
+        <div class="ev-modal-footer">
+          <button class="ev-btn ev-btn--submit" (click)="submitCollab()" [disabled]="isSubmitting()">
+            @if (isSubmitting()) {
+              <span class="ev-btn-spinner"></span> Envoi en cours...
+            } @else {
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="20,6 9,17 4,12"/>
+              </svg>
+              Envoyer la Demande ✦
+            }
+          </button>
+          <div class="ev-modal-gdpr">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6b7db3" stroke-width="2">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+              <polyline points="22,4 12,14.01 9,11.01"/>
+            </svg>
+            <span>Vos données sont utilisées uniquement pour l'évaluation de votre demande de collaboration. Elles ne seront jamais revendues.</span>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+}
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     MODAL — INSCRIPTION
+════════════════════════════════════════════════════════════════════════════ -->
+@if (showRegisterModal()) {
+  <div class="ev-modal-backdrop" (click)="closeRegisterModal()">
+    <div class="ev-modal ev-modal--register" (click)="$event.stopPropagation()">
+
+      <div class="ev-modal-header">
+        <div class="ev-modal-header-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1a2a6c" stroke-width="1.8">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        </div>
+        <div>
+          <h3>Inscription</h3>
+          @if (registerEvent()) {
+            <p>{{ registerEvent()!.title }}</p>
+          }
+        </div>
+        <button class="ev-modal-close" (click)="closeRegisterModal()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      @if (registerSuccess()) {
+        <div class="ev-modal-success">
+          <div class="ev-success-icon">✅</div>
+          <h4>Inscription confirmée !</h4>
+          <p>Vous recevrez une confirmation par email très prochainement.</p>
+          <button class="ev-btn ev-btn--primary" (click)="closeRegisterModal()">Fermer</button>
+        </div>
+      } @else {
+        <div class="ev-modal-body">
+
+          @if (registerError()) {
+            <div class="ev-form-error">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+              {{ registerError() }}
+            </div>
+          }
+
+          @if (registerEvent()) {
+            <div class="ev-form-linked-event">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+              <div>
+                <strong>{{ registerEvent()!.title }}</strong>
+                <span style="color:#6b7db3;font-size:12px;display:block;margin-top:2px">
+                  📅 {{ formatDate(registerEvent()!.startDate) }}
+                  @if (registerEvent()!.location) { · 📍 {{ registerEvent()!.location }} }
+                </span>
+              </div>
+            </div>
+          }
+
+          <div class="ev-form-field">
+            <label>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+              Nom complet <span class="req">*</span>
+            </label>
+            <input type="text" [(ngModel)]="registerForm.fullName"
+                   placeholder="Votre nom et prénom"
+                   [class.invalid]="registerErrors['fullName']" />
+            @if (registerErrors['fullName']) {
+              <span class="field-err">{{ registerErrors['fullName'] }}</span>
+            }
+          </div>
+
+          <div class="ev-form-row">
+            <div class="ev-form-field">
+              <label>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                  <polyline points="22,6 12,13 2,6"/>
+                </svg>
+                Email <span class="req">*</span>
+              </label>
+              <input type="email" [(ngModel)]="registerForm.email"
+                     placeholder="votre@email.com"
+                     [class.invalid]="registerErrors['email']" />
+              @if (registerErrors['email']) {
+                <span class="field-err">{{ registerErrors['email'] }}</span>
+              }
+            </div>
+            <div class="ev-form-field">
+              <label>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91A16 16 0 0 0 15 17l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+                </svg>
+                Téléphone <span class="req">*</span>
+              </label>
+              <input type="tel" [(ngModel)]="registerForm.phone"
+                     placeholder="+216 XX XXX XXX"
+                     [class.invalid]="registerErrors['phone']" />
+              @if (registerErrors['phone']) {
+                <span class="field-err">{{ registerErrors['phone'] }}</span>
+              }
+            </div>
+          </div>
+
+          <div class="ev-form-field">
+            <label>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="3" width="20" height="14" rx="2"/>
+                <line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
+              </svg>
+              Organisation <span style="color:#b0bdd8;font-size:11px;font-weight:400">(optionnel)</span>
+            </label>
+            <input type="text" [(ngModel)]="registerForm.organization"
+                   placeholder="Entreprise, école, association..." />
+          </div>
+
+          <div class="ev-form-field">
+            <label>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              </svg>
+              Message <span style="color:#b0bdd8;font-size:11px;font-weight:400">(optionnel)</span>
+            </label>
+            <textarea [(ngModel)]="registerForm.message" rows="3"
+                      placeholder="Questions ou besoins particuliers..."></textarea>
+          </div>
+        </div>
+
+        <div class="ev-modal-footer">
+          <button class="ev-btn ev-btn--submit" (click)="submitRegister()" [disabled]="isRegistering()">
+            @if (isRegistering()) {
+              <span class="ev-btn-spinner"></span> Inscription en cours...
+            } @else {
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="20,6 9,17 4,12"/>
+              </svg>
+              Confirmer mon inscription ✦
+            }
+          </button>
+          <div class="ev-modal-gdpr">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6b7db3" stroke-width="2">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/>
+            </svg>
+            <span>Vos données sont utilisées uniquement pour la gestion de votre inscription.</span>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+}

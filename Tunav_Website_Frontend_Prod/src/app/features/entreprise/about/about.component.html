@@ -1,0 +1,294 @@
+<!-- HERO BANNER -->
+<section class="hero-banner">
+  <div class="hero-grid-pattern"></div>
+  <div class="hero-banner-content reveal">
+    <div class="hero-eyebrow">À Propos de TUNAV</div>
+    <h1>Leader Tunisien<br><span>en Solutions IoT</span></h1>
+    <p>Tracking GPS, Fleet Management & Technologies IoT de pointe<br>pour l'Afrique du Nord depuis 2004</p>
+  </div>
+</section>
+
+<!-- NOTRE HISTOIRE -->
+<section class="history-section">
+  <div class="container">
+    <div class="section-header reveal">
+      <h2 class="section-title blue">Notre Histoire</h2>
+      <p class="section-sub">Une décennie d'innovation et de croissance au service de nos clients</p>
+    </div>
+
+    <div class="history-content">
+      <div class="history-text reveal-left">
+        <p>
+          <strong>TUNAV IT Groupe</strong> est né en 2004 de la vision de révolutionner la
+          gestion des flottes et des actifs en Tunisie grâce aux technologies IoT de pointe.
+        </p>
+        <p>
+          Depuis notre création, nous avons accompagné des centaines
+          d'entreprises dans leur transformation digitale, en proposant des
+          solutions innovantes adaptées aux besoins spécifiques du marché
+          tunisien et africain.
+        </p>
+        <p>
+          Notre équipe d'experts passionnés travaille chaque jour pour développer
+          des technologies qui simplifient la vie des entreprises et optimisent leurs
+          opérations. Nous combinons expertise technique, innovation continue et
+          service client d'excellence.
+        </p>
+        <p>
+          Aujourd'hui, TUNAV est reconnu comme le
+          <a href="#" class="link-cyan">leader des solutions IoT en Afrique du Nord</a>,
+          avec plus de 500 clients satisfaits et 10 000+ appareils déployés sur le terrain.
+        </p>
+        <div class="history-divider"></div>
+        <div class="history-stats">
+          <div class="h-stat"><strong>500+</strong><span>Clients satisfaits</span></div>
+          <div class="h-stat"><strong>10K+</strong><span>Appareils déployés</span></div>
+          <div class="h-stat"><strong>20+</strong><span>Années d'expérience</span></div>
+          <div class="h-stat"><strong>98%</strong><span>Satisfaction client</span></div>
+        </div>
+      </div>
+      <div class="history-image reveal-right">
+        <img
+          class="img-main"
+          src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=700&h=450&fit=crop"
+          alt="Equipe TUNAV"
+        />
+        <div class="img-badge">
+          <div class="badge-icon">🏆</div>
+          <div>
+            <strong>20+</strong>
+            <span>Années d'excellence</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MISSION & VISION -->
+<section class="mv-section">
+  <div class="container">
+    <div class="mv-grid">
+
+      <div class="mv-card reveal reveal-delay-1">
+        <div class="mv-icon-wrap" style="background: linear-gradient(135deg, #1a2a6c, #00c8d4)">
+          <span>🎯</span>
+        </div>
+        <h3>Notre Mission</h3>
+        <p>
+          Fournir des <strong class="text-cyan">solutions technologiques de pointe</strong>,
+          fiables et personnalisées qui permettent à nos clients d'optimiser leurs
+          opérations, réduire leurs coûts et améliorer leur efficacité opérationnelle.
+        </p>
+        <p>
+          Nous nous engageons à être le partenaire technologique de confiance
+          qui accompagne les entreprises tunisiennes et africaines dans leur
+          transformation digitale, en offrant un support client exceptionnel et
+          des innovations continues.
+        </p>
+      </div>
+
+      <div class="mv-card reveal reveal-delay-2">
+        <div class="mv-icon-wrap" style="background: linear-gradient(135deg, #00c8d4, #17d5e8)">
+          <span>👁️</span>
+        </div>
+        <h3>Notre Vision</h3>
+        <p>
+          Devenir le <a href="#" class="link-cyan">leader incontesté</a> des solutions
+          IoT et de tracking en Afrique du Nord et subsaharienne, en proposant des
+          technologies innovantes qui transforment la façon dont les entreprises gèrent
+          leurs actifs et leurs opérations.
+        </p>
+        <p>
+          Nous aspirons à créer un écosystème technologique où chaque
+          entreprise, quelle que soit sa taille, peut bénéficier de solutions IoT
+          avancées, accessibles et adaptées à ses besoins spécifiques.
+        </p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- VALEURS -->
+<section class="values-section">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-tag-pill">
+        <span>🏅</span> Nos Valeurs
+      </div>
+      <h2 class="section-title-large">
+        Les Piliers de Notre <span class="text-cyan">Engagement</span>
+      </h2>
+      <p class="section-sub">
+        Des valeurs fortes qui guident chacune de nos actions et définissent notre culture
+        d'entreprise.
+      </p>
+    </div>
+
+    <div class="values-grid">
+      @for (value of values; track value.title) {
+        <div class="value-card reveal-scale">
+          <div class="value-card-img">
+            <img [src]="value.image" [alt]="value.title" />
+          </div>
+          <div class="value-card-body">
+            <div class="value-icon-wrap" [style.background]="value.iconBg">
+              {{ value.icon }}
+            </div>
+            <h4>{{ value.title }}</h4>
+            <p>{{ value.description }}</p>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- EQUIPE -->
+<section class="team-section">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-eyebrow">Notre Équipe</div>
+      <h2 class="section-title-large">
+        Une Équipe d'<span class="text-cyan">Experts Passionnés</span>
+      </h2>
+      <p class="section-sub">
+        Des professionnels dévoués qui mettent leur expertise au service de votre réussite et
+        de votre transformation digitale.
+      </p>
+    </div>
+
+    <!-- STATS -->
+    <div class="team-stats reveal">
+      @for (stat of teamStats; track stat.label; let i = $index) {
+        <div class="team-stat-card">
+          <strong [class]="i % 2 === 0 ? 'stat-blue' : 'stat-cyan'">{{ stat.value }}</strong>
+          <span>{{ stat.label }}</span>
+        </div>
+      }
+    </div>
+
+    <!-- MEMBRES depuis le backoffice -->
+    @if (isLoadingTeam()) {
+      <div class="team-loading">
+        <div class="spinner"></div>
+        <p>Chargement de l'équipe...</p>
+      </div>
+    } @else if (teamMembers().length === 0) {
+      <div class="team-empty">
+        <p>L'équipe sera présentée prochainement.</p>
+      </div>
+    } @else {
+      <div class="team-slider">
+        <button class="slider-btn slider-btn--prev" (click)="prevSlide()" [disabled]="teamMembers().length <= 3">
+          &#8249;
+        </button>
+
+        <div class="team-cards">
+          @for (member of getVisibleMembers(); track member.id) {
+            <div class="team-card">
+              <div class="team-card-photo">
+                @if (member.photoUrl) {
+                  <img [src]="member.photoUrl" [alt]="member.fullName" />
+                } @else {
+                  <div class="team-initials">
+                    {{ getInitials(member.firstName, member.lastName) }}
+                  </div>
+                }
+              </div>
+              <div class="team-card-info">
+                <h4>{{ member.fullName | uppercase }}</h4>
+                <span class="team-position">{{ member.position }}</span>
+                @if (member.description) {
+                  <p class="team-desc">{{ member.description }}</p>
+                }
+                <div class="team-socials">
+                  @if (member.linkedInUrl) {
+                    <a [href]="member.linkedInUrl" target="_blank" class="social-icon" title="LinkedIn">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/>
+                        <rect x="2" y="9" width="4" height="12"/>
+                        <circle cx="4" cy="4" r="2"/>
+                      </svg>
+                    </a>
+                  }
+                  @if (member.email) {
+                    <a [href]="'mailto:' + member.email" class="social-icon" title="Email">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                        <polyline points="22,6 12,13 2,6"/>
+                      </svg>
+                    </a>
+                  }
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+
+        <button class="slider-btn slider-btn--next" (click)="nextSlide()" [disabled]="teamMembers().length <= 3">
+          &#8250;
+        </button>
+      </div>
+
+      <!-- Dots -->
+      @if (teamMembers().length > 3) {
+        <div class="slider-dots">
+          @for (member of teamMembers(); track member.id; let i = $index) {
+            <button
+              class="dot"
+              [class.dot--active]="i === currentSlide()"
+              (click)="currentSlide.set(i)">
+            </button>
+          }
+        </div>
+      }
+    }
+  </div>
+</section>
+
+<!-- JOIN TEAM CTA -->
+<section class="join-section">
+  <div class="container">
+    <div class="join-box reveal">
+      <div class="join-inner">
+        <div class="join-text">
+          <h2>Rejoignez Notre Équipe</h2>
+          <p>
+            Nous sommes toujours à la recherche de talents passionnés pour renforcer
+            notre équipe et participer à nos projets innovants.
+          </p>
+        </div>
+        <a routerLink="/career" class="btn-join">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Voir nos Offres d'Emploi
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA TRANSFORMER -->
+<section class="cta-transform-section">
+  <div class="cta-transform-bg"></div>
+  <div class="container">
+    <div class="cta-badge-pill reveal">
+      <span class="cta-green-dot"></span>
+      Rejoignez + de 500 entreprises satisfaites
+    </div>
+    <h2 class="reveal reveal-delay-1">Prêt à Transformer Votre Entreprise ?</h2>
+    <p>
+      Découvrez comment nos solutions IoT peuvent optimiser vos opérations et réduire vos coûts
+    </p>
+    <div class="cta-btns reveal reveal-delay-2">
+      <a routerLink="/contact"   class="cta-btn cta-btn--white">Contactez-nous →</a>
+      <a routerLink="/solutions" class="cta-btn cta-btn--ghost">Découvrir Nos Solutions ✦</a>
+    </div>
+    <div class="cta-feats">
+      <span><span class="dot-green"></span> Support 24/7</span>
+      <span>⭐ 98% de satisfaction client</span>
+      <span>🚀 Installation sous 48h</span>
+    </div>
+  </div>
+</section>

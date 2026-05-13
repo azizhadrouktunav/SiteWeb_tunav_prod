@@ -1,0 +1,249 @@
+.demo-hero {
+  position: relative;
+  padding: 4rem 2rem 5rem;
+  overflow: hidden;
+
+  &__bg {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 0 0, rgba(0, 180, 216, 0.4), transparent 55%),
+      radial-gradient(circle at 100% 0, rgba(30, 58, 138, 0.8), transparent 60%),
+      linear-gradient(135deg, var(--color-royal-blue), var(--color-cyan));
+    opacity: 0.9;
+    z-index: -1;
+  }
+
+  &__content {
+    max-width: 1120px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+    gap: 3rem;
+    align-items: center;
+    color: #ffffff;
+  }
+
+  &__text h1 {
+    font-size: clamp(2.4rem, 3vw, 3.1rem);
+    font-weight: 700;
+    line-height: 1.1;
+    margin: 1rem 0 1.25rem;
+  }
+
+  &__subtitle {
+    font-size: 0.98rem;
+    max-width: 34rem;
+    color: rgba(241, 245, 249, 0.9);
+  }
+
+  &__tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem 0.9rem;
+    border-radius: 999px;
+    background-color: rgba(15, 23, 42, 0.45);
+    font-size: 0.8rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  &__cta {
+    margin-top: 1.75rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  &__visual {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  &__card {
+    width: 100%;
+    max-width: 420px;
+    background-color: #ffffff;
+    border-radius: 1.5rem;
+    padding: 1.5rem 1.75rem;
+    box-shadow: 0 24px 70px rgba(15, 23, 42, 0.45);
+    color: #0f172a;
+  }
+
+  &__card h2 {
+    font-size: 1.1rem;
+    margin-bottom: 0.75rem;
+  }
+
+  &__card ul {
+    padding-left: 1.1rem;
+    margin: 0 0 1.25rem;
+    font-size: 0.92rem;
+
+    li + li {
+      margin-top: 0.35rem;
+    }
+  }
+
+  &__badge {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    padding: 0.75rem 1rem;
+    border-radius: 1rem;
+    background: linear-gradient(90deg, var(--color-royal-blue), var(--color-cyan));
+    color: #ffffff;
+    font-size: 0.85rem;
+  }
+
+  &__badge-title {
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  &__badge-text {
+    opacity: 0.9;
+  }
+}
+
+.demo-page {
+  padding: 0 2rem 5rem;
+
+  &__container {
+    max-width: 1120px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+    gap: 2rem;
+    align-items: start;
+  }
+
+  &__copy {
+    padding: 1.5rem 0;
+  }
+
+  &__eyebrow {
+    margin: 0 0 0.85rem;
+    color: var(--color-royal-blue);
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  &__copy h2 {
+    margin: 0 0 1rem;
+    font-size: clamp(2rem, 2.7vw, 2.6rem);
+    line-height: 1.1;
+    color: #0f172a;
+  }
+
+  &__text {
+    margin: 0;
+    color: #475569;
+    font-size: 1rem;
+    line-height: 1.8;
+  }
+
+  &__points {
+    display: grid;
+    gap: 1rem;
+    margin-top: 1.6rem;
+  }
+
+  &__point {
+    display: grid;
+    gap: 0.25rem;
+    padding: 1rem 1.1rem;
+    border: 1px solid rgba(148, 163, 184, 0.18);
+    border-radius: 1.15rem;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+    box-shadow: 0 16px 36px rgba(15, 23, 42, 0.06);
+
+    strong {
+      color: #0f172a;
+      font-size: 0.98rem;
+    }
+
+    span {
+      color: #64748b;
+      font-size: 0.94rem;
+      line-height: 1.7;
+    }
+  }
+
+  &__panel {
+    padding: 1.5rem;
+    border-radius: 1.5rem;
+    background: #ffffff;
+    border: 1px solid rgba(219, 230, 242, 0.95);
+    box-shadow: 0 24px 56px rgba(15, 23, 42, 0.12);
+  }
+
+  &__panel-head {
+    margin-bottom: 1.25rem;
+
+    h3 {
+      margin: 0 0 0.45rem;
+      font-size: 1.45rem;
+      color: #0f172a;
+    }
+
+    p {
+      margin: 0;
+      color: #64748b;
+      line-height: 1.7;
+    }
+  }
+}
+
+.btn-primary,
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.85rem;
+  padding: 0 1.4rem;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background: linear-gradient(90deg, var(--color-royal-blue), var(--color-cyan));
+  color: #ffffff;
+  border: none;
+}
+
+.btn-secondary {
+  border: 1px solid rgba(241, 245, 249, 0.7);
+  background-color: transparent;
+  color: #e5e7eb;
+}
+
+@media (max-width: 900px) {
+  .demo-hero {
+    padding: 3rem 1.25rem 3.5rem;
+
+    &__content {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 2.5rem;
+    }
+
+    &__visual {
+      justify-content: flex-start;
+    }
+  }
+
+  .demo-page {
+    padding: 0 1.25rem 3.5rem;
+
+    &__container {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+}
+

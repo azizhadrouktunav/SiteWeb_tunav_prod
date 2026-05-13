@@ -1,0 +1,530 @@
+@if (loading()) {
+  <section class="solution-detail-state">
+    <div class="solution-detail-state__spinner"></div>
+    <p>Chargement de la solution...</p>
+  </section>
+} @else if (error()) {
+  <section class="solution-detail-state">
+    <h1>Solution indisponible</h1>
+    <p>{{ error() }}</p>
+    <a
+      routerLink="/solutions"
+      class="solution-detail-btn solution-detail-btn--secondary"
+    >
+      Retour aux solutions
+    </a>
+  </section>
+} @else if (solution(); as solution) {
+  <section class="solution-detail">
+    <header class="solution-hero">
+      <div class="solution-detail__container">
+        <a routerLink="/solutions" class="solution-detail__back-link">
+          <span aria-hidden="true">&larr;</span>
+          Retour aux solutions
+        </a>
+
+        <div class="solution-summary">
+          <div class="solution-summary__copy">
+            <span class="solution-summary__eyebrow">
+              {{
+                solution.type === 'Sectorial'
+                  ? 'Solution sectorielle'
+                  : 'Solution generale'
+              }}
+            </span>
+            <h1>{{ solution.title }}</h1>
+            @if (getHeroDescription(solution); as heroDescription) {
+              <p>{{ heroDescription }}</p>
+            }
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="solution-detail__body">
+      <div class="solution-detail__container">
+        <div class="solution-layout">
+          <div class="solution-main">
+            @if (getAboutDescription(solution).length > 0) {
+              <section class="content-card">
+                <h2>&Agrave; propos de la solution</h2>
+                <div class="content-card__text">
+                  @for (paragraph of getAboutDescription(solution); track paragraph) {
+                    <p>{{ paragraph }}</p>
+                  }
+                </div>
+              </section>
+            }
+
+            <section class="content-card">
+              <h2>Vid&eacute;o de pr&eacute;sentation</h2>
+              @if (getYoutubeEmbedUrl(solution); as videoUrl) {
+                <div class="solution-video">
+                  <iframe
+                    [src]="videoUrl"
+                    [title]="'Video de presentation de ' + solution.title"
+                    frameborder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen
+                  ></iframe>
+                </div>
+              } @else {
+                <p class="solution-video__empty">
+                  Aucune video de presentation n'a ete ajoutee pour cette solution.
+                </p>
+              }
+            </section>
+
+            @if (solution.functionalities.length > 0) {
+              <section class="content-card">
+                <h2>Fonctionnalit&eacute;s</h2>
+                <div class="feature-grid">
+                  @for (feature of solution.functionalities; track feature) {
+                    <div class="feature-grid__item">
+                      <span class="feature-grid__icon">&#10003;</span>
+                      <span>{{ feature }}</span>
+                    </div>
+                  }
+                </div>
+              </section>
+            }
+
+            @if (solution.advantages.length > 0) {
+              <section class="content-card">
+                <h2>Avantages</h2>
+                <div class="advantage-list">
+                  @for (advantage of solution.advantages; track advantage) {
+                    <div class="advantage-list__item">{{ advantage }}</div>
+                  }
+                </div>
+              </section>
+            }
+
+            @if (solution.useCases.length > 0) {
+              <section class="content-card">
+                <h2>Cas d'usage</h2>
+                <div class="use-case-list">
+                  @for (useCase of solution.useCases; track useCase.title) {
+                    <article class="use-case-list__item">
+                      <h3>{{ useCase.title }}</h3>
+                      <p>{{ useCase.description }}</p>
+                    </article>
+                  }
+                </div>
+              </section>
+            }
+          </div>
+
+          <aside class="solution-sidebar">
+            <div class="cta-card">
+              <div class="cta-card__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" focusable="false">
+                  <path
+                    d="M12 3l7 3v5c0 4.6-2.8 8.9-7 10-4.2-1.1-7-5.4-7-10V6l7-3Z"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                  />
+                </svg>
+              </div>
+              <h2>Essayez {{ solution.title }}</h2>
+              <p>
+                Demandez une demonstration gratuite et decouvrez comment cette solution
+                peut transformer votre entreprise.
+              </p>
+              <button
+                type="button"
+                class="solution-detail-btn solution-detail-btn--primary"
+                (click)="openModal('demo')"
+              >
+                <span class="solution-detail-btn__icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" focusable="false">
+                    <path
+                      d="M12 5v14M5 12h14"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-width="2"
+                    />
+                  </svg>
+                </span>
+                Demander une D&eacute;mo
+              </button>
+              @if (solution.hasPacks && solution.effectivePackSolutionSlug) {
+                <a
+                  routerLink="/packs"
+                  [queryParams]="{
+                    solution: solution.effectivePackSolutionSlug,
+                  }"
+                  class="solution-detail-btn solution-detail-btn--secondary"
+                >
+                  <span class="solution-detail-btn__icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" focusable="false">
+                      <path
+                        d="M12 3 4 7l8 4 8-4-8-4Zm-8 8 8 4 8-4M4 15l8 4 8-4"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="1.8"
+                      />
+                    </svg>
+                  </span>
+                  Voir les packs
+                </a>
+              }
+              <p class="cta-card__label">Autres options</p>
+              <button
+                type="button"
+                class="solution-detail-btn solution-detail-btn--whatsapp"
+                (click)="openModal('whatsapp')"
+              >
+                <span class="solution-detail-btn__icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" focusable="false">
+                    <path
+                      d="M20 11.5A8.5 8.5 0 1 1 6.6 18.3L3.5 19.5l1.2-3.1A8.5 8.5 0 0 1 20 11.5Z"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="1.8"
+                    />
+                  </svg>
+                </span>
+                D&eacute;marrer une conversation WhatsApp
+              </button>
+              <button
+                type="button"
+                class="solution-detail-btn solution-detail-btn--ghost"
+                (click)="openModal('appointment')"
+              >
+                <span class="solution-detail-btn__icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" focusable="false">
+                    <path
+                      d="M8 3v3M16 3v3M4 9h16M6 6h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Z"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="1.8"
+                    />
+                  </svg>
+                </span>
+                Demander un Rendez-vous
+              </button>
+            </div>
+
+            @if (getVisibleSectors(solution).length > 0) {
+              <section class="sidebar-card">
+                <h3>Secteurs</h3>
+                <div class="sidebar-card__chips">
+                  @for (sector of getVisibleSectors(solution); track sector) {
+                    <span class="sidebar-card__chip">{{ sector }}</span>
+                  }
+                </div>
+              </section>
+            }
+
+            @if (solution.topClients.length > 0) {
+              <section class="sidebar-card">
+                <h3>Ils nous font confiance</h3>
+                <ul class="sidebar-card__clients">
+                  @for (client of solution.topClients; track client) {
+                    <li>{{ client }}</li>
+                  }
+                </ul>
+              </section>
+            }
+          </aside>
+        </div>
+      </div>
+    </div>
+  </section>
+}
+
+@if (solution(); as solution) {
+  @if (activeModal(); as modal) {
+    <div class="solution-modal-backdrop" (click)="closeModal()">
+      <section
+        class="solution-modal"
+        [class.solution-modal--demo]="modal === 'demo'"
+        [class.solution-modal--appointment]="modal === 'appointment'"
+        [class.solution-modal--whatsapp]="modal === 'whatsapp'"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="solution-modal-title"
+        (click)="$event.stopPropagation()"
+      >
+        <button
+          type="button"
+          class="solution-modal__close"
+          aria-label="Fermer la fenetre"
+          (click)="closeModal()"
+        >
+          &times;
+        </button>
+
+        @if (modal === 'demo') {
+          <div class="solution-modal__header solution-modal__header--simple">
+            <div>
+              <h2 id="solution-modal-title">Demander une D&eacute;mo</h2>
+              <p class="solution-modal__subtitle">{{ solution.title }}</p>
+            </div>
+          </div>
+
+          <app-demo-request-form
+            [presetSolution]="solution"
+            entryPoint="SolutionDetail"
+            [compact]="true"
+            [showCancelButton]="true"
+            submitLabel="Envoyer"
+            (cancel)="closeModal()"
+          />
+        }
+
+        @if (modal === 'appointment') {
+          <div class="solution-modal__header">
+            <div class="solution-modal__header-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" focusable="false">
+                <path
+                  d="M8 3v3M16 3v3M4 9h16M6 6h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Z"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="1.8"
+                />
+              </svg>
+            </div>
+            <div>
+              <h2 id="solution-modal-title">Demander un Rendez-vous</h2>
+              <p>
+                Remplissez ce formulaire et nous vous enverrons un lien Calendly pour
+                choisir le creneau qui vous convient le mieux.
+              </p>
+            </div>
+          </div>
+
+          <div class="solution-modal__pill">
+            Solution concernee : <strong>{{ solution.title }}</strong>
+          </div>
+
+          <form
+            class="solution-modal__form"
+            novalidate
+            (ngSubmit)="submitAppointmentRequest(solution)"
+          >
+            <div class="solution-modal__row">
+              <label class="solution-modal__field">
+                <span>Nom *</span>
+                <input
+                  type="text"
+                  name="appointmentLastName"
+                  [(ngModel)]="appointmentForm.lastName"
+                  [class.is-invalid]="appointmentErrors.lastName"
+                />
+                @if (appointmentErrors.lastName) {
+                  <small class="solution-modal__error">{{
+                    appointmentErrors.lastName
+                  }}</small>
+                }
+              </label>
+
+              <label class="solution-modal__field">
+                <span>Pr&eacute;nom *</span>
+                <input
+                  type="text"
+                  name="appointmentFirstName"
+                  [(ngModel)]="appointmentForm.firstName"
+                  [class.is-invalid]="appointmentErrors.firstName"
+                />
+                @if (appointmentErrors.firstName) {
+                  <small class="solution-modal__error">{{
+                    appointmentErrors.firstName
+                  }}</small>
+                }
+              </label>
+            </div>
+
+            <label class="solution-modal__field">
+              <span>Adresse Email *</span>
+              <input
+                type="email"
+                name="appointmentEmail"
+                [(ngModel)]="appointmentForm.email"
+                [class.is-invalid]="appointmentErrors.email"
+              />
+              @if (appointmentErrors.email) {
+                <small class="solution-modal__error">{{ appointmentErrors.email }}</small>
+              }
+            </label>
+
+            <label class="solution-modal__field">
+              <span>Num&eacute;ro de t&eacute;l&eacute;phone *</span>
+              <input
+                type="tel"
+                name="appointmentPhone"
+                [(ngModel)]="appointmentForm.phone"
+                placeholder="+216 XX XXX XXX"
+                [class.is-invalid]="appointmentErrors.phone"
+              />
+              @if (appointmentErrors.phone) {
+                <small class="solution-modal__error">{{ appointmentErrors.phone }}</small>
+              }
+            </label>
+
+            <label class="solution-modal__field">
+              <span>Entreprise</span>
+              <input
+                type="text"
+                name="appointmentCompany"
+                [(ngModel)]="appointmentForm.company"
+                placeholder="Nom de votre entreprise"
+              />
+            </label>
+
+            <label class="solution-modal__field">
+              <span>Message (optionnel)</span>
+              <textarea
+                rows="3"
+                name="appointmentMessage"
+                [(ngModel)]="appointmentForm.message"
+                placeholder="Decrivez brievement votre projet ou vos besoins..."
+              ></textarea>
+            </label>
+
+            <div class="solution-modal__note solution-modal__note--accent">
+              <span class="solution-modal__note-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" focusable="false">
+                  <path
+                    d="M12 8v4m0 4h.01M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Z"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="1.8"
+                  />
+                </svg>
+              </span>
+              <div>
+                <strong>Prochaines etapes</strong>
+                <p>
+                  Apres validation, vous recevrez un email avec un lien Calendly pour
+                  choisir votre creneau de rendez-vous parmi nos disponibilites.
+                </p>
+              </div>
+            </div>
+
+            <div class="solution-modal__actions">
+              <button
+                type="button"
+                class="solution-modal__btn solution-modal__btn--cancel"
+                (click)="closeModal()"
+              >
+                Annuler
+              </button>
+              <button
+                type="submit"
+                class="solution-modal__btn solution-modal__btn--submit"
+              >
+                Envoyer la demande
+              </button>
+            </div>
+          </form>
+        }
+
+        @if (modal === 'whatsapp') {
+          <div class="solution-modal__header">
+            <div class="solution-modal__header-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" focusable="false">
+                <path
+                  d="M20 11.5A8.5 8.5 0 1 1 6.6 18.3L3.5 19.5l1.2-3.1A8.5 8.5 0 0 1 20 11.5Z"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="1.8"
+                />
+              </svg>
+            </div>
+            <div>
+              <h2 id="solution-modal-title">D&eacute;marrer une conversation WhatsApp</h2>
+              <p>
+                Entrez votre numero de telephone et nous vous redirigerons vers
+                WhatsApp pour echanger directement avec notre equipe.
+              </p>
+            </div>
+          </div>
+
+          <div class="solution-modal__pill">
+            Solution selectionnee : <strong>{{ solution.title }}</strong>
+          </div>
+
+          <form
+            class="solution-modal__form"
+            novalidate
+            (ngSubmit)="continueToWhatsapp(solution)"
+          >
+            <label class="solution-modal__field">
+              <span>Votre num&eacute;ro de t&eacute;l&eacute;phone *</span>
+              <input
+                type="tel"
+                name="whatsappPhone"
+                [(ngModel)]="whatsappForm.phone"
+                placeholder="+216 XX XXX XXX"
+                [class.is-invalid]="whatsappErrors.phone"
+              />
+              @if (whatsappErrors.phone) {
+                <small class="solution-modal__error">{{ whatsappErrors.phone }}</small>
+              }
+            </label>
+
+            <p class="solution-modal__helper">
+              Nous utiliserons ce numero pour vous identifier sur WhatsApp.
+            </p>
+
+            <div class="solution-modal__note solution-modal__note--success">
+              <span class="solution-modal__note-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" focusable="false">
+                  <path
+                    d="M20 11.5A8.5 8.5 0 1 1 6.6 18.3L3.5 19.5l1.2-3.1A8.5 8.5 0 0 1 20 11.5Z"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="1.8"
+                  />
+                </svg>
+              </span>
+              <div>
+                <strong>Pourquoi WhatsApp ?</strong>
+                <p>
+                  Obtenez des reponses rapides, partagez des documents et beneficiez
+                  d'un support personnalise en temps reel.
+                </p>
+              </div>
+            </div>
+
+            <div class="solution-modal__actions">
+              <button
+                type="button"
+                class="solution-modal__btn solution-modal__btn--cancel"
+                (click)="closeModal()"
+              >
+                Annuler
+              </button>
+              <button
+                type="submit"
+                class="solution-modal__btn solution-modal__btn--whatsapp"
+              >
+                Continuer sur WhatsApp
+              </button>
+            </div>
+          </form>
+        }
+      </section>
+    </div>
+  }
+}

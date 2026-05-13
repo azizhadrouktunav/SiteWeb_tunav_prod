@@ -1,0 +1,490 @@
+@{
+    ViewData["Title"] = "Contacts & Rendez-vous";
+    ViewData["ActivePage"] = "Contacts";
+    Layout = "~/Views/Shared/_LayoutBackoffice.cshtml";
+}
+
+<div class="page-header">
+    <h1>Contacts &amp; Rendez-vous</h1>
+    <p>Gérez toutes les demandes de contact et rendez-vous reçus depuis le site web</p>
+</div>
+
+<!-- ONGLETS ─────────────────────────────────────────────────────────────────── -->
+<div class="tab-bar">
+    <button class="tab-btn tab-btn--active" id="tabContact" onclick="switchTab('contact')">
+        Formulaires de contact (<span id="countContact">0</span>)
+    </button>
+    <button class="tab-btn" id="tabDemo" onclick="switchTab('demo')">
+         Demandes de rendez-vous (<span id="countDemo">0</span>)
+    </button>
+</div>
+
+<!-- TABLEAU ─────────────────────────────────────────────────────────────────── -->
+<div class="card">
+    <div class="card-header">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <h2 id="tableTitle">Liste des demandes (<span id="totalCount">0</span>)</h2>
+            <select id="filterStatus" onchange="loadData()"
+                style="padding:7px 12px;border:1.5px solid #dce4f5;border-radius:8px;font-size:13px;color:#1e2d5a;outline:none">
+                <option value="">Tous les statuts</option>
+            </select>
+            <input type="text" id="searchInput" placeholder="🔍 Rechercher nom / email..."
+                oninput="applySearch()"
+                style="padding:7px 12px;border:1.5px solid #dce4f5;border-radius:8px;
+                       font-size:13px;color:#1e2d5a;outline:none;width:220px" />
+            <button class="btn btn-outline btn-sm" onclick="exportCSV()">⬇ Exporter CSV</button>
+        </div>
+    </div>
+
+    <table>
+        <thead>
+            <tr id="tableHead"></tr>
+        </thead>
+        <tbody id="dataTable">
+            <tr class="loading-row"><td colspan="9">Chargement...</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- MODAL DÉTAIL ──────────────────────────────────────────────────────────── -->
+<div class="modal-overlay" id="modalDetail">
+    <div class="modal-box" style="max-width:540px">
+        <button class="modal-close-btn" onclick="closeDetail()" title="Fermer">✕</button>
+        <h3 style="margin-bottom:4px">Détail de la demande</h3>
+        <p id="detailTypeLabel" style="font-size:12px;color:#6b7db3;margin-bottom:18px;font-weight:500"></p>
+
+        <div id="detailGrid" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px"></div>
+
+        <div style="margin-bottom:14px">
+            <div style="font-size:11px;font-weight:600;color:#6b7db3;margin-bottom:6px">Note interne</div>
+            <div id="detailNote" style="font-size:13px;color:#1e2d5a;background:#fffde7;padding:12px;border-radius:8px;border:1px solid #fff59d;white-space:pre-wrap"></div>
+        </div>
+
+        <div style="display:flex;align-items:center;justify-content:space-between;padding-top:14px;border-top:1px solid #dce4f5">
+            <div id="detailStatusWrap"></div>
+            <div style="display:flex;gap:8px">
+                <button class="btn btn-outline" onclick="closeDetail()">Fermer</button>
+                <button class="btn btn-primary btn-sm" id="btnDetailEditStatus">Modifier le statut</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL STATUT ──────────────────────────────────────────────────────────── -->
+<div class="modal-overlay" id="modalStatus">
+    <div class="modal-box" style="max-width:460px">
+        <button class="modal-close-btn" onclick="closeStatus()" title="Fermer">✕</button>
+        <h3>Mettre à jour la demande</h3>
+        <p id="statusInfo" style="font-size:13px;color:#6b7db3;margin-bottom:18px;padding:10px 14px;background:#f8faff;border-radius:8px;border-left:3px solid #00c8d4"></p>
+        <div class="mfield" style="margin-bottom:14px">
+            <label>Nouveau statut</label>
+            <select id="newStatus"></select>
+        </div>
+        <div class="mfield" style="margin-bottom:20px">
+            <label>Note interne</label>
+            <textarea id="noteField" rows="4" placeholder="Ex : Client sérieux, planifier un appel..."></textarea>
+        </div>
+        <div class="modal-actions">
+            <button class="btn btn-outline" onclick="closeStatus()">Annuler</button>
+            <button class="btn btn-primary" id="btnSaveStatus" onclick="saveStatus()">Enregistrer</button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<style>
+    .modal-close-btn { position:absolute; top:16px; right:16px; background:none; border:none; font-size:20px; cursor:pointer; color:#6b7db3; line-height:1; padding:4px 8px; border-radius:6px; transition:background 0.2s; }
+    .modal-close-btn:hover { background:#f0f4ff; color:#1e2d5a; }
+    .modal-box { position:relative; }
+    .tab-bar {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 20px;
+        border-bottom: 2px solid #e8edf8;
+        padding-bottom: 0;
+    }
+    .tab-btn {
+        background: none;
+        border: none;
+        padding: 10px 20px;
+        font-size: 14px;
+        font-weight: 500;
+        color: #6b7db3;
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+        margin-bottom: -2px;
+        transition: color .2s, border-color .2s;
+    }
+    .tab-btn--active { color: #00c8d4; border-bottom-color: #00c8d4; }
+    .tab-btn:hover:not(.tab-btn--active) { color: #1e2d5a; }
+
+    .card { background: white; border: 1px solid #dce4f5; border-radius: 12px; overflow: hidden; }
+    .card-header {
+        padding: 16px 20px;
+        border-bottom: 1px solid #dce4f5;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    .card-header h2 { font-size: 15px; font-weight: 600; color: #1e2d5a; }
+
+    table { width: 100%; border-collapse: collapse; }
+    thead th {
+        padding: 11px 16px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #6b7db3;
+        background: #f8faff;
+        border-bottom: 1px solid #dce4f5;
+        text-align: left;
+    }
+    tbody tr { border-bottom: 1px solid #dce4f5; transition: background 0.1s; }
+    tbody tr:hover { background: #f8faff; }
+    tbody td { padding: 12px 16px; font-size: 13px; color: #1e2d5a; vertical-align: middle; }
+
+    .badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+    .badge-nouveau  { background: #fff3e0; color: #e65100; }
+    .badge-encours  { background: #e3f2fd; color: #1565c0; }
+    .badge-traite   { background: #e8f5e9; color: #2e7d32; }
+    .badge-confirme { background: rgba(0,200,212,.12); color: #008a91; }
+    .badge-annule   { background: #ffebee; color: #c62828; }
+
+    .btn {
+        padding: 8px 16px; border-radius: 8px; font-family: 'Inter', sans-serif;
+        font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.15s; border: none;
+    }
+    .btn-primary { background: #1a2a6c; color: white; }
+    .btn-primary:hover { background: #0d1b4b; }
+    .btn-outline { background: none; border: 1px solid #dce4f5; color: #6b7db3; }
+    .btn-outline:hover { border-color: #00c8d4; color: #00c8d4; }
+    .btn-sm { padding: 5px 10px; font-size: 12px; }
+
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 999; align-items: center; justify-content: center; }
+    .modal-overlay.show { display: flex; }
+    .modal-box { background: white; border-radius: 14px; padding: 28px; width: 540px; max-width: 95vw; max-height: 90vh; overflow-y: auto; }
+    .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+
+    .mfield label { display: block; font-size: 12px; font-weight: 500; color: #6b7db3; margin-bottom: 5px; }
+    .mfield select, .mfield textarea {
+        width: 100%; padding: 10px 12px; border: 1.5px solid #dce4f5; border-radius: 8px;
+        font-size: 13px; font-family: 'Inter', sans-serif; outline: none; color: #1e2d5a;
+        transition: border-color 0.2s; resize: vertical;
+    }
+    .mfield select:focus, .mfield textarea:focus { border-color: #00c8d4; }
+
+    .empty-row td, .loading-row td { text-align: center; padding: 32px; color: #6b7db3; font-size: 13px; }
+
+    .detail-field .label { font-size: 11px; font-weight: 600; color: #6b7db3; margin-bottom: 4px; }
+    .detail-field .value { font-size: 13px; color: #1e2d5a; }
+    .detail-field--full  { grid-column: 1 / -1; }
+</style>
+
+<script>
+    let currentTab = 'contact';
+    let allData    = [];
+    let editingId  = null;
+
+    const STATUSES = {
+        contact: ['Nouveau', 'EnCours', 'Traité'],
+        demo:    ['Nouveau', 'Confirmé', 'Annulé']
+    };
+
+    const BADGE_MAP = {
+        'Nouveau':  'badge-nouveau',
+        'EnCours':  'badge-encours',
+        'Traité':   'badge-traite',
+        'Confirmé': 'badge-confirme',
+        'Annulé':   'badge-annule'
+    };
+
+    const LABEL_MAP = {
+        'Nouveau':  'Nouveau',
+        'EnCours':  'En cours',
+        'Traité':   'Traité',
+        'Confirmé': 'Confirmé',
+        'Annulé':   'Annulé'
+    };
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+    function esc(str) {
+        if (!str) return '';
+        return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+
+    function displaySubject(r) {
+        if (r.subject === 'Autre' && r.otherSubject) return esc(r.otherSubject);
+        return esc(r.subject);
+    }
+
+    function badge(status) {
+        return `<span class="badge ${BADGE_MAP[status]||'badge-nouveau'}">${esc(LABEL_MAP[status]||status)}</span>`;
+    }
+
+    function fmtDate(d) {
+        if (!d) return '—';
+        return new Date(d).toLocaleDateString('fr-FR', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+    }
+
+    function getToken() {
+        return localStorage.getItem('tunav_token') || sessionStorage.getItem('token') || '';
+    }
+
+    function authHeaders() {
+        return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getToken() };
+    }
+
+    // ── Onglets ───────────────────────────────────────────────────────────────
+    function switchTab(tab) {
+        currentTab = tab;
+        document.getElementById('tabContact').classList.toggle('tab-btn--active', tab === 'contact');
+        document.getElementById('tabDemo').classList.toggle('tab-btn--active',    tab === 'demo');
+        document.getElementById('filterStatus').value = '';
+        document.getElementById('searchInput').value  = '';
+        updateFilterOptions();
+        loadData();
+    }
+
+    function updateFilterOptions() {
+        const sel = document.getElementById('filterStatus');
+        sel.innerHTML = `<option value="">Tous les statuts</option>` +
+            STATUSES[currentTab].map(s =>
+                `<option value="${s}">${LABEL_MAP[s]||s}</option>`
+            ).join('');
+    }
+
+    // ── Compteurs onglets ─────────────────────────────────────────────────────
+    async function loadCounts() {
+        try {
+            const r = await fetch('/api/contact?page=1&size=1', { headers: authHeaders() });
+            if (r.ok) { const d = await r.json(); document.getElementById('countContact').textContent = d.total; }
+        } catch {}
+        try {
+            const r = await fetch('/api/contact/demo?page=1&size=1', { headers: authHeaders() });
+            if (r.ok) { const d = await r.json(); document.getElementById('countDemo').textContent = d.total; }
+        } catch {}
+    }
+
+    // ── Chargement données ────────────────────────────────────────────────────
+    async function loadData() {
+        const status  = document.getElementById('filterStatus').value;
+        const colspan = currentTab === 'contact' ? 9 : 6;
+        const url = currentTab === 'contact'
+            ? `/api/contact?page=1&size=500${status ? '&status=' + encodeURIComponent(status) : ''}`
+            : `/api/contact/demo?page=1&size=500${status ? '&status=' + encodeURIComponent(status) : ''}`;
+
+        document.getElementById('dataTable').innerHTML =
+            `<tr class="loading-row"><td colspan="${colspan}">Chargement...</td></tr>`;
+
+        try {
+            const res = await fetch(url, { headers: authHeaders() });
+            if (res.status === 401 || res.status === 403) {
+                document.getElementById('dataTable').innerHTML =
+                    `<tr class="empty-row"><td colspan="${colspan}">🔒 Accès non autorisé.</td></tr>`;
+                return;
+            }
+            const json = await res.json();
+            allData = json.items || [];
+            const total = json.total || allData.length;
+            document.getElementById('tableTitle').innerHTML =
+                (currentTab === 'contact' ? 'Formulaires de contact' : 'Demandes de rendez-vous') +
+                ` (<span id="totalCount">${total}</span>)`;
+            renderTable(allData);
+        } catch {
+            document.getElementById('dataTable').innerHTML =
+                `<tr class="empty-row"><td colspan="${colspan}">Erreur de chargement.</td></tr>`;
+        }
+    }
+
+    function applySearch() {
+        const q = document.getElementById('searchInput').value.toLowerCase().trim();
+        if (!q) { renderTable(allData); return; }
+        renderTable(allData.filter(r =>
+            (r.firstName + ' ' + r.lastName).toLowerCase().includes(q) ||
+            (r.email   || '').toLowerCase().includes(q) ||
+            (r.company || '').toLowerCase().includes(q)
+        ));
+    }
+
+    // ── Rendu tableau ─────────────────────────────────────────────────────────
+    function renderTable(list) {
+        if (currentTab === 'contact') {
+            document.getElementById('tableHead').innerHTML =
+                `<th>Nom complet</th><th>Email</th><th>Téléphone</th>
+                 <th>Entreprise</th><th>Sujet</th><th>Message</th>
+                 <th>Date de soumission</th><th>Statut</th><th>Actions</th>`;
+
+            document.getElementById('dataTable').innerHTML = list.length ? list.map(r => `
+                <tr>
+                    <td style="font-weight:600">${esc(r.firstName)} ${esc(r.lastName)}</td>
+                    <td><a href="mailto:${esc(r.email)}" style="color:#00c8d4">${esc(r.email)}</a></td>
+                    <td>${r.phone ? esc(r.phone) : '—'}</td>
+                    <td>${r.company ? esc(r.company) : '—'}</td>
+                    <td style="max-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${displaySubject(r)}">${displaySubject(r)}</td>
+                    <td style="max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${esc(r.message)}">${esc(r.message)}</td>
+                    <td style="white-space:nowrap">${fmtDate(r.createdAt)}</td>
+                    <td>${badge(r.status)}</td>
+                    <td>
+                        <div style="display:flex;gap:5px;flex-wrap:wrap">
+                            <button class="btn btn-outline btn-sm" onclick="openDetail(${r.id})">Détail</button>
+                            <button class="btn btn-outline btn-sm" style="border-color:#00c8d4;color:#00c8d4"
+                                onclick="openStatus(${r.id},'${esc(r.firstName)} ${esc(r.lastName)}','${r.status}','${esc(r.internalNote||'')}')">Statut</button>
+                        </div>
+                    </td>
+                </tr>`).join('') : '<tr class="empty-row"><td colspan="9">Aucune demande.</td></tr>';
+
+        } else {
+            document.getElementById('tableHead').innerHTML =
+                `<th>Nom complet</th><th>Email</th><th>WhatsApp</th>
+                 <th>Date de soumission</th><th>Statut</th><th>Actions</th>`;
+
+            document.getElementById('dataTable').innerHTML = list.length ? list.map(r => `
+                <tr>
+                    <td style="font-weight:600">${esc(r.firstName)} ${esc(r.lastName)}</td>
+                    <td><a href="mailto:${esc(r.email)}" style="color:#00c8d4">${esc(r.email)}</a></td>
+                    <td style="text-align:center">${r.hasWhatsApp ? '✅ Oui' : '❌ Non'}</td>
+                    <td style="white-space:nowrap">${fmtDate(r.createdAt)}</td>
+                    <td>${badge(r.status)}</td>
+                    <td>
+                        <div style="display:flex;gap:5px;flex-wrap:wrap">
+                            <button class="btn btn-outline btn-sm" onclick="openDetail(${r.id})">Détail</button>
+                            <button class="btn btn-outline btn-sm" style="border-color:#00c8d4;color:#00c8d4"
+                                onclick="openStatus(${r.id},'${esc(r.firstName)} ${esc(r.lastName)}','${r.status}','${esc(r.internalNote||'')}')">Statut</button>
+                        </div>
+                    </td>
+                </tr>`).join('') : '<tr class="empty-row"><td colspan="6">Aucune demande.</td></tr>';
+        }
+    }
+
+    // ── Modal Détail ─────────────────────────────────────────────────────────
+    function openDetail(id) {
+        const r = allData.find(x => x.id === id);
+        if (!r) return;
+
+        document.getElementById('detailTypeLabel').textContent =
+            currentTab === 'contact' ? '✉️ Formulaire de contact' : '📅 Demande de rendez-vous';
+
+        let html = '';
+        if (currentTab === 'contact') {
+            html = `
+                <div class="detail-field"><div class="label">Prénom</div><div class="value">${esc(r.firstName)}</div></div>
+                <div class="detail-field"><div class="label">Nom</div><div class="value">${esc(r.lastName)}</div></div>
+                <div class="detail-field"><div class="label">Email</div><div class="value"><a href="mailto:${esc(r.email)}" style="color:#00c8d4">${esc(r.email)}</a></div></div>
+                <div class="detail-field"><div class="label">Téléphone</div><div class="value">${esc(r.phone)||'—'}</div></div>
+                <div class="detail-field"><div class="label">Entreprise</div><div class="value">${esc(r.company)||'—'}</div></div>
+                <div class="detail-field"><div class="label">Date</div><div class="value">${fmtDate(r.createdAt)}</div></div>
+                <div class="detail-field detail-field--full"><div class="label">Sujet</div><div class="value">${displaySubject(r)}</div></div>
+                <div class="detail-field detail-field--full">
+                    <div class="label">Message</div>
+                    <div class="value" style="background:#f8faff;padding:12px;border-radius:8px;border:1px solid #dce4f5;white-space:pre-wrap">${esc(r.message)}</div>
+                </div>`;
+        } else {
+            html = `
+                <div class="detail-field"><div class="label">Prénom</div><div class="value">${esc(r.firstName)}</div></div>
+                <div class="detail-field"><div class="label">Nom</div><div class="value">${esc(r.lastName)}</div></div>
+                <div class="detail-field"><div class="label">Email</div><div class="value"><a href="mailto:${esc(r.email)}" style="color:#00c8d4">${esc(r.email)}</a></div></div>
+                <div class="detail-field"><div class="label">WhatsApp</div><div class="value">${r.hasWhatsApp ? '✅ Oui' : '❌ Non'}</div></div>
+                <div class="detail-field"><div class="label">Date</div><div class="value">${fmtDate(r.createdAt)}</div></div>`;
+        }
+
+        document.getElementById('detailGrid').innerHTML = html;
+        document.getElementById('detailNote').textContent = r.internalNote || '—';
+        document.getElementById('detailStatusWrap').innerHTML = badge(r.status);
+        document.getElementById('btnDetailEditStatus').onclick = () => {
+            closeDetail();
+            openStatus(r.id, r.firstName + ' ' + r.lastName, r.status, r.internalNote || '');
+        };
+        document.getElementById('modalDetail').classList.add('show');
+    }
+
+    function closeDetail() { document.getElementById('modalDetail').classList.remove('show'); }
+
+    // ── Modal Statut ─────────────────────────────────────────────────────────
+    function openStatus(id, name, currentStatus, note) {
+        editingId = id;
+        document.getElementById('statusInfo').textContent = 'Demande de : ' + name;
+        document.getElementById('newStatus').innerHTML = STATUSES[currentTab]
+            .map(s => `<option value="${s}"${s === currentStatus ? ' selected' : ''}>${LABEL_MAP[s]||s}</option>`)
+            .join('');
+        document.getElementById('noteField').value = note;
+        document.getElementById('modalStatus').classList.add('show');
+    }
+
+    function closeStatus() { document.getElementById('modalStatus').classList.remove('show'); editingId = null; }
+
+    async function saveStatus() {
+        if (!editingId) return;
+        const btn = document.getElementById('btnSaveStatus');
+        btn.disabled = true; btn.textContent = 'Enregistrement...';
+        try {
+            const status       = document.getElementById('newStatus').value;
+            const internalNote = document.getElementById('noteField').value.trim() || null;
+            const url = currentTab === 'contact'
+                ? `/api/contact/${editingId}/status`
+                : `/api/contact/demo/${editingId}/status`;
+            const res = await fetch(url, { method: 'PATCH', headers: authHeaders(), body: JSON.stringify({ status, internalNote }) });
+            if (res.ok) { closeStatus(); await loadCounts(); await loadData(); }
+            else alert('Erreur lors de la mise à jour.');
+        } catch { alert('Erreur réseau.'); }
+        finally { btn.disabled = false; btn.textContent = 'Enregistrer'; }
+    }
+
+    // ── Export CSV ────────────────────────────────────────────────────────────
+    function exportCSV() {
+        if (!allData.length) { alert('Aucune donnée à exporter.'); return; }
+
+        // Récupérer les données actuellement affichées (après recherche éventuelle)
+        const q = document.getElementById('searchInput').value.toLowerCase().trim();
+        const visibleData = q
+            ? allData.filter(r =>
+                (r.firstName + ' ' + r.lastName).toLowerCase().includes(q) ||
+                (r.email   || '').toLowerCase().includes(q) ||
+                (r.company || '').toLowerCase().includes(q)
+              )
+            : allData;
+
+        let headers, rows;
+
+        if (currentTab === 'contact') {
+            headers = ['NOM COMPLET', 'EMAIL', 'TÉLÉPHONE', 'ENTREPRISE', 'SUJET', 'MESSAGE', 'DATE DE SOUMISSION', 'STATUT'];
+            rows = visibleData.map(r => [
+                `${r.firstName} ${r.lastName}`,
+                r.email || '',
+                r.phone || '',
+                r.company || '',
+                r.subject === 'Autre' && r.otherSubject ? r.otherSubject : (r.subject || ''),
+                r.message || '',
+                fmtDate(r.createdAt),
+                LABEL_MAP[r.status] || r.status
+            ]);
+        } else {
+            headers = ['NOM COMPLET', 'EMAIL', 'WHATSAPP', 'DATE DE SOUMISSION', 'STATUT'];
+            rows = visibleData.map(r => [
+                `${r.firstName} ${r.lastName}`,
+                r.email || '',
+                r.hasWhatsApp ? 'Oui' : 'Non',
+                fmtDate(r.createdAt),
+                LABEL_MAP[r.status] || r.status
+            ]);
+        }
+
+        const escape = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
+        const csv = [headers, ...rows].map(row => row.map(escape).join(',')).join('\n');
+
+        const a = document.createElement('a');
+        a.href = 'data:text/csv;charset=utf-8,\uFEFF' + encodeURIComponent(csv);
+        a.download = `${currentTab}-${new Date().toISOString().slice(0, 10)}.csv`;
+        a.click();
+    }
+
+    // ── Init ──────────────────────────────────────────────────────────────────
+    (async function init() {
+        updateFilterOptions();
+        await loadCounts();
+        await loadData();
+    })();
+</script>
+}

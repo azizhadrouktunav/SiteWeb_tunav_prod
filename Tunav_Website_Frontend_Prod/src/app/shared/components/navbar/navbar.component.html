@@ -1,0 +1,98 @@
+<header class="navbar" [class.navbar--menu-open]="mobileMenuOpen">
+  <div class="navbar__bar">
+    <button type="button" class="navbar__brand" routerLink="/home" (click)="closeMobileMenu()">
+      <img class="navbar__logo-image" src="/assets/tunav_logo.png" alt="TUNAV IT GROUP" />
+    </button>
+
+    <button
+      type="button"
+      class="navbar__toggle"
+      (click)="toggleMobileMenu(); $event.stopPropagation()"
+      [attr.aria-expanded]="mobileMenuOpen"
+      aria-controls="navbar-main-nav"
+      aria-label="Ouvrir ou fermer le menu"
+    >
+      <span class="navbar__toggle-box" aria-hidden="true">
+        <span class="navbar__toggle-bar"></span>
+        <span class="navbar__toggle-bar"></span>
+        <span class="navbar__toggle-bar"></span>
+      </span>
+    </button>
+  </div>
+
+  <div
+    class="navbar__backdrop"
+    *ngIf="mobileMenuOpen"
+    (click)="closeMobileMenu()"
+    aria-hidden="true"
+  ></div>
+
+  <nav class="navbar__menu" id="navbar-main-nav" aria-label="Navigation principale">
+    <div class="navbar__menu-left">
+      <a
+        *ngFor="let item of mainMenuItems"
+        [routerLink]="item.path"
+        routerLinkActive="navbar__link--active"
+        class="navbar__link"
+        (click)="closeMobileMenu()"
+      >
+        {{ item.label }}
+      </a>
+
+      <!-- Actualité (dropdown) -->
+      <div class="navbar__dropdown" (mouseenter)="openDropdown = 'actualite'" (mouseleave)="closeDropdown()">
+        <button
+          type="button"
+          class="navbar__link navbar__link--dropdown"
+          [class.navbar__link--active]="openDropdown === 'actualite'"
+          (click)="toggleDropdown('actualite')"
+        >
+          {{ actualiteMenu.label }}
+          <span class="navbar__chevron" [class.navbar__chevron--open]="openDropdown === 'actualite'">▼</span>
+        </button>
+        <div class="navbar__dropdown-menu" *ngIf="openDropdown === 'actualite'">
+          <a *ngFor="let child of actualiteMenu.children" [routerLink]="child.path" class="navbar__dropdown-item" (click)="closeMobileMenu()">
+            {{ child.label }}
+          </a>
+        </div>
+      </div>
+
+      <!-- Entreprise (dropdown) -->
+      <div class="navbar__dropdown" (mouseenter)="openDropdown = 'entreprise'" (mouseleave)="closeDropdown()">
+        <button
+          type="button"
+          class="navbar__link navbar__link--dropdown"
+          [class.navbar__link--active]="openDropdown === 'entreprise'"
+          (click)="toggleDropdown('entreprise')"
+        >
+          {{ entrepriseMenu.label }}
+          <span class="navbar__chevron" [class.navbar__chevron--open]="openDropdown === 'entreprise'">▼</span>
+        </button>
+        <div class="navbar__dropdown-menu" *ngIf="openDropdown === 'entreprise'">
+          <a *ngFor="let child of entrepriseMenu.children" [routerLink]="child.path" class="navbar__dropdown-item" (click)="closeMobileMenu()">
+            {{ child.label }}
+          </a>
+        </div>
+      </div>
+
+      <a
+        *ngIf="showTestRubrique"
+        [routerLink]="testRubriqueItem.path"
+        routerLinkActive="navbar__link--active"
+        class="navbar__link"
+        (click)="closeMobileMenu()"
+      >
+        {{ testRubriqueItem.label }}
+      </a>
+    </div>
+
+    <div class="navbar__menu-right">
+      <a [routerLink]="partnerLink.path" class="navbar__link navbar__link--secondary" (click)="closeMobileMenu()">
+        {{ partnerLink.label }}
+      </a>
+      <a [routerLink]="demoCta.path" class="navbar__link navbar__link--cta" (click)="closeMobileMenu()">
+        {{ demoCta.label }}
+      </a>
+    </div>
+  </nav>
+</header>

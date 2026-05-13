@@ -1,0 +1,325 @@
+@{
+    Layout = "_LayoutBackoffice";
+    ViewData["Title"] = "Gestion des Clients";
+    ViewData["ActivePage"] = "Clients";
+}
+
+<div class="page-header">
+    <h1>Gestion des Clients</h1>
+    <p>Ajoutez, modifiez et gérez les clients TUNAV</p>
+</div>
+
+
+<div class="card">
+    <div class="card-header">
+        <h2>Liste des clients</h2>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+            <input type="text" id="searchInput" placeholder="Rechercher un client..." class="search-input" oninput="filterTable()" />
+            <button class="btn btn-primary btn-sm" onclick="openAddModal()">+ Ajouter un client</button>
+        </div>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Logo</th>
+                <th>Nom</th>
+                <th>Secteur</th>
+                <th>Site Web</th>
+                <th>Ordre</th>
+                <th>Statut</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="clientsBody">
+            <tr class="loading-row"><td colspan="7">Chargement...</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- MODAL AJOUTER / MODIFIER -->
+<div class="modal-overlay" id="clientModal">
+    <div class="modal-box" style="max-width:560px">
+        <button class="modal-close-btn" onclick="closeModal()" title="Fermer">✕</button>
+        <h3 id="modalTitle">Ajouter un client</h3>
+
+        <div id="formError" style="display:none;background:#fff0f0;border:1px solid #ffc5c5;color:#d63031;padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:14px"></div>
+
+        <input type="hidden" id="editId" />
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+            <div class="mfield">
+                <label>Nom <span style="color:#d63031">*</span></label>
+                <input type="text" id="fName" placeholder="Ex: Tunisia Post" />
+            </div>
+            <div class="mfield">
+                <label>Secteur</label>
+                <input type="text" id="fSector" placeholder="Ex: Services Publics" />
+            </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+            <div class="mfield">
+                <label>Site Web</label>
+                <input type="url" id="fWebsite" placeholder="https://..." />
+            </div>
+            <div class="mfield">
+                <label>Ordre d'affichage</label>
+                <input type="number" id="fOrder" value="0" min="0" />
+            </div>
+        </div>
+
+        <div class="mfield" style="margin-bottom:14px">
+            <label>Description</label>
+            <textarea id="fDescription" rows="3" placeholder="Courte description du client..."></textarea>
+        </div>
+
+        <div class="mfield" style="margin-bottom:14px">
+            <label>URL Logo (ou uploader après création)</label>
+            <input type="url" id="fLogoUrl" placeholder="https://... ou /uploads/clients/..." />
+        </div>
+
+        <div class="mfield" style="margin-bottom:20px">
+            <label class="checkbox-label">
+                <input type="checkbox" id="fIsActive" checked />
+                <span>Client actif (visible sur le site)</span>
+            </label>
+        </div>
+
+        <div class="modal-actions">
+            <button class="btn btn-outline" onclick="closeModal()">Annuler</button>
+            <button class="btn btn-primary" onclick="saveClient()">Enregistrer</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL UPLOAD LOGO -->
+<div class="modal-overlay" id="logoModal">
+    <div class="modal-box" style="max-width:400px">
+        <button class="modal-close-btn" onclick="closeLogoModal()" title="Fermer">✕</button>
+        <h3>Uploader un logo</h3>
+
+        <input type="hidden" id="logoClientId" />
+
+        <div class="mfield" style="margin-bottom:20px">
+            <label>Fichier image (PNG, JPG, SVG)</label>
+            <input type="file" id="logoFile" accept="image/*" />
+        </div>
+
+        <div id="logoUploadMsg" style="display:none;padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:14px"></div>
+
+        <div class="modal-actions">
+            <button class="btn btn-outline" onclick="closeLogoModal()">Annuler</button>
+            <button class="btn btn-primary" onclick="uploadLogo()">Uploader</button>
+        </div>
+    </div>
+</div>
+
+@@section Scripts {
+<style>
+    .page-header { margin-bottom: 24px; }
+    .page-header h1 { font-size: 26px; font-weight: 700; color: #1e2d5a; margin: 0 0 6px 0; letter-spacing: -0.3px; }
+    .page-header p { font-size: 14px; color: #6b7db3; margin: 0; }
+
+    .stats-row { display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
+    .stat-card { flex: 1; min-width: 100px; text-align: center; padding: 16px 24px !important; }
+    .stat-card strong { display: block; font-size: 28px; font-weight: 700; color: #1e2d5a; margin-bottom: 4px; }
+    .stat-card span { font-size: 13px; color: #6b7db3; font-weight: 500; }
+
+    .search-input { padding: 8px 12px; border: 1.5px solid #dce4f5; border-radius: 8px; font-size: 13px; color: #1e2d5a; outline: none; width: 200px; font-family: 'Inter', sans-serif; }
+    .search-input:focus { border-color: #00c8d4; }
+
+    .modal-close-btn { position: absolute; top: 16px; right: 16px; background: none; border: none; font-size: 20px; cursor: pointer; color: #6b7db3; line-height: 1; padding: 4px 8px; border-radius: 6px; transition: background 0.2s; }
+    .modal-close-btn:hover { background: #f0f4ff; color: #1e2d5a; }
+    .modal-box { position: relative; }
+
+    .mfield label { display: block; font-size: 12px; font-weight: 500; color: #6b7db3; margin-bottom: 5px; }
+    .mfield input, .mfield textarea, .mfield select {
+        width: 100%; padding: 10px 12px; border: 1.5px solid #dce4f5; border-radius: 8px;
+        font-size: 14px; font-family: 'Inter', sans-serif; outline: none; color: #1e2d5a;
+        transition: border-color 0.2s; background: white; box-sizing: border-box;
+    }
+    .mfield input:focus, .mfield textarea:focus, .mfield select:focus { border-color: #00c8d4; }
+    .mfield input[type="file"] { padding: 7px 12px; }
+    .mfield textarea { resize: vertical; }
+    .checkbox-label { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; color: #1e2d5a; font-weight: 500; }
+    .checkbox-label input[type="checkbox"] { width: auto; accent-color: #00c8d4; }
+
+    .logo-av {
+        width: 38px; height: 38px; border-radius: 8px; background: #e8edf8;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 14px; font-weight: 700; color: #1e2d5a; flex-shrink: 0;
+    }
+</style>
+<script>
+const API = '/api/clients';
+let allClients = [];
+
+async function loadClients() {
+    try {
+        const res = await fetch(API, { headers: authHeaders() });
+        allClients = await res.json();
+        renderTable(allClients);
+        const totalEl = document.getElementById('totalCount');
+        const activeEl = document.getElementById('activeCount');
+        const inactiveEl = document.getElementById('inactiveCount');
+        if (totalEl) totalEl.textContent = allClients.length;
+        if (activeEl) activeEl.textContent = allClients.filter(c => c.isActive).length;
+        if (inactiveEl) inactiveEl.textContent = allClients.filter(c => !c.isActive).length;
+    } catch(e) {
+        document.getElementById('clientsBody').innerHTML = '<tr class="empty-row"><td colspan="7">Erreur de chargement.</td></tr>';
+    }
+}
+
+function renderTable(clients) {
+    const tbody = document.getElementById('clientsBody');
+    if (!clients.length) {
+        tbody.innerHTML = '<tr class="empty-row"><td colspan="7">Aucun client. Cliquez sur "+ Ajouter un client".</td></tr>';
+        return;
+    }
+    tbody.innerHTML = clients.map(c => `
+        <tr>
+            <td>
+                ${c.logoUrl
+                    ? `<img src="${c.logoUrl}" style="height:36px;max-width:70px;object-fit:contain;border-radius:4px" onerror="this.style.display='none'" />`
+                    : `<div class="logo-av">${escapeHtml(c.name.charAt(0))}</div>`
+                }
+            </td>
+            <td><strong style="color:#1e2d5a">${escapeHtml(c.name)}</strong></td>
+            <td style="color:#6b7db3">${escapeHtml(c.sector) || '—'}</td>
+            <td>
+                ${c.website
+                    ? `<a href="${c.website}" target="_blank" style="color:#00c8d4;font-size:13px">${escapeHtml(c.website)}</a>`
+                    : '<span style="color:#6b7db3">—</span>'
+                }
+            </td>
+            <td style="color:#6b7db3">${c.displayOrder}</td>
+            <td>
+                <span style="display:inline-block;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;${c.isActive ? 'background:#e8f5e9;color:#2e7d32' : 'background:#f5f5f5;color:#757575'}">
+                    ${c.isActive ? 'Actif' : 'Inactif'}
+                </span>
+            </td>
+            <td>
+                <div style="display:flex;gap:6px;flex-wrap:wrap">
+                    <button class="btn btn-outline btn-sm" onclick="openLogoModal(${c.id})" title="Uploader logo">🖼️</button>
+                    <button class="btn btn-outline btn-sm" onclick="openEdit(${c.id})">Modifier</button>
+                    <button class="btn btn-outline btn-sm"
+                        style="${c.isActive ? 'border-color:#ffc107;color:#856404' : 'border-color:#00b894;color:#00704a'}"
+                        onclick="toggleClient(${c.id})">
+                        ${c.isActive ? 'Désactiver' : 'Activer'}
+                    </button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteClient(${c.id})">Supprimer</button>
+                </div>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function filterTable() {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    renderTable(allClients.filter(c =>
+        c.name.toLowerCase().includes(q) ||
+        (c.sector || '').toLowerCase().includes(q)
+    ));
+}
+
+function openAddModal() {
+    document.getElementById('modalTitle').textContent = 'Ajouter un client';
+    document.getElementById('editId').value = '';
+    ['fName','fSector','fWebsite','fDescription','fLogoUrl'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('fOrder').value = 0;
+    document.getElementById('fIsActive').checked = true;
+    document.getElementById('formError').style.display = 'none';
+    document.getElementById('clientModal').classList.add('show');
+}
+
+function openEdit(id) {
+    const c = allClients.find(x => x.id === id);
+    if (!c) return;
+    document.getElementById('modalTitle').textContent = 'Modifier le client';
+    document.getElementById('editId').value = c.id;
+    document.getElementById('fName').value = c.name;
+    document.getElementById('fSector').value = c.sector || '';
+    document.getElementById('fWebsite').value = c.website || '';
+    document.getElementById('fOrder').value = c.displayOrder;
+    document.getElementById('fDescription').value = c.description || '';
+    document.getElementById('fLogoUrl').value = c.logoUrl || '';
+    document.getElementById('fIsActive').checked = c.isActive;
+    document.getElementById('formError').style.display = 'none';
+    document.getElementById('clientModal').classList.add('show');
+}
+
+function closeModal() { document.getElementById('clientModal').classList.remove('show'); }
+
+async function saveClient() {
+    document.getElementById('formError').style.display = 'none';
+    const id = document.getElementById('editId').value;
+    const body = {
+        name: document.getElementById('fName').value.trim(),
+        sector: document.getElementById('fSector').value.trim(),
+        website: document.getElementById('fWebsite').value.trim(),
+        displayOrder: parseInt(document.getElementById('fOrder').value) || 0,
+        description: document.getElementById('fDescription').value.trim(),
+        logoUrl: document.getElementById('fLogoUrl').value.trim() || null,
+        isActive: document.getElementById('fIsActive').checked
+    };
+    if (!body.name) { showErr('Le nom est obligatoire.'); return; }
+    const url = id ? API + '/' + id : API;
+    const method = id ? 'PUT' : 'POST';
+    try {
+        const res = await fetch(url, { method, headers: authHeaders(), body: JSON.stringify(body) });
+        if (res.ok) { closeModal(); loadClients(); }
+        else { const d = await res.json(); showErr(d.message || 'Erreur lors de la sauvegarde.'); }
+    } catch(e) { showErr('Erreur réseau.'); }
+}
+
+async function toggleClient(id) {
+    await fetch(API + '/' + id + '/toggle', { method: 'PATCH', headers: authHeaders() });
+    loadClients();
+}
+
+async function deleteClient(id) {
+    if (!confirm('Supprimer ce client ?')) return;
+    await fetch(API + '/' + id, { method: 'DELETE', headers: authHeaders() });
+    loadClients();
+}
+
+function openLogoModal(id) {
+    document.getElementById('logoClientId').value = id;
+    document.getElementById('logoFile').value = '';
+    document.getElementById('logoUploadMsg').style.display = 'none';
+    document.getElementById('logoModal').classList.add('show');
+}
+function closeLogoModal() { document.getElementById('logoModal').classList.remove('show'); }
+
+async function uploadLogo() {
+    const id = document.getElementById('logoClientId').value;
+    const file = document.getElementById('logoFile').files[0];
+    if (!file) { alert('Veuillez choisir un fichier.'); return; }
+    const formData = new FormData();
+    formData.append('file', file);
+    const res = await fetch(API + '/' + id + '/logo', { method: 'POST', headers: { 'Authorization': authHeaders().Authorization }, body: formData });
+    const msg = document.getElementById('logoUploadMsg');
+    msg.style.display = 'block';
+    if (res.ok) {
+        msg.style.cssText = 'display:block;background:#f0fff4;border:1px solid #b7ebc4;color:#1e7e34;padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:14px';
+        msg.textContent = '✅ Logo uploadé avec succès !';
+        setTimeout(() => { closeLogoModal(); loadClients(); }, 1200);
+    } else {
+        msg.style.cssText = 'display:block;background:#fff0f0;border:1px solid #ffc5c5;color:#d63031;padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:14px';
+        msg.textContent = '❌ Erreur lors de l\'upload.';
+    }
+}
+
+function showErr(msg) {
+    const el = document.getElementById('formError');
+    el.textContent = msg; el.style.display = 'block';
+}
+
+function escapeHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+loadClients();
+</script>
+}

@@ -1,0 +1,400 @@
+@if (!activeType()) {
+  <section class="partners-page">
+    <header class="partners-hero">
+      <div class="partners-page__container">
+        <h1>Devenir Partenaire</h1>
+        <p>
+          Rejoignez notre reseau de partenaires et developpez votre activite
+          avec nos solutions innovantes.
+        </p>
+      </div>
+    </header>
+
+    <section class="partners-page__content">
+      <div class="partners-page__container">
+        <header class="partners-section-header">
+          <h2>Choisissez votre type de partenariat</h2>
+          <p>Selectionnez le modele qui correspond le mieux a vos objectifs.</p>
+        </header>
+
+        <div class="partner-type-grid">
+          @for (type of partnerTypes; track type.key) {
+            <article
+              class="partner-card"
+              [class.partner-card--franchise]="type.key === 'franchise'"
+              [class.partner-card--revendeur]="type.key === 'revendeur'"
+              [class.partner-card--commissionnaire]="
+                type.key === 'commissionnaire'
+              "
+            >
+              <div class="partner-card__icon" aria-hidden="true">
+                @switch (type.icon) {
+                  @case ('store') {
+                    <svg viewBox="0 0 24 24" focusable="false">
+                      <path
+                        d="M4 10h16v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8Zm2-5h12l2 3H4l2-3Zm4 8v7m4-7v7"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="1.8"
+                      />
+                    </svg>
+                  }
+                  @case ('gift') {
+                    <svg viewBox="0 0 24 24" focusable="false">
+                      <path
+                        d="M12 22V8M4 12h16M5 8h14v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V8Zm4-3c0 1.7 1.5 3 3 3-0.4-2.2-1.3-5-3-5-1.1 0-2 0.9-2 2s0.9 3 2 3Zm6 0c1.1 0 2-0.9 2-2s-0.9-2-2-2c-1.7 0-2.6 2.8-3 5 1.5 0 3-1.3 3-3Z"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="1.8"
+                      />
+                    </svg>
+                  }
+                  @case ('percent') {
+                    <svg viewBox="0 0 24 24" focusable="false">
+                      <path
+                        d="m19 5-14 14M8 7h.01M16 17h.01M10 7a2 2 0 1 1-4 0 2 2 0 0 1 4 0Zm8 10a2 2 0 1 1-4 0 2 2 0 0 1 4 0Z"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="1.8"
+                      />
+                    </svg>
+                  }
+                }
+              </div>
+
+              <h3>{{ type.title }}</h3>
+              <p>{{ type.description }}</p>
+
+              <ul class="partner-card__list">
+                @for (benefit of type.benefits; track benefit) {
+                  <li>{{ benefit }}</li>
+                }
+              </ul>
+
+              <button
+                type="button"
+                class="partner-card__primary"
+                (click)="openPartnerType(type.key)"
+              >
+                {{ type.actionLabel }}
+              </button>
+
+              <button
+                type="button"
+                class="partner-card__secondary"
+                (click)="openPartnerDocument(type)"
+              >
+                <span aria-hidden="true">
+                  <svg viewBox="0 0 24 24" focusable="false">
+                    <path
+                      d="M7 3h7l5 5v13H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Zm7 0v5h5M9 12h6M9 16h6"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="1.8"
+                    />
+                  </svg>
+                </span>
+                Voir le document de partenariat
+              </button>
+            </article>
+          }
+        </div>
+      </div>
+    </section>
+  </section>
+} @else if (activeType(); as type) {
+  <section class="partner-request-page">
+    <div class="partner-request-page__container">
+      <button
+        type="button"
+        class="partner-request-page__back"
+        (click)="backToTypes()"
+      >
+        <span aria-hidden="true">&larr;</span>
+        Retour aux types de partenariat
+      </button>
+
+      <header class="partner-request-page__header">
+        <h1>Formulaire de Demande - {{ type.title }}</h1>
+        <p>
+          Remplissez ce formulaire pour soumettre votre demande de partenariat.
+          Notre equipe l'examinera et reviendra vers vous.
+        </p>
+      </header>
+
+      <form class="partner-form-card" novalidate (ngSubmit)="submitRequest(type)">
+        @if (submitSuccessMessage()) {
+          <div class="partner-form-card__alert partner-form-card__alert--success">
+            {{ submitSuccessMessage() }}
+          </div>
+        }
+
+        @if (submitErrorMessage()) {
+          <div class="partner-form-card__alert partner-form-card__alert--error">
+            {{ submitErrorMessage() }}
+          </div>
+        }
+
+        <div class="partner-form-card__grid">
+          <label class="partner-field">
+            <span class="partner-field__label">Nom complet *</span>
+            <input
+              type="text"
+              name="fullName"
+              [(ngModel)]="form.fullName"
+              placeholder="Votre nom complet"
+              [class.is-invalid]="formErrors()['fullName']"
+              (ngModelChange)="clearError('fullName')"
+            />
+            @if (formErrors()['fullName']) {
+              <small class="partner-field__error">{{ formErrors()['fullName'] }}</small>
+            }
+          </label>
+
+          <label class="partner-field">
+            <span class="partner-field__label">Adresse e-mail *</span>
+            <input
+              type="email"
+              name="email"
+              [(ngModel)]="form.email"
+              placeholder="votre@email.com"
+              [class.is-invalid]="formErrors()['email']"
+              (ngModelChange)="clearError('email')"
+            />
+            @if (formErrors()['email']) {
+              <small class="partner-field__error">{{ formErrors()['email'] }}</small>
+            }
+          </label>
+
+          <label class="partner-field">
+            <span class="partner-field__label">Numero de telephone *</span>
+            <input
+              type="tel"
+              name="phone"
+              [(ngModel)]="form.phone"
+              placeholder="+216 XX XXX XXX"
+              [class.is-invalid]="formErrors()['phone']"
+              (ngModelChange)="clearError('phone')"
+            />
+            @if (formErrors()['phone']) {
+              <small class="partner-field__error">{{ formErrors()['phone'] }}</small>
+            }
+          </label>
+
+          <label class="partner-field">
+            <span class="partner-field__label">Entreprise</span>
+            <input
+              type="text"
+              name="company"
+              [(ngModel)]="form.company"
+              placeholder="Nom de votre entreprise"
+            />
+          </label>
+
+          <label class="partner-field">
+            <span class="partner-field__label">Ville *</span>
+            <input
+              type="text"
+              name="city"
+              [(ngModel)]="form.city"
+              placeholder="Votre ville"
+              [class.is-invalid]="formErrors()['city']"
+              (ngModelChange)="clearError('city')"
+            />
+            @if (formErrors()['city']) {
+              <small class="partner-field__error">{{ formErrors()['city'] }}</small>
+            }
+          </label>
+        </div>
+
+        <div class="partner-form-card__section">
+          <h2>Type de personne *</h2>
+          <div class="partner-choice-grid">
+            <label
+              class="partner-choice"
+              [class.partner-choice--selected]="form.personType === 'physique'"
+            >
+              <input
+                type="radio"
+                name="personType"
+                value="physique"
+                [(ngModel)]="form.personType"
+                (ngModelChange)="clearError('personType')"
+              />
+              <span class="partner-choice__dot"></span>
+              <div>
+                <strong>Personne Physique</strong>
+                <small>Particulier ou independant</small>
+              </div>
+            </label>
+
+            <label
+              class="partner-choice"
+              [class.partner-choice--selected]="form.personType === 'morale'"
+            >
+              <input
+                type="radio"
+                name="personType"
+                value="morale"
+                [(ngModel)]="form.personType"
+                (ngModelChange)="clearError('personType')"
+              />
+              <span class="partner-choice__dot"></span>
+              <div>
+                <strong>Personne Morale</strong>
+                <small>Entreprise ou organisation</small>
+              </div>
+            </label>
+          </div>
+
+          @if (formErrors()['personType']) {
+            <small class="partner-field__error">{{ formErrors()['personType'] }}</small>
+          }
+        </div>
+
+        <div class="partner-form-card__section">
+          <h2>Selectionnez les solutions qui vous interessent *</h2>
+          <p>Vous pouvez selectionner une ou plusieurs solutions.</p>
+
+          <div class="partner-solution-grid">
+            @for (solution of solutionOptions; track solution.key) {
+              <button
+                type="button"
+                class="partner-solution"
+                [class.partner-solution--selected]="
+                  isSolutionSelected(solution.key)
+                "
+                (click)="toggleSolution(solution.key)"
+              >
+                <span class="partner-solution__icon" aria-hidden="true">
+                  @switch (solution.icon) {
+                    @case ('rfid') {
+                      <svg viewBox="0 0 24 24" focusable="false">
+                        <path
+                          d="M8 5 5 8l11 11 3-3L8 5Zm-1 4 2-2M4 4l5 5"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="1.8"
+                        />
+                      </svg>
+                    }
+                    @case ('grid') {
+                      <svg viewBox="0 0 24 24" focusable="false">
+                        <path
+                          d="M4 4h7v7H4V4Zm9 0h7v7h-7V4ZM4 13h7v7H4v-7Zm9 0h7v7h-7v-7Z"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="1.8"
+                        />
+                      </svg>
+                    }
+                    @case ('bolt') {
+                      <svg viewBox="0 0 24 24" focusable="false">
+                        <path
+                          d="m13 2-8 11h6l-1 9 8-11h-6l1-9Z"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="1.8"
+                        />
+                      </svg>
+                    }
+                    @case ('fuel') {
+                      <svg viewBox="0 0 24 24" focusable="false">
+                        <path
+                          d="M12 3s5 5.1 5 9a5 5 0 1 1-10 0c0-3.9 5-9 5-9Z"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="1.8"
+                        />
+                      </svg>
+                    }
+                    @case ('pin') {
+                      <svg viewBox="0 0 24 24" focusable="false">
+                        <path
+                          d="M12 21s7-5.3 7-11a7 7 0 1 0-14 0c0 5.7 7 11 7 11Zm0-8.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="1.8"
+                        />
+                      </svg>
+                    }
+                    @case ('camera') {
+                      <svg viewBox="0 0 24 24" focusable="false">
+                        <path
+                          d="M4 7h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2Zm6 1v10M7 11h2M7 15h2M13 11h2M13 15h2m4-5 3-2v10l-3-2"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="1.8"
+                        />
+                      </svg>
+                    }
+                  }
+                </span>
+
+                <span class="partner-solution__content">
+                  <strong>{{ solution.title }}</strong>
+                  <span>Selectionner</span>
+                </span>
+
+                <span class="partner-solution__checkbox">
+                  <input
+                    type="checkbox"
+                    [checked]="isSolutionSelected(solution.key)"
+                    tabindex="-1"
+                  />
+                </span>
+              </button>
+            }
+          </div>
+
+          @if (formErrors()['selectedSolutions']) {
+            <small class="partner-field__error">{{
+              formErrors()['selectedSolutions']
+            }}</small>
+          }
+        </div>
+
+        <button type="submit" class="partner-form-card__submit" [disabled]="isSubmitting()">
+          <span aria-hidden="true">
+            <svg viewBox="0 0 24 24" focusable="false">
+              <path
+                d="M3 11.5 21 4l-7.5 16-2.7-6.3L3 11.5Zm7.8 2.2L21 4"
+                fill="none"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="1.8"
+              />
+            </svg>
+          </span>
+          {{ isSubmitting() ? 'Envoi en cours...' : 'Envoyer ma demande' }}
+        </button>
+
+        <p class="partner-form-card__footnote">
+          En soumettant ce formulaire, votre demande sera enregistree puis
+          examinee par notre equipe.
+        </p>
+      </form>
+    </div>
+  </section>
+}

@@ -1,0 +1,539 @@
+@{
+    ViewData["Title"] = "Demandes de Collaboration";
+    ViewData["ActivePage"] = "Collaborations";
+    Layout = "~/Views/Shared/_LayoutBackoffice.cshtml";
+}
+
+<div class="page-header">
+    <h1>Collaborations &amp; Formations</h1>
+    <p>Gérez toutes les demandes reçues depuis le site web</p>
+</div>
+
+<!-- ONGLETS (exactement comme dans Blogs) ─────────────────────────────────── -->
+<div class="tab-bar">
+    <button class="tab-btn tab-btn--active" id="tabCollab" onclick="switchCollabTab('collab')">
+         Demandes de collaboration (<span id="countCollab">0</span>)
+    </button>
+    <button class="tab-btn" id="tabEvent" onclick="switchCollabTab('event')">
+         Propositions d'événements (<span id="countEvent">0</span>)
+    </button>
+    <button class="tab-btn" id="tabFormation" onclick="switchCollabTab('formation')">
+         Demandes de formation (<span id="countFormation">0</span>)
+    </button>
+</div>
+
+<!-- TABLEAU ───────────────────────────────────────────────────────────────── -->
+<div class="card">
+    <div class="card-header">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <h2 id="tableTitle">Liste des demandes (<span id="collabCount">0</span>)</h2>
+            <select id="filterStatus" onchange="loadCollabs()"
+                style="padding:7px 12px;border:1.5px solid #dce4f5;border-radius:8px;font-size:13px;color:#1e2d5a;outline:none">
+                <option value="">Tous les statuts</option>
+                <option value="Nouvelle"> Nouvelle</option>
+                <option value="EnCours"> En cours</option>
+                <option value="Acceptee"> Acceptée</option>
+                <option value="Refusee"> Refusée</option>
+            </select>
+            <input type="text" id="searchInput" placeholder=" Rechercher nom / email..."
+                oninput="applySearch()"
+                style="padding:7px 12px;border:1.5px solid #dce4f5;border-radius:8px;
+                       font-size:13px;color:#1e2d5a;outline:none;width:220px" />
+        </div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Nom complet</th>
+                <th>Téléphone</th>
+                <th>Email</th>
+                <th>Organisation</th>
+                <th>Adresse</th>
+                <th>Description / Message</th>
+                <th id="colHomologue" style="display:none">Homologation MALEK</th>
+                <th>Pièces jointes</th>
+                <th>Date de soumission</th>
+                <th>Statut</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="collabsTable">
+            <tr class="loading-row"><td colspan="11">Chargement...<\/td><\/tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- MODAL DÉTAIL -->
+<div class="modal-overlay" id="modalDetail">
+    <div class="modal-box" style="max-width:540px">
+        <button class="modal-close-btn" onclick="closeDetail()" title="Fermer">✕</button>
+        <h3 style="margin-bottom:4px">Détail de la demande</h3>
+        <p id="detailTypeLabel" style="font-size:12px;color:#6b7db3;margin-bottom:18px;font-weight:500"></p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+            <div><div style="font-size:11px;font-weight:600;color:#6b7db3;margin-bottom:4px">Nom complet</div><div id="detailName" style="font-size:14px;font-weight:600;color:#1e2d5a"></div></div>
+            <div><div style="font-size:11px;font-weight:600;color:#6b7db3;margin-bottom:4px">Téléphone</div><div id="detailPhone" style="font-size:13px;color:#1e2d5a"></div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+            <div><div style="font-size:11px;font-weight:600;color:#6b7db3;margin-bottom:4px">Email</div><div id="detailEmail" style="font-size:13px;color:#00c8d4"></div></div>
+            <div><div style="font-size:11px;font-weight:600;color:#6b7db3;margin-bottom:4px">Organisation</div><div id="detailOrg" style="font-size:13px;color:#1e2d5a"></div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+            <div><div style="font-size:11px;font-weight:600;color:#6b7db3;margin-bottom:4px">Adresse</div><div id="detailAddress" style="font-size:13px;color:#1e2d5a"></div></div>
+            <div><div style="font-size:11px;font-weight:600;color:#6b7db3;margin-bottom:4px">Pièces jointes</div><div id="detailAttachments" style="font-size:13px;color:#1e2d5a"></div></div>
+        </div>
+        <div id="detailHomologueWrap" style="margin-bottom:14px;display:none">
+            <div style="font-size:11px;font-weight:600;color:#6b7db3;margin-bottom:4px">Homologation MALEK – CNFCPP</div>
+            <div id="detailHomologue" style="font-size:13px;color:#1e2d5a"></div>
+        </div>
+        <div style="margin-bottom:14px">
+            <div style="font-size:11px;font-weight:600;color:#6b7db3;margin-bottom:6px">Description / Message</div>
+            <div id="detailMessage" style="font-size:13px;color:#1e2d5a;background:#f8faff;padding:12px;border-radius:8px;border:1px solid #dce4f5;white-space:pre-wrap"></div>
+        </div>
+        <div style="margin-bottom:14px">
+            <div style="font-size:11px;font-weight:600;color:#6b7db3;margin-bottom:6px">Note interne</div>
+            <div id="detailNote" style="font-size:13px;color:#1e2d5a;background:#fffde7;padding:12px;border-radius:8px;border:1px solid #fff59d;white-space:pre-wrap"></div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding-top:14px;border-top:1px solid #dce4f5">
+            <div id="detailStatusWrap"></div>
+            <div style="display:flex;gap:8px">
+                <button class="btn btn-outline" onclick="closeDetail()">Fermer</button>
+                <button class="btn btn-primary btn-sm" id="btnDetailEditStatus">Modifier le statut</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL STATUT -->
+<div class="modal-overlay" id="modalStatus">
+    <div class="modal-box" style="max-width:460px">
+        <button class="modal-close-btn" onclick="closeStatus()" title="Fermer">✕</button>
+        <h3>Mettre à jour la demande</h3>
+        <p id="statusInfo" style="font-size:13px;color:#6b7db3;margin-bottom:18px;padding:10px 14px;background:#f8faff;border-radius:8px;border-left:3px solid #00c8d4"></p>
+        <div class="mfield" style="margin-bottom:14px">
+            <label>Nouveau statut</label>
+            <select id="newStatus">
+                <option value="Nouvelle">Nouvelle</option>
+                <option value="EnCours"> En cours</option>
+                <option value="Acceptee"> Acceptée</option>
+                <option value="Refusee"> Refusée</option>
+            </select>
+        </div>
+        <div class="mfield" style="margin-bottom:20px">
+            <label>Note interne</label>
+            <textarea id="noteField" rows="4" placeholder="Ex : Partenaire sérieux, planifier un appel..."></textarea>
+        </div>
+        <div class="modal-actions">
+            <button class="btn btn-outline" onclick="closeStatus()">Annuler</button>
+            <button class="btn btn-primary" id="btnSaveStatus" onclick="saveStatus()">Enregistrer</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL SUPPRESSION -->
+<div class="modal-overlay" id="modalDelete">
+    <div class="modal-box" style="max-width:400px;text-align:center">
+     
+        <button class="modal-close-btn" onclick="closeDelete()" title="Fermer">✕</button>
+        <h3 style="margin-bottom:8px">Confirmer la suppression</h3>
+        <p id="deleteMsg" style="font-size:14px;color:#6b7db3;margin-bottom:24px"></p>
+        <div style="display:flex;gap:10px;justify-content:center">
+            <button class="btn btn-outline" onclick="closeDelete()">Annuler</button>
+            <button class="btn btn-danger" id="btnConfirmDelete" onclick="confirmDelete()">Supprimer</button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<style>
+    .modal-close-btn { position:absolute; top:16px; right:16px; background:none; border:none; font-size:20px; cursor:pointer; color:#6b7db3; line-height:1; padding:4px 8px; border-radius:6px; transition:background 0.2s; }
+    .modal-close-btn:hover { background:#f0f4ff; color:#1e2d5a; }
+    /* Style identique aux Blogs */
+    .tab-bar {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 20px;
+        border-bottom: 2px solid #e8edf8;
+        padding-bottom: 0;
+    }
+    .tab-btn {
+        background: none;
+        border: none;
+        padding: 10px 20px;
+        font-size: 14px;
+        font-weight: 500;
+        color: #6b7db3;
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+        margin-bottom: -2px;
+        transition: color .2s, border-color .2s;
+    }
+    .tab-btn--active {
+        color: #00c8d4;
+        border-bottom-color: #00c8d4;
+    }
+    .tab-btn:hover:not(.tab-btn--active) {
+        color: #1e2d5a;
+    }
+
+    .card {
+        background: white;
+        border: 1px solid #dce4f5;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    .card-header {
+        padding: 16px 20px;
+        border-bottom: 1px solid #dce4f5;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    .card-header h2 {
+        font-size: 15px;
+        font-weight: 600;
+        color: #1e2d5a;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    thead th {
+        padding: 11px 16px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #6b7db3;
+        background: #f8faff;
+        border-bottom: 1px solid #dce4f5;
+        text-align: left;
+    }
+    tbody tr {
+        border-bottom: 1px solid #dce4f5;
+        transition: background 0.1s;
+    }
+    tbody tr:hover {
+        background: #f8faff;
+    }
+    tbody td {
+        padding: 12px 16px;
+        font-size: 13px;
+        color: #1e2d5a;
+        vertical-align: middle;
+    }
+
+    .badge-nouvelle  { background: #e3f2fd; color: #1565c0; }
+    .badge-encours   { background: #fff3e0; color: #e65100; }
+    .badge-acceptee  { background: #e8f5e9; color: #2e7d32; }
+    .badge-refusee   { background: #ffebee; color: #c62828; }
+    .badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+    }
+
+    .btn {
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-family: 'Inter', sans-serif;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.15s;
+        border: none;
+    }
+    .btn-primary {
+        background: #1a2a6c;
+        color: white;
+    }
+    .btn-primary:hover {
+        background: #0d1b4b;
+    }
+    .btn-outline {
+        background: none;
+        border: 1px solid #dce4f5;
+        color: #6b7db3;
+    }
+    .btn-outline:hover {
+        border-color: #00c8d4;
+        color: #00c8d4;
+    }
+    .btn-danger {
+        background: none;
+        border: 1px solid #ffc5c5;
+        color: #d63031;
+    }
+    .btn-danger:hover {
+        background: #fff0f0;
+    }
+    .btn-sm {
+        padding: 5px 10px;
+        font-size: 12px;
+    }
+
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.35);
+        z-index: 999;
+        align-items: center;
+        justify-content: center;
+    }
+    .modal-overlay.show {
+        display: flex;
+    }
+    .modal-box { position:relative;
+        background: white;
+        border-radius: 14px;
+        padding: 28px;
+        width: 540px;
+        max-width: 95vw;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+    .modal-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+        margin-top: 20px;
+    }
+
+    .empty-row td, .loading-row td {
+        text-align: center;
+        padding: 32px;
+        color: #6b7db3;
+        font-size: 13px;
+    }
+
+    .attachment-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        background: #e8f0fe;
+        color: #1a2a6c;
+        font-size: 11px;
+        font-weight: 500;
+        padding: 3px 8px;
+        border-radius: 6px;
+        text-decoration: none;
+    }
+</style>
+
+<script>
+    let editingId = null, deletingId = null, detailId = null, allCollabs = [];
+    let currentTab = 'collab';
+
+    const tabTypeMap = {
+        collab: 'Collaboration',
+        event: 'PropositionEvenement',
+        formation: 'DemandeFormation'
+    };
+
+    const tabTitles = {
+        collab: 'Demandes de collaboration',
+        event: 'Propositions d\'événements',
+        formation: 'Demandes de formation'
+    };
+
+    function collabBadge(status) {
+        const map = {
+            'Nouvelle': ['badge-nouvelle', 'Nouvelle'],
+            'EnCours': ['badge-encours', ' En cours'],
+            'Acceptee': ['badge-acceptee', 'Acceptée'],
+            'Refusee': ['badge-refusee', ' Refusée']
+        };
+        const [cls, label] = map[status] || ['badge-nouvelle', status];
+        return `<span class="badge ${cls}">${label}</span>`;
+    }
+
+    function fmtDate(d) {
+        if (!d) return '—';
+        return new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    }
+
+    function renderAttachments(attachmentNames) {
+        if (!attachmentNames) return '—';
+        return attachmentNames.split(',').map(entry => {
+            const parts = entry.trim().split('|');
+            if (parts.length === 2) {
+                return `<a href="/api/uploads/${encodeURIComponent(parts[1])}" target="_blank" class="attachment-link">📎 ${escapeHtml(parts[0].length > 25 ? parts[0].substring(0,25)+'...' : parts[0])}</a>`;
+            }
+            return `<span class="attachment-link">📎 ${escapeHtml(entry.trim())}</span>`;
+        }).join(' ');
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
+    async function loadCounts() {
+        for (const tab of ['collab', 'event', 'formation']) {
+            try {
+                const type = tabTypeMap[tab];
+                const res = await fetch('/api/collaborations?collaborationType=' + encodeURIComponent(type), { headers: authHeaders() });
+                if (!res.ok) continue;
+                const list = await res.json();
+                const count = Array.isArray(list) ? list.length : 0;
+                document.getElementById('count' + tab.charAt(0).toUpperCase() + tab.slice(1)).textContent = count;
+            } catch { }
+        }
+    }
+
+    function switchCollabTab(tab) {
+        currentTab = tab;
+        // Mettre à jour l'onglet actif
+        document.getElementById('tabCollab').classList.toggle('tab-btn--active', tab === 'collab');
+        document.getElementById('tabEvent').classList.toggle('tab-btn--active', tab === 'event');
+        document.getElementById('tabFormation').classList.toggle('tab-btn--active', tab === 'formation');
+        // Réinitialiser les filtres
+        document.getElementById('filterStatus').value = '';
+        document.getElementById('searchInput').value = '';
+        loadCollabs();
+    }
+
+    async function loadCollabs() {
+        const status = document.getElementById('filterStatus').value;
+        const type = tabTypeMap[currentTab];
+        let url = '/api/collaborations?collaborationType=' + encodeURIComponent(type);
+        if (status) url += '&status=' + encodeURIComponent(status);
+
+        document.getElementById('collabsTable').innerHTML = '<tr class="loading-row"><td colspan="11">Chargement...<\/td><\/tr>';
+
+        try {
+            const res = await fetch(url, { headers: authHeaders() });
+            if (res.status === 401 || res.status === 403) {
+                document.getElementById('collabsTable').innerHTML = '<tr class="empty-row"><td colspan="11"> Accès non autorisé.<\/td><\/tr>';
+                return;
+            }
+            const list = await res.json();
+            allCollabs = Array.isArray(list) ? list : [];
+            renderTable(allCollabs);
+            document.getElementById('collabCount').textContent = allCollabs.length;
+            document.getElementById('tableTitle').innerHTML = tabTitles[currentTab] + ' (<span id="collabCount">' + allCollabs.length + '<\/span>)';
+        } catch (e) {
+            document.getElementById('collabsTable').innerHTML = '<tr class="empty-row"><td colspan="11">Erreur de chargement.<\/td><\/tr>';
+        }
+    }
+
+    function applySearch() {
+        const q = document.getElementById('searchInput').value.toLowerCase().trim();
+        if (!q) { renderTable(allCollabs); return; }
+        const filtered = allCollabs.filter(r => (r.fullName || '').toLowerCase().includes(q) || (r.email || '').toLowerCase().includes(q) || (r.organization || '').toLowerCase().includes(q));
+        renderTable(filtered);
+    }
+
+    function renderTable(list) {
+        const isFormation = currentTab === 'formation';
+        document.getElementById('colHomologue').style.display = isFormation ? '' : 'none';
+
+        document.getElementById('collabsTable').innerHTML = list.length ? list.map(r => `
+            <tr>
+                <td style="font-weight:600">${escapeHtml(r.fullName)}<\/td>
+                <td>${r.phone ? escapeHtml(r.phone) : '—'}<\/td>
+                <td><a href="mailto:${escapeHtml(r.email)}" style="color:#00c8d4">${escapeHtml(r.email)}<\/a><\/td>
+                <td>${r.organization ? escapeHtml(r.organization) : '—'}<\/td>
+                <td>${r.address ? escapeHtml(r.address) : '—'}<\/td>
+                <td style="max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${escapeHtml(r.message)}">${r.message ? escapeHtml(r.message) : '—'}<\/td>
+                ${isFormation ? `<td style="text-align:center">${r.isHomologueMalek === true ? '✅ Oui' : r.isHomologueMalek === false ? '❌ Non' : '—'}<\/td>` : ''}
+                <td>${r.attachmentNames ? renderAttachments(r.attachmentNames) : '—'}<\/td>
+                <td style="white-space:nowrap">${fmtDate(r.submittedAt)}<\/td>
+                <td>${collabBadge(r.status)}<\/td>
+                <td>
+                    <div style="display:flex;gap:5px;flex-wrap:wrap">
+                        <button class="btn btn-outline btn-sm" onclick="openDetail(${r.id})">Détail</button>
+                        <button class="btn btn-outline btn-sm" style="border-color:#00c8d4;color:#00c8d4" onclick="openStatus(${r.id},'${escapeHtml(r.fullName)}','${r.status}','${escapeHtml(r.internalNote || '')}')">Statut</button>
+                        <button class="btn btn-danger btn-sm" onclick="openDelete(${r.id},'${escapeHtml(r.fullName)}')">Supprimer</button>
+                    </div>
+                <\/td>
+            <\/tr>
+        `).join('') : '<tr class="empty-row"><td colspan="' + (isFormation ? 11 : 10) + '">Aucune demande.<\/td><\/tr>';
+    }
+
+    function openDetail(id) {
+        const r = allCollabs.find(x => x.id === id);
+        if (!r) return;
+        const typeLabels = { 'Collaboration': ' Demande de collaboration', 'PropositionEvenement': ' Proposition d\'événement', 'DemandeFormation': '🎓 Demande de formation' };
+        document.getElementById('detailTypeLabel').textContent = typeLabels[r.collaborationType] || '';
+        document.getElementById('detailName').textContent = r.fullName;
+        document.getElementById('detailPhone').textContent = r.phone || '—';
+        document.getElementById('detailEmail').innerHTML = `<a href="mailto:${escapeHtml(r.email)}" style="color:#00c8d4">${escapeHtml(r.email)}<\/a>`;
+        document.getElementById('detailOrg').textContent = r.organization || '—';
+        document.getElementById('detailAddress').textContent = r.address || '—';
+        document.getElementById('detailAttachments').innerHTML = r.attachmentNames ? renderAttachments(r.attachmentNames) : '—';
+        document.getElementById('detailMessage').textContent = r.message || '—';
+        document.getElementById('detailNote').textContent = r.internalNote || '—';
+        document.getElementById('detailStatusWrap').innerHTML = collabBadge(r.status);
+        const homoWrap = document.getElementById('detailHomologueWrap');
+        if (r.collaborationType === 'DemandeFormation') {
+            homoWrap.style.display = '';
+            document.getElementById('detailHomologue').textContent = r.isHomologueMalek === true ? '✅ Oui' : r.isHomologueMalek === false ? '❌ Non' : '—';
+        } else {
+            homoWrap.style.display = 'none';
+        }
+        document.getElementById('btnDetailEditStatus').onclick = () => { closeDetail(); openStatus(r.id, r.fullName, r.status, r.internalNote || ''); };
+        document.getElementById('modalDetail').classList.add('show');
+    }
+
+    function closeDetail() { document.getElementById('modalDetail').classList.remove('show'); }
+
+    function openStatus(id, name, currentStatus, note) {
+        editingId = id;
+        document.getElementById('statusInfo').textContent = 'Demande de : ' + name;
+        document.getElementById('newStatus').value = currentStatus;
+        document.getElementById('noteField').value = note;
+        document.getElementById('modalStatus').classList.add('show');
+    }
+
+    function closeStatus() { document.getElementById('modalStatus').classList.remove('show'); editingId = null; }
+
+    async function saveStatus() {
+        if (!editingId) return;
+        const btn = document.getElementById('btnSaveStatus');
+        btn.disabled = true;
+        btn.textContent = 'Enregistrement...';
+        try {
+            const status = document.getElementById('newStatus').value;
+            const internalNote = document.getElementById('noteField').value.trim() || null;
+            const res = await fetch('/api/collaborations/' + editingId + '/status', { method: 'PATCH', headers: authHeaders(), body: JSON.stringify({ status, internalNote }) });
+            if (res.ok) { closeStatus(); await loadCollabs(); await loadCounts(); }
+            else alert('Erreur lors de la mise à jour.');
+        } catch (e) { alert('Erreur réseau.'); }
+        finally { btn.disabled = false; btn.textContent = 'Enregistrer'; }
+    }
+
+    function openDelete(id, name) {
+        deletingId = id;
+        document.getElementById('deleteMsg').innerHTML = `Voulez-vous vraiment supprimer la demande de <strong>${escapeHtml(name)}</strong> ?<br><span style="color:#d63031">Cette action est irréversible.</span>`;
+        document.getElementById('modalDelete').classList.add('show');
+    }
+
+    function closeDelete() { document.getElementById('modalDelete').classList.remove('show'); deletingId = null; }
+
+    async function confirmDelete() {
+        if (!deletingId) return;
+        const btn = document.getElementById('btnConfirmDelete');
+        btn.disabled = true;
+        btn.textContent = 'Suppression...';
+        try {
+            const res = await fetch('/api/collaborations/' + deletingId, { method: 'DELETE', headers: authHeaders() });
+            if (res.ok || res.status === 204) { closeDelete(); await loadCollabs(); await loadCounts(); }
+            else alert('Erreur lors de la suppression.');
+        } catch (e) { alert('Erreur réseau.'); }
+        finally { btn.disabled = false; btn.textContent = 'Supprimer'; }
+    }
+
+    (async function init() {
+        await loadCounts();
+        await loadCollabs();
+    })();
+</script>
+}

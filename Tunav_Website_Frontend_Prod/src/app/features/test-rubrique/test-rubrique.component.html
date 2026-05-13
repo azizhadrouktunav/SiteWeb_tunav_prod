@@ -1,0 +1,84 @@
+<section class="test-rubrique">
+  <header class="test-rubrique__header">
+    <div>
+      <h1>Rubrique de test</h1>
+      <p>Texte dynamique stocké dans la base de données.</p>
+    </div>
+
+    <button type="button" class="btn-primary" (click)="vm.edit({ id: 0, titre: '', description: '', actif: true })">
+      Ajouter
+    </button>
+  </header>
+
+  <div class="test-rubrique__content" *ngIf="!vm.loading()">
+    <p *ngIf="vm.error()" class="error">{{ vm.error() }}</p>
+
+    <table *ngIf="vm.rubriques().length; else empty" class="table">
+      <thead>
+        <tr>
+          <th>Titre</th>
+          <th>Description</th>
+          <th>Actif</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of vm.rubriques()">
+          <td>{{ item.titre }}</td>
+          <td>{{ item.description || '—' }}</td>
+          <td>{{ item.actif ? 'Oui' : 'Non' }}</td>
+          <td class="actions">
+            <button type="button" (click)="vm.edit(item)">Modifier</button>
+            <button type="button" class="danger" (click)="vm.delete(item.id)">Supprimer</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <ng-template #empty>
+      <p>Aucun contenu défini pour le moment.</p>
+    </ng-template>
+  </div>
+
+  <div class="test-rubrique__form" *ngIf="vm.current() as current">
+    <h2>{{ current.id === 0 ? 'Créer' : 'Modifier' }} un texte</h2>
+
+    <form
+      #form="ngForm"
+      (ngSubmit)="
+        vm.save({
+          id: current.id,
+          titre: current.titre,
+          description: current.description,
+          actif: current.actif
+        })
+      "
+    >
+      <div class="field">
+        <label for="titre">Titre</label>
+        <input id="titre" name="titre" [(ngModel)]="current.titre" required />
+      </div>
+
+      <div class="field">
+        <label for="description">Description</label>
+        <textarea
+          id="description"
+          name="description"
+          rows="3"
+          [(ngModel)]="current.description"
+        ></textarea>
+      </div>
+
+      <div class="field field--inline">
+        <label for="actif">Actif</label>
+        <input id="actif" type="checkbox" name="actif" [(ngModel)]="current.actif" />
+      </div>
+
+      <div class="actions">
+        <button type="submit" class="btn-primary" [disabled]="form.invalid">Enregistrer</button>
+        <button type="button" (click)="vm.edit(null)">Annuler</button>
+      </div>
+    </form>
+  </div>
+</section>
+

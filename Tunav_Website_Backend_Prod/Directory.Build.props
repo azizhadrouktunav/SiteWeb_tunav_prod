@@ -1,0 +1,14 @@
+<Project>
+  <PropertyGroup>
+    <BaseOutputPath>bin_build\</BaseOutputPath>
+    <BaseIntermediateOutputPath>obj_build\</BaseIntermediateOutputPath>
+    <!-- Avoid setting MSBuildProjectExtensionsPath: it can cause Razor/VS to
+         pick up generated assembly attributes twice (CS0579). -->
+    <!-- Ensure no stray intermediate folders get picked up by default globbing -->
+    <DefaultItemExcludes>$(DefaultItemExcludes);obj\**;bin\**;obj_build\**;bin_build\**;obj_cursor\**;bin_cursor\**;obj_tmp\**;bin_tmp\**</DefaultItemExcludes>
+    <RestorePackagesPath Condition="'$(RestorePackagesPath)' == ''">$(UserProfile)\.nuget\packages\</RestorePackagesPath>
+    <NuGetPackageRoot Condition="'$(NuGetPackageRoot)' == ''">$(RestorePackagesPath)</NuGetPackageRoot>
+    <RestoreFallbackFolders></RestoreFallbackFolders>
+    <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
+  </PropertyGroup>
+</Project>

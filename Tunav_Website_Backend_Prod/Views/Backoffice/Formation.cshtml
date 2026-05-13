@@ -1,0 +1,636 @@
+@{
+    ViewData["Title"] = "Pôle Formation";
+    ViewData["ActivePage"] = "Formation";
+    Layout = "~/Views/Shared/_LayoutBackoffice.cshtml";
+}
+
+<div class="page-header">
+    <h1>Pôle Formation</h1>
+    <p>Gérez les établissements partenaires et les témoignages affichés sur le site</p>
+</div>
+
+<!-- ONGLETS ──────────────────────────────────────────────────────────────────── -->
+<div class="tab-bar">
+    <button class="tab-btn tab-btn--active" id="tabPartners" onclick="switchTab('partners')">
+         Partenaires (<span id="countPartners">0</span>)
+    </button>
+    <button class="tab-btn" id="tabTestimonials" onclick="switchTab('testimonials')">
+         Témoignages (<span id="countTestimonials">0</span>)
+    </button>
+</div>
+
+<!-- ── PANEL PARTENAIRES ──────────────────────────────────────────────────────── -->
+<div id="panelPartners">
+    <div class="card">
+        <div class="card-header">
+            <h2>Établissements Partenaires</h2>
+            <button class="btn btn-primary btn-sm" onclick="openAddPartner()">+ Ajouter</button>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Aperçu</th>
+                    <th>Nom</th>
+                    <th>Domaine</th>
+                    <th>Image</th>
+                    <th>Ordre</th>
+                    <th>Statut</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="partnersTable">
+                <tr class="loading-row"><td colspan="7">Chargement......</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- ── PANEL TÉMOIGNAGES ──────────────────────────────────────────────────────── -->
+<div id="panelTestimonials" style="display:none">
+    <div class="card">
+        <div class="card-header">
+            <h2>Témoignages Employés</h2>
+            <button class="btn btn-primary btn-sm" onclick="openAddTestimonial()">+ Ajouter</button>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Avatar</th>
+                    <th>Auteur</th>
+                    <th>Poste</th>
+                    <th>Note</th>
+                    <th>Contenu</th>
+                    <th>Ordre</th>
+                    <th>Statut</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="testimonialsTable">
+                <tr class="loading-row"><td colspan="8">Chargement......</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     MODAL — PARTENAIRE
+════════════════════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modalPartner">
+    <div class="modal-box" style="max-width:560px">
+        <button class="modal-close-btn" onclick="closePartner()" title="Fermer">✕</button>
+        <h3 id="partnerModalTitle">Ajouter un partenaire</h3>
+        <div id="partnerError" style="display:none;background:#fff0f0;border:1px solid #ffc5c5;
+             color:#d63031;padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:14px"></div>
+
+        <!-- Aperçu carte — comme sur le site -->
+        <div id="pPreviewWrap" style="margin-bottom:16px">
+            <div style="font-size:11px;font-weight:600;color:#6b7db3;text-transform:uppercase;
+                        letter-spacing:.5px;margin-bottom:8px">Aperçu de la carte</div>
+            <div id="pPreviewCard" style="position:relative;height:160px;border-radius:12px;
+                 overflow:hidden;background:#1a2a6c;display:flex;flex-direction:column;
+                 justify-content:space-between;">
+                <!-- Image de fond -->
+                <div id="pPreviewBg" style="position:absolute;inset:0;background-size:cover;
+                     background-position:center;transition:all .3s"></div>
+                <!-- Overlay -->
+                <div style="position:absolute;inset:0;background:linear-gradient(to bottom,
+                     rgba(13,27,75,.25) 0%,rgba(13,27,75,.55) 50%,rgba(13,27,75,.88) 100%)"></div>
+                <!-- Icône haut droite -->
+                <div style="position:relative;z-index:2;padding:10px 12px 0;display:flex;justify-content:flex-end">
+                    <span id="pPreviewIcon"
+                          style="font-size:22px;background:rgba(255,255,255,.18);backdrop-filter:blur(6px);
+                                 border:1px solid rgba(255,255,255,.25);width:40px;height:40px;border-radius:10px;
+                                 display:flex;align-items:center;justify-content:center">🎓</span>
+                </div>
+                <!-- Texte bas gauche -->
+                <div style="position:relative;z-index:2;padding:0 14px 14px">
+                    <div id="pPreviewName"
+                         style="font-size:14px;font-weight:800;color:#fff;margin-bottom:4px;text-shadow:0 1px 4px rgba(0,0,0,.4)">
+                        Nom de l'établissement
+                    </div>
+                    <div id="pPreviewDomain"
+                         style="font-size:11px;font-weight:600;color:#17d5e8;margin-bottom:4px">
+                        Domaine de formation
+                    </div>
+                    <div style="font-size:11px;color:rgba(255,255,255,.8);display:flex;align-items:center;gap:4px">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg>
+                        Partenaire certifié
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Icône + Nom -->
+        <div style="display:grid;grid-template-columns:80px 1fr;gap:12px;margin-bottom:14px">
+            <div class="mfield">
+                <label>Icône (emoji)</label>
+                <input type="text" id="pIcon" placeholder="🚀" maxlength="4"
+                       style="text-align:center;font-size:24px"
+                       oninput="updatePreview()" />
+            </div>
+            <div class="mfield">
+                <label>Nom de l'établissement *</label>
+                <input type="text" id="pName" placeholder="Ex : École Digitale Tunisie"
+                       oninput="updatePreview()" />
+            </div>
+        </div>
+
+        <!-- Domaine + Ordre -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+            <div class="mfield">
+                <label>Domaine *</label>
+                <input type="text" id="pDomain" placeholder="Ex : Data Science"
+                       oninput="updatePreview()" />
+            </div>
+            <div class="mfield">
+                <label>Ordre d'affichage</label>
+                <input type="number" id="pOrder" value="0" min="0" />
+            </div>
+        </div>
+
+        <!-- URL de l'image -->
+        <div class="mfield" style="margin-bottom:14px">
+            <label style="display:flex;align-items:center;gap:6px">
+                 Image de la carte (URL)
+                <span style="color:#b0bdd8;font-weight:400;font-size:11px">(optionnel — remplace l'image auto)</span>
+            </label>
+            <input type="text" id="pImageUrl" placeholder="https://images.unsplash.com/..."
+                   oninput="updatePreview()" />
+            <div style="font-size:11px;color:#6b7db3;margin-top:4px">
+                Laissez vide pour utiliser une image automatique selon le domaine.
+                Vous pouvez utiliser <a href="https://unsplash.com" target="_blank" style="color:#00c8d4">Unsplash</a>
+                ou toute URL d'image publique.
+            </div>
+        </div>
+
+        <div class="mfield" id="pStatusField" style="display:none;margin-bottom:14px">
+            <label>Statut</label>
+            <select id="pIsActive">
+                <option value="true">✅ Actif (visible sur le site)</option>
+                <option value="false">⛔ Inactif (masqué)</option>
+            </select>
+        </div>
+
+        <div class="modal-actions">
+            <button class="btn btn-outline" onclick="closePartner()">Annuler</button>
+            <button class="btn btn-primary" id="btnSavePartner" onclick="savePartner()">Enregistrer</button>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     MODAL — TÉMOIGNAGE
+════════════════════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modalTestimonial">
+    <div class="modal-box" style="max-width:580px">
+        <button class="modal-close-btn" onclick="closeTestimonial()" title="Fermer">✕</button>
+        <h3 id="testiModalTitle">Ajouter un témoignage</h3>
+        <div id="testiError" style="display:none;background:#fff0f0;border:1px solid #ffc5c5;
+             color:#d63031;padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:14px"></div>
+
+        <div style="display:grid;grid-template-columns:80px 1fr;gap:12px;margin-bottom:14px">
+            <div class="mfield">
+                <label>Avatar (emoji)</label>
+                <input type="text" id="tAvatar" placeholder="👤" maxlength="4" style="text-align:center;font-size:24px" />
+            </div>
+            <div class="mfield">
+                <label>Nom complet *</label>
+                <input type="text" id="tAuthorName" placeholder="Amira Ben Salah" />
+            </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+            <div class="mfield">
+                <label>Poste / Rôle *</label>
+                <input type="text" id="tAuthorRole" placeholder="Développeuse Full Stack" />
+            </div>
+            <div class="mfield">
+                <label>Entreprise</label>
+                <input type="text" id="tCompany" placeholder="TUNAV IT Groupe" />
+            </div>
+        </div>
+
+        <div class="mfield" style="margin-bottom:14px">
+            <label>Témoignage *</label>
+            <textarea id="tContent" rows="4"
+                placeholder="Décrivez votre expérience de formation..."></textarea>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:14px">
+            <div class="mfield">
+                <label>Note (1–5)</label>
+                <select id="tRating">
+                    <option value="5">★★★★★ (5)</option>
+                    <option value="4">★★★★ (4)</option>
+                    <option value="3">★★★ (3)</option>
+                    <option value="2">★★ (2)</option>
+                    <option value="1">★ (1)</option>
+                </select>
+            </div>
+            <div class="mfield">
+                <label>Ordre d'affichage</label>
+                <input type="number" id="tOrder" value="0" min="0" />
+            </div>
+            <div class="mfield" id="tStatusField" style="display:none">
+                <label>Statut</label>
+                <select id="tIsActive">
+                    <option value="true">Actif</option>
+                    <option value="false">Inactif</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="modal-actions">
+            <button class="btn btn-outline" onclick="closeTestimonial()">Annuler</button>
+            <button class="btn btn-primary" id="btnSaveTestimonial" onclick="saveTestimonial()">Enregistrer</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL SUPPRESSION ─────────────────────────────────────────────────────── -->
+<div class="modal-overlay" id="modalDelete">
+    <div class="modal-box" style="max-width:400px;text-align:center">
+       
+        <button class="modal-close-btn" onclick="closeDelete()" title="Fermer">✕</button>
+        <h3 style="margin-bottom:8px">Confirmer la suppression</h3>
+        <p id="deleteMsg" style="font-size:14px;color:#6b7db3;margin-bottom:24px">Cette action est irréversible.</p>
+        <div style="display:flex;gap:10px;justify-content:center">
+            <button class="btn btn-outline" onclick="closeDelete()">Annuler</button>
+            <button class="btn btn-danger" id="btnConfirmDelete" onclick="confirmDelete()">Supprimer</button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<style>
+    .modal-close-btn { position:absolute; top:16px; right:16px; background:none; border:none; font-size:20px; cursor:pointer; color:#6b7db3; line-height:1; padding:4px 8px; border-radius:6px; transition:background 0.2s; }
+    .modal-close-btn:hover { background:#f0f4ff; color:#1e2d5a; }
+    .modal-box { position:relative; }
+    .tab-bar { display:flex;gap:8px;margin-bottom:20px;border-bottom:2px solid #e8edf8;padding-bottom:0; }
+    .tab-btn { background:none;border:none;padding:10px 20px;font-size:14px;font-weight:500;color:#6b7db3;
+               cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:color .2s,border-color .2s; }
+    .tab-btn--active { color:#00c8d4;border-bottom-color:#00c8d4; }
+    .tab-btn:hover:not(.tab-btn--active) { color:#1e2d5a; }
+
+    .mfield label { display:block;font-size:12px;font-weight:500;color:#6b7db3;margin-bottom:5px; }
+    .mfield input,.mfield textarea,.mfield select {
+        width:100%;padding:10px 12px;border:1.5px solid #dce4f5;border-radius:8px;
+        font-size:14px;font-family:inherit;outline:none;color:#1e2d5a;
+        transition:border-color .2s;background:white;
+    }
+    .mfield input:focus,.mfield textarea:focus,.mfield select:focus { border-color:#00c8d4; }
+    .mfield textarea { resize:vertical; }
+    .emoji-preview { font-size:28px;width:48px;height:48px;background:#f0f4ff;border-radius:12px;
+                     display:flex;align-items:center;justify-content:center;flex-shrink:0; }
+    .stars-display { color:#f5b042;letter-spacing:2px; }
+
+    /* Bannière d'erreur si tables manquantes / 500 */
+    .db-error-banner {
+        background:#fff3e0;border:1px solid #ffcc02;color:#856404;
+        padding:12px 16px;border-radius:8px;font-size:13px;
+        margin-bottom:16px;display:none;
+    }
+</style>
+
+<script>
+    let currentTab    = 'partners';
+    let editingId     = null;
+    let editingType   = null;  // 'partner' | 'testimonial'
+    let deletingId    = null;
+    let deletingType  = null;
+
+    /* ── ONGLETS ─────────────────────────────────────────────────────────── */
+    function switchTab(tab) {
+        currentTab = tab;
+        document.getElementById('panelPartners').style.display    = tab === 'partners'    ? '' : 'none';
+        document.getElementById('panelTestimonials').style.display = tab === 'testimonials' ? '' : 'none';
+        document.getElementById('tabPartners').classList.toggle('tab-btn--active',    tab === 'partners');
+        document.getElementById('tabTestimonials').classList.toggle('tab-btn--active', tab === 'testimonials');
+        if (tab === 'testimonials') loadTestimonials();
+    }
+
+    /* ── PREVIEW EN TEMPS RÉEL de la carte partenaire ───────────────────── */
+    function getAutoImage(domain) {
+        const d = (domain || '').toLowerCase();
+        if (d.includes('data') || d.includes('intelligence'))
+            return 'https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=400&h=260&fit=crop';
+        if (d.includes('cloud') || d.includes('devops') || d.includes('linux'))
+            return 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=400&h=260&fit=crop';
+        if (d.includes('web') || d.includes('react') || d.includes('angular') || d.includes('front'))
+            return 'https://images.unsplash.com/photo-1593720213428-28a5b9e94613?w=400&h=260&fit=crop';
+        if (d.includes('marketing') || d.includes('digital') || d.includes('communication'))
+            return 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&h=260&fit=crop';
+        if (d.includes('projet') || d.includes('management') || d.includes('gestion'))
+            return 'https://images.unsplash.com/photo-1507925921958-8a62f3d1a50d?w=400&h=260&fit=crop';
+        if (d.includes('comptab') || d.includes('finance') || d.includes('fiscal'))
+            return 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=400&h=260&fit=crop';
+        if (d.includes('securit') || d.includes('cyber') || d.includes('réseau'))
+            return 'https://images.unsplash.com/photo-1563986768494-4dee2763ff3f?w=400&h=260&fit=crop';
+        if (d.includes('langue') || d.includes('anglais') || d.includes('français'))
+            return 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=400&h=260&fit=crop';
+        return 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=400&h=260&fit=crop';
+    }
+
+    function updatePreview() {
+        const icon     = document.getElementById('pIcon')?.value.trim()     || '🎓';
+        const name     = document.getElementById('pName')?.value.trim()     || 'Nom de l\'établissement';
+        const domain   = document.getElementById('pDomain')?.value.trim()   || 'Domaine de formation';
+        const imageUrl = document.getElementById('pImageUrl')?.value.trim() || getAutoImage(domain);
+
+        const bg   = document.getElementById('pPreviewBg');
+        const icn  = document.getElementById('pPreviewIcon');
+        const nm   = document.getElementById('pPreviewName');
+        const dom  = document.getElementById('pPreviewDomain');
+        if (!bg) return;
+
+        bg.style.backgroundImage   = imageUrl ? `url(${imageUrl})` : 'none';
+        bg.style.backgroundColor   = imageUrl ? 'transparent' : '#1a2a6c';
+        icn.textContent            = icon;
+        nm.textContent             = name;
+        dom.textContent            = domain;
+    }
+
+    /* ── HELPER : message d'erreur lisible ──────────────────────────────── */
+    function renderError(tbody, colspan, err) {
+        let msg = 'Erreur de chargement.';
+        if (err && err.status === 401) msg = ' Session expirée. Veuillez vous reconnecter.';
+        else if (err && err.status === 500) msg = ' Erreur serveur.';
+        document.getElementById(tbody).innerHTML =
+            `<tr class="empty-row"><td colspan="${colspan}" style="color:#d63031">${msg}</td></tr>`;
+    }
+
+    /* ── CHARGEMENT PARTENAIRES ──────────────────────────────────────────── */
+    async function loadPartners() {
+        document.getElementById('partnersTable').innerHTML =
+            '<tr class="loading-row"><td colspan="7">Chargement...</td></tr>';
+        try {
+            const res  = await fetch('/api/training-partners', { headers: authHeaders() });
+            if (!res.ok) { renderError('partnersTable', 7, res); return; }
+            const list = await res.json();
+            document.getElementById('countPartners').textContent = Array.isArray(list) ? list.length : 0;
+            document.getElementById('partnersTable').innerHTML = Array.isArray(list) && list.length
+                ? list.map(p => `
+                    <tr style="${!p.isActive ? 'opacity:0.55' : ''}">
+                        <td>
+                            ${p.imageUrl
+                                ? `<div style="width:72px;height:48px;border-radius:8px;overflow:hidden;background:#1a2a6c;position:relative">
+                                     <img src="${esc(p.imageUrl)}" style="width:100%;height:100%;object-fit:cover"
+                                          onerror="this.style.display='none'" />
+                                     <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+                                                 font-size:18px;background:rgba(13,27,75,.4)">${p.icon || '🎓'}</div>
+                                   </div>`
+                                : `<div style="width:72px;height:48px;border-radius:8px;background:linear-gradient(135deg,#1a2a6c,#00c8d4);
+                                              display:flex;align-items:center;justify-content:center;font-size:22px">${p.icon || '🎓'}</div>`}
+                        </td>
+                        <td style="font-weight:600;color:#1e2d5a">${esc(p.name)}</td>
+                        <td><span class="badge badge-cyan">${esc(p.domain)}</span></td>
+                        <td style="font-size:12px;color:#6b7db3;max-width:140px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+                            ${p.imageUrl
+                                ? `<a href="${esc(p.imageUrl)}" target="_blank" style="color:#00c8d4;text-decoration:none"
+                                      title="${esc(p.imageUrl)}">🖼️ Image personnalisée</a>`
+                                : '<span style="color:#b0bdd8">Auto (selon domaine)</span>'}
+                        </td>
+                        <td style="color:#6b7db3;text-align:center">${p.displayOrder}</td>
+                        <td><span class="badge ${p.isActive ? 'badge-success' : 'badge-danger'}">${p.isActive ? '✅ Actif' : '⛔ Inactif'}</span></td>
+                        <td>
+                            <div style="display:flex;gap:5px;flex-wrap:wrap">
+                                <button class="btn btn-outline btn-sm" onclick="openEditPartner(${p.id})">Modifier</button>
+                                <button class="btn btn-outline btn-sm" style="${p.isActive ? 'border-color:#ffc107;color:#856404' : 'border-color:#00b894;color:#00704a'}"
+                                    onclick="toggleItem('partner',${p.id})">${p.isActive ? 'Masquer' : 'Afficher'}</button>
+                                <button class="btn btn-danger btn-sm" onclick="openDelete('partner',${p.id},'${esc(p.name)}')">Supprimer</button>
+                            </div>
+                        </td>
+                    </tr>`).join('')
+                : '<tr class="empty-row"><td colspan="7">Aucun partenaire. Cliquez sur "+ Ajouter" pour commencer.</td></tr>';
+        } catch(e) {
+            renderError('partnersTable', 7, null);
+        }
+    }
+
+    /* ── CHARGEMENT TÉMOIGNAGES ──────────────────────────────────────────── */
+    async function loadTestimonials() {
+        document.getElementById('testimonialsTable').innerHTML =
+            '<tr class="loading-row"><td colspan="8">Chargement...</td></tr>';
+        try {
+            const res  = await fetch('/api/testimonials', { headers: authHeaders() });
+            if (!res.ok) { renderError('testimonialsTable', 8, res); return; }
+            const list = await res.json();
+            document.getElementById('countTestimonials').textContent = Array.isArray(list) ? list.length : 0;
+            document.getElementById('testimonialsTable').innerHTML = Array.isArray(list) && list.length
+                ? list.map(t => `
+                    <tr style="${!t.isActive ? 'opacity:0.55' : ''}">
+                        <td style="font-size:24px;text-align:center">${t.avatar || '👤'}</td>
+                        <td style="font-weight:600;color:#1e2d5a">${esc(t.authorName)}</td>
+                        <td style="color:#6b7db3">${esc(t.authorRole)}${t.company ? `<br><span style="font-size:11px;color:#00c8d4">${esc(t.company)}</span>` : ''}</td>
+                        <td class="stars-display">${'★'.repeat(t.rating)}</td>
+                        <td style="font-size:12px;color:#6b7db3;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"
+                            title="${esc(t.content)}">${esc(t.content)}</td>
+                        <td style="color:#6b7db3;text-align:center">${t.displayOrder}</td>
+                        <td><span class="badge ${t.isActive ? 'badge-success' : 'badge-danger'}">${t.isActive ? ' Actif' : ' Inactif'}</span></td>
+                        <td>
+                            <div style="display:flex;gap:5px;flex-wrap:wrap">
+                                <button class="btn btn-outline btn-sm" onclick="openEditTestimonial(${t.id})">Modifier</button>
+                                <button class="btn btn-outline btn-sm" style="${t.isActive ? 'border-color:#ffc107;color:#856404' : 'border-color:#00b894;color:#00704a'}"
+                                    onclick="toggleItem('testimonial',${t.id})">${t.isActive ? 'Masquer' : 'Afficher'}</button>
+                                <button class="btn btn-danger btn-sm" onclick="openDelete('testimonial',${t.id},'${esc(t.authorName)}')">Supprimer</button>
+                            </div>
+                        </td>
+                    </tr>`).join('')
+                : '<tr class="empty-row"><td colspan="8">Aucun témoignage. Cliquez sur "+ Ajouter" pour commencer.</td></tr>';
+        } catch(e) {
+            renderError('testimonialsTable', 8, null);
+        }
+    }
+
+    /* ── MODAL PARTENAIRE ────────────────────────────────────────────────── */
+    function openAddPartner() {
+        editingId = null; editingType = 'partner';
+        document.getElementById('partnerModalTitle').textContent = 'Ajouter un partenaire';
+        document.getElementById('pIcon').value     = '';
+        document.getElementById('pName').value     = '';
+        document.getElementById('pDomain').value   = '';
+        document.getElementById('pImageUrl').value = '';
+        document.getElementById('pOrder').value    = '0';
+        document.getElementById('pStatusField').style.display = 'none';
+        document.getElementById('partnerError').style.display = 'none';
+        updatePreview();
+        document.getElementById('modalPartner').classList.add('show');
+    }
+
+    async function openEditPartner(id) {
+        editingId = id; editingType = 'partner';
+        document.getElementById('partnerModalTitle').textContent = 'Modifier le partenaire';
+        document.getElementById('partnerError').style.display = 'none';
+        document.getElementById('pStatusField').style.display = '';
+        try {
+            const res = await fetch('/api/training-partners/' + id, { headers: authHeaders() });
+            const p   = await res.json();
+            document.getElementById('pIcon').value     = p.icon     || '';
+            document.getElementById('pName').value     = p.name     || '';
+            document.getElementById('pDomain').value   = p.domain   || '';
+            document.getElementById('pImageUrl').value = p.imageUrl || '';
+            document.getElementById('pOrder').value    = p.displayOrder ?? 0;
+            document.getElementById('pIsActive').value = p.isActive ? 'true' : 'false';
+            updatePreview();
+        } catch(e) { alert('Erreur chargement.'); }
+        document.getElementById('modalPartner').classList.add('show');
+    }
+
+    function closePartner() {
+        document.getElementById('modalPartner').classList.remove('show');
+        editingId = null;
+    }
+
+    async function savePartner() {
+        const btn    = document.getElementById('btnSavePartner');
+        const errDiv = document.getElementById('partnerError');
+        errDiv.style.display = 'none';
+
+        const name     = document.getElementById('pName').value.trim();
+        const domain   = document.getElementById('pDomain').value.trim();
+        const icon     = document.getElementById('pIcon').value.trim() || null;
+        const imageUrl = document.getElementById('pImageUrl').value.trim() || null;
+        const order    = parseInt(document.getElementById('pOrder').value) || 0;
+
+        if (!name)   { errDiv.textContent = 'Le nom est obligatoire.';     errDiv.style.display = 'block'; return; }
+        if (!domain) { errDiv.textContent = 'Le domaine est obligatoire.'; errDiv.style.display = 'block'; return; }
+
+        btn.disabled = true; btn.textContent = 'Enregistrement...';
+
+        try {
+            const isActive = editingId ? document.getElementById('pIsActive').value === 'true' : true;
+            const body     = { name, domain, icon, imageUrl, isActive, displayOrder: order };
+            const url      = editingId ? '/api/training-partners/' + editingId : '/api/training-partners';
+            const method   = editingId ? 'PUT' : 'POST';
+            const res      = await fetch(url, { method, headers: authHeaders(), body: JSON.stringify(body) });
+            if (res.ok) { closePartner(); loadPartners(); }
+            else {
+                const d = await res.json();
+                errDiv.textContent = d.message || (res.status === 401 ? 'Session expirée.' : 'Erreur.');
+                errDiv.style.display = 'block';
+            }
+        } catch(e) { errDiv.textContent = 'Erreur réseau.'; errDiv.style.display = 'block'; }
+        finally { btn.disabled = false; btn.textContent = 'Enregistrer'; }
+    }
+
+    /* ── MODAL TÉMOIGNAGE ────────────────────────────────────────────────── */
+    function openAddTestimonial() {
+        editingId = null; editingType = 'testimonial';
+        document.getElementById('testiModalTitle').textContent = 'Ajouter un témoignage';
+        ['tAvatar','tAuthorName','tAuthorRole','tCompany','tContent'].forEach(id =>
+            document.getElementById(id).value = '');
+        document.getElementById('tRating').value  = '5';
+        document.getElementById('tOrder').value   = '0';
+        document.getElementById('tStatusField').style.display = 'none';
+        document.getElementById('testiError').style.display   = 'none';
+        document.getElementById('modalTestimonial').classList.add('show');
+    }
+
+    async function openEditTestimonial(id) {
+        editingId = id; editingType = 'testimonial';
+        document.getElementById('testiModalTitle').textContent = 'Modifier le témoignage';
+        document.getElementById('testiError').style.display = 'none';
+        document.getElementById('tStatusField').style.display = '';
+        try {
+            const res = await fetch('/api/testimonials/' + id, { headers: authHeaders() });
+            const t   = await res.json();
+            document.getElementById('tAvatar').value     = t.avatar     || '';
+            document.getElementById('tAuthorName').value = t.authorName || '';
+            document.getElementById('tAuthorRole').value = t.authorRole || '';
+            document.getElementById('tCompany').value    = t.company    || '';
+            document.getElementById('tContent').value    = t.content    || '';
+            document.getElementById('tRating').value     = t.rating     ?? 5;
+            document.getElementById('tOrder').value      = t.displayOrder ?? 0;
+            document.getElementById('tIsActive').value   = t.isActive ? 'true' : 'false';
+        } catch(e) { alert('Erreur chargement.'); }
+        document.getElementById('modalTestimonial').classList.add('show');
+    }
+
+    function closeTestimonial() {
+        document.getElementById('modalTestimonial').classList.remove('show');
+        editingId = null;
+    }
+
+    async function saveTestimonial() {
+        const btn    = document.getElementById('btnSaveTestimonial');
+        const errDiv = document.getElementById('testiError');
+        errDiv.style.display = 'none';
+
+        const authorName = document.getElementById('tAuthorName').value.trim();
+        const authorRole = document.getElementById('tAuthorRole').value.trim();
+        const company    = document.getElementById('tCompany').value.trim()    || null;
+        const avatar     = document.getElementById('tAvatar').value.trim()     || null;
+        const content    = document.getElementById('tContent').value.trim();
+        const rating     = parseInt(document.getElementById('tRating').value)  || 5;
+        const order      = parseInt(document.getElementById('tOrder').value)   || 0;
+
+        if (!authorName) { errDiv.textContent = 'Le nom est obligatoire.';        errDiv.style.display = 'block'; return; }
+        if (!content)    { errDiv.textContent = 'Le témoignage est obligatoire.'; errDiv.style.display = 'block'; return; }
+
+        btn.disabled = true; btn.textContent = 'Enregistrement...';
+        try {
+            const isActive = editingId ? document.getElementById('tIsActive').value === 'true' : true;
+            const body     = { authorName, authorRole, company, avatar, content, rating, isActive, displayOrder: order };
+            const url      = editingId ? '/api/testimonials/' + editingId : '/api/testimonials';
+            const method   = editingId ? 'PUT' : 'POST';
+            const res      = await fetch(url, { method, headers: authHeaders(), body: JSON.stringify(body) });
+            if (res.ok) { closeTestimonial(); loadTestimonials(); }
+            else {
+                const d = await res.json();
+                errDiv.textContent = d.message || (res.status === 401 ? 'Session expirée.' : 'Erreur.');
+                errDiv.style.display = 'block';
+            }
+        } catch(e) { errDiv.textContent = 'Erreur réseau.'; errDiv.style.display = 'block'; }
+        finally { btn.disabled = false; btn.textContent = 'Enregistrer'; }
+    }
+
+    /* ── TOGGLE ──────────────────────────────────────────────────────────── */
+    async function toggleItem(type, id) {
+        const url = type === 'partner' ? '/api/training-partners/' : '/api/testimonials/';
+        try {
+            const res = await fetch(url + id + '/toggle', { method: 'PATCH', headers: authHeaders() });
+            if (res.ok) { type === 'partner' ? loadPartners() : loadTestimonials(); }
+            else if (res.status === 401) alert('Session expirée. Veuillez vous reconnecter.');
+        } catch(e) { alert('Erreur réseau.'); }
+    }
+
+    /* ── SUPPRESSION ─────────────────────────────────────────────────────── */
+    function openDelete(type, id, label) {
+        deletingType = type; deletingId = id;
+        document.getElementById('deleteMsg').textContent =
+            `Supprimer "${label}" ? Cette action est irréversible.`;
+        document.getElementById('modalDelete').classList.add('show');
+    }
+
+    function closeDelete() {
+        document.getElementById('modalDelete').classList.remove('show');
+        deletingId = null; deletingType = null;
+    }
+
+    async function confirmDelete() {
+        const btn = document.getElementById('btnConfirmDelete');
+        btn.disabled = true; btn.textContent = 'Suppression...';
+        try {
+            const url = deletingType === 'partner' ? '/api/training-partners/' : '/api/testimonials/';
+            const res = await fetch(url + deletingId, { method: 'DELETE', headers: authHeaders() });
+            if (res.ok || res.status === 204) {
+                closeDelete();
+                deletingType === 'partner' ? loadPartners() : loadTestimonials();
+            } else { alert('Erreur lors de la suppression.'); }
+        } catch(e) { alert('Erreur réseau.'); }
+        finally { btn.disabled = false; btn.textContent = 'Supprimer'; }
+    }
+
+    /* ── XSS escape ─────────────────────────────────────────────────────── */
+    function esc(str) {
+        if (!str) return '';
+        return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+                          .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+
+    /* ── INIT ────────────────────────────────────────────────────────────── */
+    (async function init() {
+        await loadPartners();
+    })();
+</script>
+}

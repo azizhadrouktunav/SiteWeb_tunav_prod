@@ -1,0 +1,355 @@
+@{
+    ViewData["Title"] = "Secteurs d'Activité";
+    Layout = "_LayoutBackoffice";
+    ViewData["ActivePage"] = "Sectors";
+}
+
+<div class="page-header">
+    <h1> Secteurs d'Activité</h1>
+    <p>Gérez les secteurs affichés dans le carousel "Solutions Adaptées à Votre Industrie" de la page d'accueil</p>
+</div>
+
+
+<div class="card">
+    <div class="card-header">
+        <h2>Liste des secteurs</h2>
+        <button class="btn btn-primary" onclick="openAdd()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+            Ajouter un secteur
+        </button>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th style="width:60px">Ordre</th>
+                <th style="width:80px">Image</th>
+                <th>Titre</th>
+                <th>Description</th>
+                <th style="width:100px">Statut</th>
+                <th style="width:130px">Actions</th>
+            </tr>
+        </thead>
+        <tbody id="sectorsTbody">
+            <tr class="loading-row"><td colspan="6">Chargement…</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- ── Modal Ajouter / Modifier ────────────────────────────────────────────── -->
+<!-- ✅ CORRECTION : suppression du onclick sur l'overlay pour empêcher la fermeture au clic dehors -->
+<div class="modal-overlay" id="modalSector">
+    <div class="modal-box" style="width:520px;max-width:95vw;position:relative;">
+
+        <!-- ✅ Bouton X pour fermer uniquement via ce bouton -->
+        <button onclick="closeModalSector()"
+            style="position:absolute;top:14px;right:16px;background:none;border:none;cursor:pointer;font-size:20px;color:var(--muted);line-height:1;padding:0;"
+            title="Fermer">✕</button>
+
+        <h3 id="modalSectorTitle">Ajouter un secteur</h3>
+        <input type="hidden" id="sectorId" />
+
+        <div class="modal-field">
+            <label>Titre <span style="color:#d63031">*</span></label>
+            <input type="text" id="sectorTitle" placeholder="ex: SANTÉ & MÉDICAL" maxlength="200" />
+        </div>
+
+        <div class="modal-field">
+            <label>Description <span style="color:#d63031">*</span></label>
+            <textarea id="sectorDesc" rows="3" placeholder="Description courte du secteur…" maxlength="1000"
+                style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:'Inter',sans-serif;outline:none;color:var(--text);transition:border-color 0.2s;resize:vertical;"
+                onfocus="this.style.borderColor='var(--cyan)'" onblur="this.style.borderColor='var(--border)'"></textarea>
+        </div>
+
+        <div class="modal-field">
+            <label>Image</label>
+            <div style="display:flex;gap:10px;flex-direction:column;">
+                <!-- Preview -->
+                <div id="imgPreviewWrap" style="display:none;border-radius:8px;overflow:hidden;height:140px;background:#f0f4ff;">
+                    <img id="imgPreview" src="" alt="preview" style="width:100%;height:100%;object-fit:cover;" />
+                </div>
+                <!-- URL ou upload -->
+                <input type="text" id="sectorImageUrl" placeholder="URL de l'image (https://…) ou importez ci-dessous"
+                    oninput="previewFromUrl(this.value)" />
+                <label style="cursor:pointer;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border:1.5px dashed var(--border);border-radius:8px;font-size:13px;color:var(--muted);background:#f8faff;transition:all 0.15s;"
+                    onmouseover="this.style.borderColor='var(--cyan)';this.style.color='var(--cyan)'"
+                    onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">
+                    📁 Importer un fichier image
+                    <input type="file" id="sectorImageFile" accept="image/*" style="display:none" onchange="previewFromFile(this)" />
+                </label>
+            </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div class="modal-field" style="margin-bottom:0">
+                <label>Ordre d'affichage</label>
+                <input type="number" id="sectorOrder" value="0" min="0" />
+            </div>
+            <div class="modal-field" style="margin-bottom:0">
+                <label>Statut</label>
+                <select id="sectorActive"
+                    style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:'Inter',sans-serif;outline:none;color:var(--text);background:white;">
+                    <option value="true">✅ Actif</option>
+                    <option value="false">⛔ Inactif</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="sectorError" style="display:none;margin-top:12px;padding:10px 14px;background:#fff0f0;border-radius:8px;color:#d63031;font-size:13px;"></div>
+
+        <div class="modal-actions">
+            <button class="btn btn-outline" onclick="closeModalSector()">Annuler</button>
+            <button class="btn btn-primary" id="saveSectorBtn" onclick="saveSector()">Enregistrer</button>
+        </div>
+    </div>
+</div>
+
+<!-- ── Modal Supprimer ─────────────────────────────────────────────────────── -->
+<!-- ✅ CORRECTION : suppression du onclick sur l'overlay -->
+<div class="modal-overlay" id="modalDelete">
+    <div class="modal-box" style="width:400px;position:relative;">
+
+        <!-- ✅ Bouton X pour fermer -->
+        <button onclick="closeModalDelete()"
+            style="position:absolute;top:14px;right:16px;background:none;border:none;cursor:pointer;font-size:20px;color:var(--muted);line-height:1;padding:0;"
+            title="Fermer">✕</button>
+
+        <h3>⚠️ Supprimer ce secteur ?</h3>
+        <p style="font-size:14px;color:var(--muted);margin-bottom:20px;line-height:1.6;">
+            Cette action est irréversible. Le secteur sera supprimé définitivement et retiré du site.
+        </p>
+        <div style="background:#f8faff;border-radius:8px;padding:12px 16px;margin-bottom:20px;">
+            <div style="font-size:13px;font-weight:600;color:var(--text)" id="deleteTitle"></div>
+        </div>
+        <div class="modal-actions">
+            <button class="btn btn-outline" onclick="closeModalDelete()">Annuler</button>
+            <button class="btn btn-danger" id="confirmDeleteBtn" onclick="confirmDelete()">Supprimer</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API = '/api/industry-sectors';
+    // ✅ Base URL du serveur backend pour préfixer les chemins relatifs des images
+    const BASE_URL = 'http://localhost:5057';
+    let allSectors = [];
+    let deletingId = null;
+
+    // ✅ Fonction utilitaire pour construire l'URL complète de l'image
+    function buildImageUrl(imageUrl) {
+        if (!imageUrl) return null;
+        if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+            return imageUrl; // URL absolue → on la retourne telle quelle
+        }
+        return BASE_URL + imageUrl; // Chemin relatif → on préfixe avec le serveur
+    }
+
+    // ── Chargement ─────────────────────────────────────────────────────────────
+    async function loadSectors() {
+        try {
+            const res = await authFetch(API + '/all');
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            allSectors = await res.json();
+            renderTable(allSectors);
+            updateStats(allSectors);
+        } catch (e) {
+            if (e.message === 'AUTH_REDIRECT') return;
+            // Fallback : endpoint public (actifs uniquement)
+            try {
+                const res2 = await fetch(API);
+                if (!res2.ok) throw new Error();
+                allSectors = await res2.json();
+                renderTable(allSectors);
+                updateStats(allSectors);
+            } catch {
+                document.getElementById('sectorsTbody').innerHTML =
+                    '<tr class="empty-row"><td colspan="6">Erreur de chargement.</td></tr>';
+            }
+        }
+    }
+
+    function updateStats(data) { /* stats supprimées */ }
+
+    // ── Rendu tableau ─────────────────────────────────────────────────────────
+    function renderTable(data) {
+        const tbody = document.getElementById('sectorsTbody');
+        if (!data.length) {
+            tbody.innerHTML = '<tr class="empty-row"><td colspan="6">Aucun secteur créé.</td></tr>';
+            return;
+        }
+        tbody.innerHTML = data.map(s => {
+            // ✅ CORRECTION : on construit l'URL complète pour le tableau
+            const imgSrc = buildImageUrl(s.imageUrl);
+            const imgCell = imgSrc
+                ? `<img src="${imgSrc}" alt="${s.title}"
+                        style="width:56px;height:38px;object-fit:cover;border-radius:6px;display:block;"
+                        onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" />
+                   <div style="display:none;width:56px;height:38px;background:#e0e8f0;border-radius:6px;align-items:center;justify-content:center;font-size:18px;">🏭</div>`
+                : `<div style="width:56px;height:38px;background:#e0e8f0;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:18px;">🏭</div>`;
+
+            return `
+            <tr>
+                <td style="text-align:center;font-weight:600;color:var(--muted)">${s.displayOrder}</td>
+                <td>${imgCell}</td>
+                <td style="font-weight:600;color:var(--text);font-size:13px;">${s.title}</td>
+                <td style="color:var(--muted);font-size:12px;max-width:280px;">
+                    <div style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${s.description}</div>
+                </td>
+                <td>
+                    <span class="badge ${s.isActive ? 'badge-success' : 'badge-danger'}" style="cursor:pointer;"
+                        onclick="toggleSector(${s.id})" title="Cliquer pour basculer">
+                        ${s.isActive ? 'Actif' : 'Inactif'}
+                    </span>
+                </td>
+                <td>
+                    <div style="display:flex;gap:6px;">
+                        <button class="btn btn-sm btn-outline" onclick="openEdit(${s.id})" title="Modifier">✏️</button>
+                        <button class="btn btn-sm btn-danger"  onclick="openDelete(${s.id}, '${s.title.replace(/'/g,"\\'")}')">🗑️</button>
+                    </div>
+                </td>
+            </tr>`;
+        }).join('');
+    }
+
+    // ── Modal Ajouter ─────────────────────────────────────────────────────────
+    function openAdd() {
+        document.getElementById('modalSectorTitle').textContent = 'Ajouter un secteur';
+        document.getElementById('sectorId').value        = '';
+        document.getElementById('sectorTitle').value     = '';
+        document.getElementById('sectorDesc').value      = '';
+        document.getElementById('sectorImageUrl').value  = '';
+        document.getElementById('sectorOrder').value     = '0';
+        document.getElementById('sectorActive').value    = 'true';
+        document.getElementById('sectorImageFile').value = '';
+        document.getElementById('imgPreviewWrap').style.display = 'none';
+        document.getElementById('sectorError').style.display   = 'none';
+        document.getElementById('saveSectorBtn').textContent   = 'Enregistrer';
+        document.getElementById('modalSector').classList.add('show');
+    }
+
+    // ── Modal Modifier ────────────────────────────────────────────────────────
+    function openEdit(id) {
+        const s = allSectors.find(x => x.id === id);
+        if (!s) return;
+        document.getElementById('modalSectorTitle').textContent = 'Modifier le secteur';
+        document.getElementById('sectorId').value        = s.id;
+        document.getElementById('sectorTitle').value     = s.title;
+        document.getElementById('sectorDesc').value      = s.description;
+        document.getElementById('sectorImageUrl').value  = s.imageUrl || '';
+        document.getElementById('sectorOrder').value     = s.displayOrder;
+        document.getElementById('sectorActive').value    = s.isActive ? 'true' : 'false';
+        document.getElementById('sectorImageFile').value = '';
+        document.getElementById('sectorError').style.display = 'none';
+        document.getElementById('saveSectorBtn').textContent  = 'Enregistrer';
+        if (s.imageUrl) {
+            // ✅ CORRECTION : on utilise l'URL complète pour le preview dans openEdit
+            document.getElementById('imgPreview').src = buildImageUrl(s.imageUrl);
+            document.getElementById('imgPreviewWrap').style.display = 'block';
+        } else {
+            document.getElementById('imgPreviewWrap').style.display = 'none';
+        }
+        document.getElementById('modalSector').classList.add('show');
+    }
+
+    function closeModalSector() { document.getElementById('modalSector').classList.remove('show'); }
+
+    // ── Prévisualisation image ────────────────────────────────────────────────
+    function previewFromUrl(url) {
+        const wrap = document.getElementById('imgPreviewWrap');
+        const img  = document.getElementById('imgPreview');
+        if (url) { img.src = url; wrap.style.display = 'block'; }
+        else      { wrap.style.display = 'none'; }
+    }
+
+    function previewFromFile(input) {
+        const file = input.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = e => {
+            document.getElementById('imgPreview').src = e.target.result;
+            document.getElementById('imgPreviewWrap').style.display = 'block';
+            document.getElementById('sectorImageUrl').value = '';
+        };
+        reader.readAsDataURL(file);
+    }
+
+    // ── Sauvegarde ────────────────────────────────────────────────────────────
+    async function saveSector() {
+        const id    = document.getElementById('sectorId').value;
+        const title = document.getElementById('sectorTitle').value.trim();
+        const desc  = document.getElementById('sectorDesc').value.trim();
+        const err   = document.getElementById('sectorError');
+
+        if (!title || !desc) {
+            err.textContent = 'Le titre et la description sont obligatoires.';
+            err.style.display = 'block';
+            return;
+        }
+
+        const btn = document.getElementById('saveSectorBtn');
+        btn.disabled = true;
+        btn.textContent = 'Enregistrement…';
+        err.style.display = 'none';
+
+        const fd = new FormData();
+        fd.append('Title',        title);
+        fd.append('Description',  desc);
+        fd.append('DisplayOrder', document.getElementById('sectorOrder').value);
+        fd.append('IsActive',     document.getElementById('sectorActive').value);
+
+        const file = document.getElementById('sectorImageFile').files[0];
+        if (file) {
+            fd.append('Image', file);
+        } else {
+            const url = document.getElementById('sectorImageUrl').value.trim();
+            if (url) fd.append('ImageUrl', url);
+        }
+
+        try {
+            const url = id ? `${API}/${id}` : API;
+            const res = await authFetch(url, { method: id ? 'PUT' : 'POST', body: fd });
+            if (!res.ok) { const e = await res.text(); throw new Error(e || 'Erreur'); }
+            closeModalSector();
+            await loadSectors();
+        } catch (e) {
+            if (e.message !== 'AUTH_REDIRECT') {
+                err.textContent = e.message || 'Une erreur est survenue.';
+                err.style.display = 'block';
+            }
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Enregistrer';
+        }
+    }
+
+    // ── Toggle actif/inactif ──────────────────────────────────────────────────
+    async function toggleSector(id) {
+        try {
+            await authFetch(`${API}/${id}/toggle`, { method: 'PATCH' });
+            await loadSectors();
+        } catch(e) { if (e.message !== 'AUTH_REDIRECT') alert('Erreur lors du changement de statut.'); }
+    }
+
+    // ── Suppression ───────────────────────────────────────────────────────────
+    function openDelete(id, title) {
+        deletingId = id;
+        document.getElementById('deleteTitle').textContent = title;
+        document.getElementById('modalDelete').classList.add('show');
+    }
+
+    function closeModalDelete() { document.getElementById('modalDelete').classList.remove('show'); deletingId = null; }
+
+    async function confirmDelete() {
+        if (!deletingId) return;
+        const btn = document.getElementById('confirmDeleteBtn');
+        btn.disabled = true; btn.textContent = 'Suppression…';
+        try {
+            const res = await authFetch(`${API}/${deletingId}`, { method: 'DELETE' });
+            if (!res.ok) throw new Error();
+            closeModalDelete();
+            await loadSectors();
+        } catch { alert('Erreur lors de la suppression.'); }
+        finally { btn.disabled = false; btn.textContent = 'Supprimer'; }
+    }
+
+    loadSectors();
+</script>
