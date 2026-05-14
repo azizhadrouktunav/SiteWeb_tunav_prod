@@ -146,22 +146,33 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("CommercialDemandsAccess", p => p.RequireRole("Admin", "Commercial"));
 });
 
+// CORS : front Angular (localhost) + domaines prod (config). www et apex sont des origines distinctes.
+var localFrontendOrigins = new[]
+{
+    "http://localhost:4200",
+    "https://localhost:4200",
+    "http://localhost:5057",
+    "https://localhost:5057",
+    "http://localhost:7000",
+    "https://localhost:7000",
+    "http://localhost:7110",
+    "https://localhost:7110"
+};
+var configuredCorsOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
+    ?? Array.Empty<string>();
+var corsAllowedOrigins = localFrontendOrigins
+    .Concat(configuredCorsOrigins)
+    .Select(o => (o ?? "").Trim().TrimEnd('/'))
+    .Where(o => o.Length > 0)
+    .Distinct(StringComparer.OrdinalIgnoreCase)
+    .ToArray();
+
 builder.Services.AddCors(options =>
 {
-    // Politique pour les appels Angular (front séparé sur un port différent)
     options.AddPolicy("FrontendPolicy", policy =>
     {
         policy
-            .WithOrigins(
-                "http://localhost:4200",
-                "https://localhost:4200",
-                "http://localhost:5057",
-                "https://localhost:5057",
-                "http://localhost:7000",
-                "https://localhost:7000",
-                "http://localhost:7110",
-                "https://localhost:7110"
-            )
+            .WithOrigins(corsAllowedOrigins)
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
