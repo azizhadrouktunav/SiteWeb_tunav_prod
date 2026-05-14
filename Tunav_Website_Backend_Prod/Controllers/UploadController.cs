@@ -148,4 +148,117 @@ public class UploadController : ControllerBase
             absoluteUrl
         });
     }
+
+    private static readonly string[] StandardImageExtensions = [".jpg", ".jpeg", ".png", ".webp"];
+
+    private string ContentUploadsRoot => Path.Combine(_env.ContentRootPath, "Uploads");
+
+    private async Task<IActionResult> SaveImageToContentUploadsAsync(
+        IFormFile? file,
+        string subFolder,
+        string filePrefix,
+        long maxBytes)
+    {
+        if (file is null || file.Length == 0)
+            return BadRequest(new { message = "Aucune image fournie." });
+
+        if (file.Length > maxBytes)
+            return BadRequest(new { message = $"L'image depasse {maxBytes / 1_000_000} MB." });
+
+        var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
+        if (!StandardImageExtensions.Contains(ext))
+            return BadRequest(new { message = $"Extension non autorisee : {ext}" });
+
+        var dir = Path.Combine(ContentUploadsRoot, subFolder);
+        Directory.CreateDirectory(dir);
+
+        var uniqueName = $"{filePrefix}_{Guid.NewGuid():N}{ext}";
+        var filePath = Path.Combine(dir, uniqueName);
+
+        await using (var stream = System.IO.File.Create(filePath))
+            await file.CopyToAsync(stream);
+
+        var relativeUrl = $"/uploads/{subFolder.TrimEnd('/')}/{uniqueName}";
+        _logger.LogInformation("Image {SubFolder} uploadee : {Original} -> {Stored}", subFolder, file.FileName, uniqueName);
+
+        return Ok(new
+        {
+            message = "Image uploadee avec succes.",
+            url = relativeUrl,
+            absoluteUrl = $"{Request.Scheme}://{Request.Host}{relativeUrl}"
+        });
+    }
+
+    [HttpPost("blog-cover-image")]
+    [Authorize(Policy = "BlogWrite")]
+    [RequestSizeLimit(10_000_000)]
+    public Task<IActionResult> UploadBlogCoverImage(IFormFile? file) =>
+        SaveImageToContentUploadsAsync(file, "blogs", "blog", 5_000_000);
+
+    [HttpPost("event-cover-image")]
+    [Authorize(Policy = "EventWrite")]
+    [RequestSizeLimit(10_000_000)]
+    public Task<IActionResult> UploadEventCoverImage(IFormFile? file) =>
+        SaveImageToContentUploadsAsync(file, "events", "event", 5_000_000);
+
+    [HttpPost("newsletter-cover-image")]
+    [Authorize(Policy = "NewsletterWrite")]
+    [RequestSizeLimit(10_000_000)]
+    public Task<IActionResult> UploadNewsletterCoverImage(IFormFile? file) =>
+        SaveImageToContentUploadsAsync(file, "newsletters", "newsletter", 5_000_000);
+
+    [HttpPost("team-photo")]
+    [Authorize(Policy = "TeamWrite")]
+    [RequestSizeLimit(10_000_000)]
+    public Task<IActionResult> UploadTeamPhoto(IFormFile? file) =>
+        SaveImageToContentUploadsAsync(file, "team", "team", 5_000_000);
+
+    [HttpPost("training-partner-image")]
+    [Authorize(Policy = "EventWrite")]
+    [RequestSizeLimit(10_000_000)]
+    public Task<IActionResult> UploadTrainingPartnerImage(IFormFile? file) =>
+        SaveImageToContentUploadsAsync(file, "training-partners", "partner", 5_000_000);
+
+    [HttpPost("sector-image")]
+    [Authorize(Policy = "SectorWrite")]
+    [RequestSizeLimit(10_000_000)]
+    public Task<IActionResult> UploadSectorImage(IFormFile? file) =>
+        SaveImageToContentUploadsAsync(file, "sectors", "sector", 5_000_000);
+
+    /// <summary>Fichier vidéo du pack (MP4/WebM), servi sous /uploads/packs/… — les liens YouTube restent possibles via le champ URL.</summary>
+    [HttpPost("pack-video")]
+    [Authorize(Policy = "SolutionWrite")]
+    [RequestSizeLimit(50_000_000)]
+    public async Task<IActionResult> UploadPackVideo(IFormFile? file)
+    {
+        if (file is null || file.Length == 0)
+            return BadRequest(new { message = "Aucune video fournie." });
+
+        if (file.Length > 40_000_000)
+            return BadRequest(new { message = "La video depasse 40 MB." });
+
+        var allowed = new[] { ".mp4", ".webm" };
+        var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
+        if (!allowed.Contains(ext))
+            return BadRequest(new { message = $"Extension non autorisee : {ext} (MP4 ou WebM)." });
+
+        var dir = Path.Combine(ContentUploadsRoot, "packs");
+        Directory.CreateDirectory(dir);
+
+        var uniqueName = $"pack_{Guid.NewGuid():N}{ext}";
+        var filePath = Path.Combine(dir, uniqueName);
+
+        await using (var stream = System.IO.File.Create(filePath))
+            await file.CopyToAsync(stream);
+
+        var relativeUrl = $"/uploads/packs/{uniqueName}";
+        _logger.LogInformation("Video pack uploadee : {Original} -> {Stored}", file.FileName, uniqueName);
+
+        return Ok(new
+        {
+            message = "Video uploadee avec succes.",
+            url = relativeUrl,
+            absoluteUrl = $"{Request.Scheme}://{Request.Host}{relativeUrl}"
+        });
+    }
 }

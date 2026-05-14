@@ -242,8 +242,13 @@
 
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
                     <div class="mfield">
-                        <label>Image de couverture (URL) <span style="color:#b0bdd8;font-weight:400">(optionnel)</span></label>
-                        <input type="text" id="evCoverImageUrl" placeholder="https://..." />
+                        <label>Image de couverture <span style="color:#b0bdd8;font-weight:400">(optionnel)</span></label>
+                        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px">
+                            <input type="file" id="evCoverImageFile" accept=".jpg,.jpeg,.png,.webp" style="font-size:12px;max-width:220px" />
+                            <button type="button" class="btn btn-outline btn-sm" onclick="uploadEventCover()">Importer sur le serveur</button>
+                        </div>
+                        <input type="text" id="evCoverImageUrl" placeholder="Ou URL (https://… ou /uploads/…)" />
+                        <div id="evCoverUploadMsg" style="font-size:11px;color:#6b7db3;margin-top:4px"></div>
                     </div>
                     <div class="mfield">
                         <label>Vidéo YouTube <span style="color:#b0bdd8;font-weight:400">(optionnel)</span></label>
@@ -508,6 +513,37 @@
         return val.length <= 20 ? val : null;
     }
 
+    async function uploadEventCover() {
+        const fileInput = document.getElementById('evCoverImageFile');
+        const msg = document.getElementById('evCoverUploadMsg');
+        const file = fileInput && fileInput.files && fileInput.files[0];
+        if (!file) {
+            msg.textContent = 'Choisissez une image.';
+            msg.style.color = '#d63031';
+            return;
+        }
+        msg.textContent = 'Envoi en cours...';
+        msg.style.color = '#6b7db3';
+        const fd = new FormData();
+        fd.append('file', file);
+        try {
+            const res = await authFetch('/api/uploads/event-cover-image', { method: 'POST', body: fd });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) {
+                msg.textContent = data.message || ('Erreur ' + res.status);
+                msg.style.color = '#d63031';
+                return;
+            }
+            document.getElementById('evCoverImageUrl').value = data.url || '';
+            msg.textContent = 'Image enregistrée sur le serveur.';
+            msg.style.color = '#00b894';
+        } catch (e) {
+            if (isAuthInterrupt(e)) return;
+            msg.textContent = 'Erreur réseau.';
+            msg.style.color = '#d63031';
+        }
+    }
+
     function previewEvYoutube(val) {
         const id = extractYtId(val);
         const box = document.getElementById('evYoutubePreview');
@@ -598,6 +634,10 @@
         document.getElementById('eventModalTitle').textContent = 'Ajouter un événement';
         document.getElementById('btnSaveEvent').textContent = 'Enregistrer';
         ['evTitle','evLocation','evOnlineLink','evCoverImageUrl','evYoutubeUrl','evExternalUrl','evDescription'].forEach(id => document.getElementById(id).value = '');
+        const evCf = document.getElementById('evCoverImageFile');
+        if (evCf) evCf.value = '';
+        const evCm = document.getElementById('evCoverUploadMsg');
+        if (evCm) evCm.textContent = '';
         document.getElementById('evParticipants').value = '';
         document.getElementById('evType').value = 'Autre';
         document.getElementById('evFormat').value = 'Presentiel';
@@ -629,6 +669,10 @@
             document.getElementById('evDescription').value = ev.description || '';
             document.getElementById('evLocation').value = ev.location || '';
             document.getElementById('evCoverImageUrl').value = ev.coverImageUrl || '';
+            const evCf = document.getElementById('evCoverImageFile');
+            if (evCf) evCf.value = '';
+            const evCm = document.getElementById('evCoverUploadMsg');
+            if (evCm) evCm.textContent = '';
             document.getElementById('evYoutubeUrl').value = ev.youtubeUrl || '';
             document.getElementById('evExternalUrl').value = ev.externalUrl || '';
             document.getElementById('evType').value = ev.type || 'Autre';

@@ -26,7 +26,10 @@
         .role-badge { background: var(--cyan); color: var(--navy); font-size: 11px; font-weight: 700; padding: 2px 10px; border-radius: 20px; }
         .sidebar-nav { flex: 1; min-height: 0; padding: 10px 0; overflow-y: auto; scrollbar-width: none; }
         .sidebar-nav::-webkit-scrollbar { display: none; }
-        .nav-group { padding: 10px 20px 3px; font-size: 10px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: rgba(255,255,255,0.28); }
+        .nav-group { padding: 14px 20px 4px; font-size: 10px; font-weight: 700; letter-spacing: 0.85px; text-transform: uppercase; color: rgba(255,255,255,0.38); }
+        .nav-group:first-child { padding-top: 6px; }
+        .nav-subgroup { padding: 10px 20px 2px; font-size: 10px; font-weight: 600; letter-spacing: 0.4px; text-transform: none; color: rgba(255,255,255,0.32); }
+        .nav-block-spacer { height: 6px; flex-shrink: 0; }
         .nav-link { display: block; padding: 10px 20px; font-size: 13.5px; font-weight: 500; color: rgba(255,255,255,0.62); text-decoration: none; transition: all 0.15s; border-left: 3px solid transparent; }
         .nav-link:hover { background: rgba(255,255,255,0.05); color: white; }
         .nav-link.active { background: rgba(0,200,212,0.14); color: var(--cyan); border-left-color: var(--cyan); }
@@ -309,6 +312,10 @@
             if (s11) s11.style.display = perms.savClaims ? '' : 'none';
             const s12 = document.getElementById('nav-commercial-demands-section');
             if (s12) s12.style.display = perms.commercialDemands ? '' : 'none';
+            const sComm = document.getElementById('nav-communication-wrap');
+            if (sComm) sComm.style.display = (perms.evenements || perms.newsletters) ? '' : 'none';
+            const sService = document.getElementById('nav-service-wrap');
+            if (sService) sService.style.display = (perms.savClaims || perms.commercialDemands) ? '' : 'none';
 
             const path = tunavPathWithoutBase(window.location.pathname);
             const adminPages        = ['/backoffice/users', '/backoffice/roles', '/backoffice/permissions'];
@@ -376,6 +383,17 @@
             };
         }
 
+        function authUploadHeaders() {
+            if (!ensureSession()) {
+                return {};
+            }
+            return { 'Authorization': 'Bearer ' + (localStorage.getItem('tunav_token') || '') };
+        }
+
+        function isAuthInterrupt(error) {
+            return error && error.message === 'AUTH_REDIRECT';
+        }
+
         function toggleDropdown() { document.getElementById('profileWrap').classList.toggle('open'); }
 
         document.addEventListener('click', function(e) {
@@ -421,63 +439,69 @@
         <div class="sidebar-role">Role: <span class="role-badge js-role">Admin</span></div>
         <nav class="sidebar-nav">
             <div id="nav-dashboard-section">
+                <div class="nav-group">Vue d'ensemble</div>
                 <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Dashboard" ? "active" : "")" href="@Url.Content("~/dashboard")">Dashboard</a>
             </div>
 
             <div id="nav-admin-section">
-                
-                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Users" ? "active" : "")" href="@Url.Content("~/backoffice/users")"> Utilisateurs</a>
-                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Roles" ? "active" : "")" href="@Url.Content("~/backoffice/roles")"> Roles</a>
+                <div class="nav-group">Administration</div>
+                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Users" ? "active" : "")" href="@Url.Content("~/backoffice/users")">Utilisateurs</a>
+                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Roles" ? "active" : "")" href="@Url.Content("~/backoffice/roles")">Rôles</a>
                 <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Permissions" ? "active" : "")" href="@Url.Content("~/backoffice/permissions")">Permissions</a>
             </div>
 
             <div id="nav-contenu-section">
-               
-                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Solutions" ? "active" : "")" href="@Url.Content("~/backoffice/solutions")"> Solutions</a>
+                <div class="nav-group">Contenu & offre</div>
+                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Solutions" ? "active" : "")" href="@Url.Content("~/backoffice/solutions")">Solutions</a>
                 <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Packs" ? "active" : "")" href="@Url.Content("~/backoffice/packs")">Packs</a>
-                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Team" ? "active" : "")" href="@Url.Content("~/backoffice/team")"> Equipe</a>
+                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Team" ? "active" : "")" href="@Url.Content("~/backoffice/team")">Équipe</a>
                 <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Blog" ? "active" : "")" href="@Url.Content("~/backoffice/blogs")">Blog</a>
             </div>
 
             <div id="nav-sectors-section">
-                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Sectors" ? "active" : "")" href="@Url.Content("~/backoffice/sectors")">Secteurs d'Activité</a>
+                <div class="nav-group">Référentiels</div>
+                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Sectors" ? "active" : "")" href="@Url.Content("~/backoffice/sectors")">Secteurs d'activité</a>
             </div>
 
-            <div id="nav-evenements-section">
-                
-                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Events" ? "active" : "")" href="@Url.Content("~/backoffice/events")"> Événements</a>
-            </div>
-
-            <div id="nav-newsletters-section">
-                
-                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Newsletters" ? "active" : "")" href="@Url.Content("~/backoffice/newsletters")">Newsletters</a>
+            <div id="nav-communication-wrap">
+                <div class="nav-group">Communication</div>
+                <div id="nav-evenements-section">
+                    <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Events" ? "active" : "")" href="@Url.Content("~/backoffice/events")">Événements</a>
+                </div>
+                <div id="nav-newsletters-section">
+                    <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Newsletters" ? "active" : "")" href="@Url.Content("~/backoffice/newsletters")">Newsletters</a>
+                </div>
             </div>
 
             <div id="nav-collabs-section">
-               
-                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Collaborations" ? "active" : "")" href="@Url.Content("~/backoffice/collaborations")"> Collaborations</a>
-                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "PartnerRequests" ? "active" : "")" href="@Url.Content("~/backoffice/partner-requests")">Demandes Partenaires</a>
-                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "DemoRequests" ? "active" : "")" href="@Url.Content("~/backoffice/demo-requests")">Demandes de Demo</a>
-                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "CustomPackRequests" ? "active" : "")" href="@Url.Content("~/backoffice/custom-pack-requests")">Demandes de Packs</a>
-                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Formation" ? "active" : "")" href="@Url.Content("~/backoffice/formation")">Pôle Formation</a>
+                <div class="nav-group">Activités & demandes</div>
+                <div class="nav-subgroup">Partenariats & projets</div>
+                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Collaborations" ? "active" : "")" href="@Url.Content("~/backoffice/collaborations")">Collaborations</a>
+                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "PartnerRequests" ? "active" : "")" href="@Url.Content("~/backoffice/partner-requests")">Demandes partenaires</a>
+                <div class="nav-subgroup">Prospection & formation</div>
+                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "DemoRequests" ? "active" : "")" href="@Url.Content("~/backoffice/demo-requests")">Demandes de démo</a>
+                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "CustomPackRequests" ? "active" : "")" href="@Url.Content("~/backoffice/custom-pack-requests")">Demandes de packs</a>
+                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Formation" ? "active" : "")" href="@Url.Content("~/backoffice/formation")">Pôle formation</a>
             </div>
 
             <div id="nav-rh-section">
-                
-                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Jobs" ? "active" : "")" href="@Url.Content("~/backoffice/jobs")"> Offres d'emploi</a>
+                <div class="nav-group">Ressources humaines</div>
+                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Jobs" ? "active" : "")" href="@Url.Content("~/backoffice/jobs")">Offres d'emploi</a>
             </div>
 
             <div id="nav-contact-section">
-                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Contacts" ? "active" : "")" href="@Url.Content("~/backoffice/contacts")">Contacts & Rendez-vous</a>
+                <div class="nav-group">Leads & contact</div>
+                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Contacts" ? "active" : "")" href="@Url.Content("~/backoffice/contacts")">Contacts & rendez-vous</a>
             </div>
 
             <div id="nav-commercial-section">
+                <div class="nav-group">Réseau commercial</div>
                 <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Clients" ? "active" : "")" href="@Url.Content("~/backoffice/clients")">Clients</a>
                 <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Partners" ? "active" : "")" href="@Url.Content("~/backoffice/partners")">Partenaires</a>
             </div>
 
             <div id="nav-partner-portal-section">
-              
+                <div class="nav-group">Espace partenaire</div>
                 <button class="nav-link nav-link-btn @(ViewData["ActivePage"]?.ToString() == "PartnerPortal" ? "active" : "")"
                     id="ppNavDashboard" onclick="ppSwitchView('dashboard')">
                     <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
@@ -487,8 +511,6 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>
                     Historique
                 </button>
-
-               
                 <button class="nav-link nav-link-btn nav-link-danger" id="ppBtnClaim" style="display:none" onclick="openClaimModal ? openClaimModal() : null">
                     <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                     Nouvelle réclamation
@@ -499,14 +521,14 @@
                 </button>
             </div>
 
-            <div id="nav-sav-section">
-
-                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "SavClaims" ? "active" : "")" href="@Url.Content("~/backoffice/sav-claims")">Réclamations</a>
-            </div>
-
-            <div id="nav-commercial-demands-section">
-
-                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "CommercialDemands" ? "active" : "")" href="@Url.Content("~/backoffice/commercial-demands")">Demandes Partenaires-Backoffice</a>
+            <div id="nav-service-wrap">
+                <div class="nav-group">Service client & suivi</div>
+                <div id="nav-sav-section">
+                    <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "SavClaims" ? "active" : "")" href="@Url.Content("~/backoffice/sav-claims")">Réclamations (SAV)</a>
+                </div>
+                <div id="nav-commercial-demands-section">
+                    <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "CommercialDemands" ? "active" : "")" href="@Url.Content("~/backoffice/commercial-demands")">Demandes partenaires (back-office)</a>
+                </div>
             </div>
         </nav>
         <div class="sidebar-footer">

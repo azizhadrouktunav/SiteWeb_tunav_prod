@@ -97,8 +97,13 @@
         </div>
 
         <div class="mfield" style="margin-bottom:14px">
-            <label>URL video (optionnelle)</label>
-            <input type="text" id="fVideoUrl" placeholder="https://www.youtube.com/embed/..." />
+            <label>Vidéo du pack</label>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px">
+                <input type="file" id="fVideoFile" accept=".mp4,.webm,video/mp4,video/webm" style="font-size:12px;max-width:220px" />
+                <button type="button" class="btn btn-outline btn-sm" onclick="uploadPackVideoFile()">Importer vidéo (MP4/WebM)</button>
+            </div>
+            <input type="text" id="fVideoUrl" placeholder="Ou URL YouTube / embed (https://...)" />
+            <div id="fVideoUploadMsg" style="font-size:11px;color:#6b7db3;margin-top:4px"></div>
         </div>
 
         <div class="mfield" style="margin-bottom:12px">
@@ -366,6 +371,38 @@
         `).join('');
     }
 
+    async function uploadPackVideoFile() {
+        const inp = document.getElementById('fVideoFile');
+        const msg = document.getElementById('fVideoUploadMsg');
+        const file = inp && inp.files && inp.files[0];
+        if (!file) {
+            msg.textContent = 'Choisissez un fichier MP4 ou WebM.';
+            msg.style.color = '#d63031';
+            return;
+        }
+        msg.textContent = 'Envoi en cours (peut prendre une minute)...';
+        msg.style.color = '#6b7db3';
+        const fd = new FormData();
+        fd.append('file', file);
+        try {
+            const res = await authFetch('/api/uploads/pack-video', { method: 'POST', body: fd });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) {
+                msg.textContent = data.message || ('Erreur ' + res.status);
+                msg.style.color = '#d63031';
+                return;
+            }
+            document.getElementById('fVideoUrl').value = data.url || '';
+            if (inp) inp.value = '';
+            msg.textContent = 'Vidéo enregistrée sur le serveur.';
+            msg.style.color = '#00b894';
+        } catch (e) {
+            if (isAuthInterrupt(e)) return;
+            msg.textContent = 'Erreur réseau.';
+            msg.style.color = '#d63031';
+        }
+    }
+
     async function loadPacks() {
         document.getElementById('packsTable').innerHTML = '<tr class="loading-row"><td colspan="6">Chargement...</td></tr>';
 
@@ -392,6 +429,10 @@
         document.getElementById('fDisplayOrder').value = '0';
         document.getElementById('fIsPopular').value = 'false';
         document.getElementById('fVideoUrl').value = '';
+        const vf = document.getElementById('fVideoFile');
+        if (vf) vf.value = '';
+        const vm = document.getElementById('fVideoUploadMsg');
+        if (vm) vm.textContent = '';
         document.getElementById('fFeatures').value = '';
         document.getElementById('fIsActive').value = 'true';
         document.getElementById('formError').style.display = 'none';
@@ -429,6 +470,10 @@
             document.getElementById('fDisplayOrder').value = String(pack.displayOrder ?? 0);
             document.getElementById('fIsPopular').value = pack.isPopular ? 'true' : 'false';
             document.getElementById('fVideoUrl').value = pack.videoUrl || '';
+            const vf = document.getElementById('fVideoFile');
+            if (vf) vf.value = '';
+            const vm = document.getElementById('fVideoUploadMsg');
+            if (vm) vm.textContent = '';
             document.getElementById('fFeatures').value = Array.isArray(pack.features) ? pack.features.join('\n') : '';
             document.getElementById('fIsActive').value = pack.isActive ? 'true' : 'false';
             document.getElementById('packFormModal').classList.add('show');

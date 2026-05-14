@@ -425,13 +425,21 @@ public class PackService : IPackService
             throw new InvalidOperationException("L'URL vidéo ne peut pas dépasser 500 caractères.");
         }
 
+        // Vidéo hébergée sur ce site (fichier uploadé sous /uploads/…)
+        if (normalized.StartsWith('/'))
+        {
+            if (normalized.Contains("..", StringComparison.Ordinal))
+                throw new InvalidOperationException("URL relative invalide.");
+            if (!normalized.StartsWith("/uploads/", StringComparison.OrdinalIgnoreCase))
+                throw new InvalidOperationException("L'URL vidéo relative doit commencer par /uploads/.");
+            return normalized;
+        }
+
         var isAbsolute = Uri.TryCreate(normalized, UriKind.Absolute, out var uri)
             && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps);
 
         if (!isAbsolute)
-        {
-            throw new InvalidOperationException("L'URL vidéo doit être une URL HTTP/HTTPS valide.");
-        }
+            throw new InvalidOperationException("L'URL vidéo doit être une URL HTTP/HTTPS valide ou un chemin /uploads/…");
 
         return normalized;
     }

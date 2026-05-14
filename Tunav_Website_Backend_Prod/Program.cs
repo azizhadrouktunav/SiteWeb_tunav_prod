@@ -20,6 +20,16 @@ using tunav_backend.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Autoriser les uploads volumineux (ex. vidéo pack jusqu'à ~40 Mo + marge)
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.Limits.MaxRequestBodySize = 52_428_800;
+});
+builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(options =>
+{
+    options.MultipartBodyLengthLimit = 52_428_800;
+});
+
 
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();

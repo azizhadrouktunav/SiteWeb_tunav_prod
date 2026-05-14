@@ -148,8 +148,13 @@
         <!-- Ligne 2 : Image + YouTube -->
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
             <div class="mfield">
-                <label>Image de couverture (URL)</label>
-                <input type="text" id="aCoverImageUrl" placeholder="https://..." />
+                <label>Image de couverture</label>
+                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px">
+                    <input type="file" id="aCoverImageFile" accept=".jpg,.jpeg,.png,.webp" style="font-size:12px;max-width:220px" />
+                    <button type="button" class="btn btn-outline btn-sm" onclick="uploadArticleCover()">Importer sur le serveur</button>
+                </div>
+                <input type="text" id="aCoverImageUrl" placeholder="Ou URL (https://… ou /uploads/…)" />
+                <div id="aCoverUploadMsg" style="font-size:11px;color:#6b7db3;margin-top:4px"></div>
             </div>
             <div class="mfield">
                 <label>Vidéo YouTube <span style="color:#b0bdd8;font-weight:400">(optionnel — URL ou ID)</span></label>
@@ -491,6 +496,39 @@
         return val.length <= 20 ? val : null;
     }
 
+    async function uploadArticleCover() {
+        const fileInput = document.getElementById('aCoverImageFile');
+        const msg = document.getElementById('aCoverUploadMsg');
+        const file = fileInput && fileInput.files && fileInput.files[0];
+        if (!file) {
+            if (msg) {
+                msg.textContent = 'Choisissez une image.';
+                msg.style.color = '#d63031';
+            }
+            return;
+        }
+        msg.textContent = 'Envoi en cours...';
+        msg.style.color = '#6b7db3';
+        const fd = new FormData();
+        fd.append('file', file);
+        try {
+            const res = await authFetch('/api/uploads/blog-cover-image', { method: 'POST', body: fd });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) {
+                msg.textContent = data.message || ('Erreur ' + res.status);
+                msg.style.color = '#d63031';
+                return;
+            }
+            document.getElementById('aCoverImageUrl').value = data.url || '';
+            msg.textContent = 'Image enregistrée sur le serveur.';
+            msg.style.color = '#00b894';
+        } catch (e) {
+            if (isAuthInterrupt(e)) return;
+            msg.textContent = 'Erreur réseau.';
+            msg.style.color = '#d63031';
+        }
+    }
+
     function previewYoutube(val) {
         const id  = extractYoutubeId(val);
         const box = document.getElementById('youtubePreview');
@@ -651,6 +689,10 @@
         document.getElementById('articleFormError').style.display = 'none';
         document.getElementById('youtubePreview').style.display   = 'none';
         document.getElementById('youtubeFrame').src = '';
+        const aCoverFile = document.getElementById('aCoverImageFile');
+        if (aCoverFile) aCoverFile.value = '';
+        const aCoverMsg = document.getElementById('aCoverUploadMsg');
+        if (aCoverMsg) aCoverMsg.textContent = '';
         document.getElementById('modalArticle').classList.add('show');
     }
 
@@ -684,6 +726,10 @@
             }
 
             previewYoutube(a.youtubeUrl);
+            const aCoverFile = document.getElementById('aCoverImageFile');
+            if (aCoverFile) aCoverFile.value = '';
+            const aCoverMsg = document.getElementById('aCoverUploadMsg');
+            if (aCoverMsg) aCoverMsg.textContent = '';
             document.getElementById('modalArticle').classList.add('show');
         } catch(e) { alert("Erreur lors du chargement de l'article."); }
     }

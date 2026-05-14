@@ -148,18 +148,21 @@
             </div>
         </div>
 
-        <!-- URL de l'image -->
+        <!-- Image carte -->
         <div class="mfield" style="margin-bottom:14px">
             <label style="display:flex;align-items:center;gap:6px">
-                 Image de la carte (URL)
+                 Image de la carte
                 <span style="color:#b0bdd8;font-weight:400;font-size:11px">(optionnel — remplace l'image auto)</span>
             </label>
-            <input type="text" id="pImageUrl" placeholder="https://images.unsplash.com/..."
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px">
+                <input type="file" id="pImageFile" accept=".jpg,.jpeg,.png,.webp" style="font-size:12px;max-width:220px" />
+                <button type="button" class="btn btn-outline btn-sm" onclick="uploadTrainingPartnerImage()">Importer sur le serveur</button>
+            </div>
+            <input type="text" id="pImageUrl" placeholder="Ou URL (https://… ou /uploads/…)"
                    oninput="updatePreview()" />
+            <div id="pImageUploadMsg" style="font-size:11px;color:#6b7db3;margin-top:4px"></div>
             <div style="font-size:11px;color:#6b7db3;margin-top:4px">
                 Laissez vide pour utiliser une image automatique selon le domaine.
-                Vous pouvez utiliser <a href="https://unsplash.com" target="_blank" style="color:#00c8d4">Unsplash</a>
-                ou toute URL d'image publique.
             </div>
         </div>
 
@@ -300,6 +303,39 @@
     let deletingType  = null;
 
     /* ── ONGLETS ─────────────────────────────────────────────────────────── */
+    async function uploadTrainingPartnerImage() {
+        const inp = document.getElementById('pImageFile');
+        const msg = document.getElementById('pImageUploadMsg');
+        const file = inp && inp.files && inp.files[0];
+        if (!file) {
+            msg.textContent = 'Choisissez une image.';
+            msg.style.color = '#d63031';
+            return;
+        }
+        msg.textContent = 'Envoi en cours...';
+        msg.style.color = '#6b7db3';
+        const fd = new FormData();
+        fd.append('file', file);
+        try {
+            const res = await authFetch('/api/uploads/training-partner-image', { method: 'POST', body: fd });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) {
+                msg.textContent = data.message || ('Erreur ' + res.status);
+                msg.style.color = '#d63031';
+                return;
+            }
+            document.getElementById('pImageUrl').value = data.url || '';
+            if (inp) inp.value = '';
+            updatePreview();
+            msg.textContent = 'Image enregistrée sur le serveur.';
+            msg.style.color = '#00b894';
+        } catch (e) {
+            if (isAuthInterrupt(e)) return;
+            msg.textContent = 'Erreur réseau.';
+            msg.style.color = '#d63031';
+        }
+    }
+
     function switchTab(tab) {
         currentTab = tab;
         document.getElementById('panelPartners').style.display    = tab === 'partners'    ? '' : 'none';
@@ -450,6 +486,10 @@
         document.getElementById('pName').value     = '';
         document.getElementById('pDomain').value   = '';
         document.getElementById('pImageUrl').value = '';
+        const pif = document.getElementById('pImageFile');
+        if (pif) pif.value = '';
+        const pim = document.getElementById('pImageUploadMsg');
+        if (pim) pim.textContent = '';
         document.getElementById('pOrder').value    = '0';
         document.getElementById('pStatusField').style.display = 'none';
         document.getElementById('partnerError').style.display = 'none';
@@ -469,6 +509,10 @@
             document.getElementById('pName').value     = p.name     || '';
             document.getElementById('pDomain').value   = p.domain   || '';
             document.getElementById('pImageUrl').value = p.imageUrl || '';
+            const pif = document.getElementById('pImageFile');
+            if (pif) pif.value = '';
+            const pim = document.getElementById('pImageUploadMsg');
+            if (pim) pim.textContent = '';
             document.getElementById('pOrder').value    = p.displayOrder ?? 0;
             document.getElementById('pIsActive').value = p.isActive ? 'true' : 'false';
             updatePreview();

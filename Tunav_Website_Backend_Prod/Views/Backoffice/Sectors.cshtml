@@ -76,6 +76,8 @@
                     📁 Importer un fichier image
                     <input type="file" id="sectorImageFile" accept="image/*" style="display:none" onchange="previewFromFile(this)" />
                 </label>
+                <button type="button" class="btn btn-outline btn-sm" onclick="uploadSectorImageToServer()">Enregistrer l'image sur le serveur</button>
+                <span id="sectorServerImgMsg" style="font-size:12px;color:var(--muted)"></span>
             </div>
         </div>
 
@@ -141,6 +143,39 @@
 
     let allSectors = [];
     let deletingId = null;
+
+    async function uploadSectorImageToServer() {
+        const inp = document.getElementById('sectorImageFile');
+        const msg = document.getElementById('sectorServerImgMsg');
+        const file = inp && inp.files && inp.files[0];
+        if (!file) {
+            msg.textContent = 'Choisissez un fichier via « Importer un fichier image ».';
+            msg.style.color = '#d63031';
+            return;
+        }
+        msg.textContent = 'Envoi...';
+        msg.style.color = 'var(--muted)';
+        const fd = new FormData();
+        fd.append('file', file);
+        try {
+            const res = await authFetch('/api/uploads/sector-image', { method: 'POST', body: fd });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) {
+                msg.textContent = data.message || ('Erreur ' + res.status);
+                msg.style.color = '#d63031';
+                return;
+            }
+            document.getElementById('sectorImageUrl').value = data.url || '';
+            previewFromUrl(data.url || '');
+            if (inp) inp.value = '';
+            msg.textContent = 'Image enregistrée sur le serveur.';
+            msg.style.color = '#00b894';
+        } catch (e) {
+            if (e.message === 'AUTH_REDIRECT') return;
+            msg.textContent = 'Erreur réseau.';
+            msg.style.color = '#d63031';
+        }
+    }
 
     // ── Chargement ─────────────────────────────────────────────────────────────
     async function loadSectors() {

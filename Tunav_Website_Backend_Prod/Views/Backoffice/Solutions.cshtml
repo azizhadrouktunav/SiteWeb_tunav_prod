@@ -549,18 +549,6 @@
     let generalSolutions = [];
     let searchTimer = null;
 
-    function authUploadHeaders() {
-        if (!ensureSession()) {
-            return {};
-        }
-
-        return { 'Authorization': 'Bearer ' + localStorage.getItem('tunav_token') };
-    }
-
-    function isAuthInterrupt(error) {
-        return error && error.message === 'AUTH_REDIRECT';
-    }
-
     function esc(value) {
         if (value === null || value === undefined) return '';
         return String(value)
@@ -922,7 +910,6 @@
         try {
             const res = await authFetch('/api/uploads/solution-image', {
                 method: 'POST',
-                headers: authUploadHeaders(),
                 body: formData
             });
 
