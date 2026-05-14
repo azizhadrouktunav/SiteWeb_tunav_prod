@@ -43,3 +43,21 @@ public class ContactRequest
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }
+
+/// <summary>Payload du modal « Rendez-vous / démo » sur la page Contact (public).</summary>
+public class ContactDemoSubmitDto
+{
+    [Required, MaxLength(100)]
+    public string FirstName { get; set; } = "";
+
+    [Required, MaxLength(100)]
+    public string LastName { get; set; } = "";
+
+    [Required, EmailAddress, MaxLength(200)]
+    public string Email { get; set; } = "";
+
+    public bool HasWhatsApp { get; set; }
+
+    [MaxLength(40)]
+    public string? WhatsAppNumber { get; set; }
+}
