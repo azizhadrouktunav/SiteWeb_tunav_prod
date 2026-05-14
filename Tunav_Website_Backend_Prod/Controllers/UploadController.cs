@@ -11,10 +11,8 @@ public class UploadController : ControllerBase
     private readonly ILogger<UploadController> _logger;
 
     private string CollaborationUploadPath => Path.Combine(_env.ContentRootPath, "Uploads", "collaborations");
-    private string SolutionUploadPath => Path.Combine(
-        _env.WebRootPath ?? Path.Combine(_env.ContentRootPath, "wwwroot"),
-        "uploads",
-        "solutions");
+    /// <summary>Même racine que Program.cs (PhysicalFileProvider sur ContentRoot/Uploads, RequestPath /uploads).</summary>
+    private string SolutionUploadPath => Path.Combine(_env.ContentRootPath, "Uploads", "solutions");
 
     public UploadController(IWebHostEnvironment env, ILogger<UploadController> logger)
     {
@@ -126,27 +124,35 @@ public class UploadController : ControllerBase
         if (!allowedExtensions.Contains(ext))
             return BadRequest(new { message = $"Extension non autorisee : {ext}" });
 
-        Directory.CreateDirectory(SolutionUploadPath);
-
-        var uniqueName = $"solution_{Guid.NewGuid():N}{ext}";
-        var filePath = Path.Combine(SolutionUploadPath, uniqueName);
-
-        await using (var stream = System.IO.File.Create(filePath))
+        try
         {
-            await file.CopyToAsync(stream);
+            Directory.CreateDirectory(SolutionUploadPath);
+
+            var uniqueName = $"solution_{Guid.NewGuid():N}{ext}";
+            var filePath = Path.Combine(SolutionUploadPath, uniqueName);
+
+            await using (var stream = System.IO.File.Create(filePath))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            var relativeUrl = $"/uploads/solutions/{uniqueName}";
+            var absoluteUrl = $"{Request.Scheme}://{Request.Host}{relativeUrl}";
+
+            _logger.LogInformation("Image solution uploadee : {OriginalName} -> {StoredName}", file.FileName, uniqueName);
+
+            return Ok(new
+            {
+                message = "Image solution uploadee avec succes.",
+                url = relativeUrl,
+                absoluteUrl
+            });
         }
-
-        var relativeUrl = $"/uploads/solutions/{uniqueName}";
-        var absoluteUrl = $"{Request.Scheme}://{Request.Host}{relativeUrl}";
-
-        _logger.LogInformation("Image solution uploadee : {OriginalName} -> {StoredName}", file.FileName, uniqueName);
-
-        return Ok(new
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            message = "Image solution uploadee avec succes.",
-            url = relativeUrl,
-            absoluteUrl
-        });
+            _logger.LogError(ex, "Solution image upload failed for path {Path}", SolutionUploadPath);
+            return StatusCode(500, new { message = "Impossible d'enregistrer le fichier sur le serveur (droits ou disque). Vérifiez que le compte d'application peut écrire dans le dossier Uploads/solutions." });
+        }
     }
 
     private static readonly string[] StandardImageExtensions = [".jpg", ".jpeg", ".png", ".webp"];

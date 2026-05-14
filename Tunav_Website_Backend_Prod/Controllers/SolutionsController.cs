@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using tunav_backend.DTOs;
 using tunav_backend.Services;
@@ -251,6 +252,14 @@ public class SolutionsController : ControllerBase
         catch (InvalidOperationException ex)
         {
             return BadRequest(new { message = ex.Message });
+        }
+        catch (DbUpdateException ex)
+        {
+            return BadRequest(new
+            {
+                message = "Impossible de supprimer cette solution (données liées en base). Détail technique : "
+                          + ex.InnerException?.Message ?? ex.Message
+            });
         }
 
         return BadRequest(new { message = "Failed to delete solution." });

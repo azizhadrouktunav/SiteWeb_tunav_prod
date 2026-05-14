@@ -168,9 +168,18 @@ var localFrontendOrigins = new[]
     "http://localhost:7110",
     "https://localhost:7110"
 };
+// Toujours autoriser le site public même si Cors:AllowedOrigins est absent ou écrasé sur le serveur.
+var productionPublicOrigins = new[]
+{
+    "https://tunav.com",
+    "https://www.tunav.com",
+    "http://tunav.com",
+    "http://www.tunav.com"
+};
 var configuredCorsOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
     ?? Array.Empty<string>();
 var corsAllowedOrigins = localFrontendOrigins
+    .Concat(productionPublicOrigins)
     .Concat(configuredCorsOrigins)
     .Select(o => (o ?? "").Trim().TrimEnd('/'))
     .Where(o => o.Length > 0)

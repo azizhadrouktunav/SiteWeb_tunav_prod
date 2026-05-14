@@ -17,9 +17,10 @@ public class SolutionService : ISolutionService
     private readonly IWebHostEnvironment _environment;
     private readonly ILogger<SolutionService> _logger;
 
+    /// <summary>Aligné sur UploadController et le middleware fichiers statiques (/uploads → ContentRoot/Uploads).</summary>
     private string SolutionUploadPath => Path.Combine(
-        _environment.WebRootPath ?? Path.Combine(_environment.ContentRootPath, "wwwroot"),
-        "uploads",
+        _environment.ContentRootPath,
+        "Uploads",
         "solutions");
 
     public SolutionService(
@@ -361,11 +362,20 @@ public class SolutionService : ISolutionService
 
     public async Task<bool> DeleteSolutionAsync(int id)
     {
-        var solution = await _context.Solutions.FirstOrDefaultAsync(s => s.Id == id);
+        var solution = await _context.Solutions
+            .Include(s => s.DerivedSolutions)
+            .FirstOrDefaultAsync(s => s.Id == id);
 
         if (solution == null)
         {
             throw new KeyNotFoundException($"Solution with ID {id} does not exist.");
+        }
+
+        // FK self-reference en Restrict : impossible de supprimer une solution générale
+        // tant que des sectorielles pointent vers elle. On détache plutôt que d'échouer en 500.
+        foreach (var derived in solution.DerivedSolutions.ToList())
+        {
+            derived.BaseSolutionId = null;
         }
 
         var coverImageUrl = solution.CoverImageUrl;
