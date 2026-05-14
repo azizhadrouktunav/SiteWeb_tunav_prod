@@ -14,7 +14,7 @@
     <div class="card-header">
         <h2>Liste des partenaires</h2>
         <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-            <input type="text" id="searchInput" placeholder="Rechercher..." class="search-input" oninput="filterTable()" />
+            <input type="text" id="searchInput" placeholder="Rechercher nom, email, pays…" class="search-input" oninput="filterTable()" />
             <button class="btn btn-primary btn-sm" onclick="openAddModal()">+ Ajouter un partenaire</button>
         </div>
     </div>
@@ -139,7 +139,7 @@
     </div>
 </div>
 
-@@section Scripts {
+@section Scripts {
 <style>
     .page-header { margin-bottom: 24px; }
     .page-header h1 { font-size: 26px; font-weight: 700; color: #1e2d5a; margin: 0 0 6px 0; letter-spacing: -0.3px; }
@@ -242,7 +242,10 @@ function filterTable() {
     renderTable(allPartners.filter(p =>
         p.name.toLowerCase().includes(q) ||
         (p.country || '').toLowerCase().includes(q) ||
-        (p.partnerType || '').toLowerCase().includes(q)
+        (p.partnerType || '').toLowerCase().includes(q) ||
+        (p.contactPerson || '').toLowerCase().includes(q) ||
+        (p.contactEmail || '').toLowerCase().includes(q) ||
+        (p.website || '').toLowerCase().includes(q)
     ));
 }
 

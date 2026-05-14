@@ -89,7 +89,7 @@
                 <option value="Proposition commerciale">Proposition commerciale</option>
                 <option value="Autre">Autre</option>
             </select>
-            <input type="text" id="searchInput" placeholder="Rechercher partenaire, sujet…" oninput="renderTable()"
+            <input type="text" id="searchInput" placeholder="Rechercher partenaire, email, sujet…" oninput="renderTable()"
                 style="padding:7px 12px;border:1.5px solid #dce4f5;border-radius:8px;font-size:13px;color:#1e2d5a;outline:none;width:240px" />
         </div>
     </div>
@@ -209,6 +209,7 @@ function renderTable() {
     if (search) data = data.filter(d =>
         (d.subject||'').toLowerCase().includes(search) ||
         (d.partnerUser?.fullName||'').toLowerCase().includes(search) ||
+        (d.partnerUser?.email||'').toLowerCase().includes(search) ||
         (d.demandType||'').toLowerCase().includes(search)
     );
 
