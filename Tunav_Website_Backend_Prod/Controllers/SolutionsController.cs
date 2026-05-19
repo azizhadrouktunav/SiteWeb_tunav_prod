@@ -151,6 +151,7 @@ public class SolutionsController : ControllerBase
     /// <param name="dto">Updated solution data</param>
     /// <returns>The updated solution</returns>
     [HttpPut("{id:int}")]
+    [HttpPost("{id:int}")]
     [Authorize(Policy = "SolutionWrite")]
     [ProducesResponseType(typeof(SolutionDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -191,6 +192,7 @@ public class SolutionsController : ControllerBase
     /// <param name="id">Solution ID</param>
     /// <returns>The updated solution</returns>
     [HttpPatch("{id:int}/toggle")]
+    [HttpPost("{id:int}/toggle")]
     [Authorize(Policy = "SolutionWrite")]
     [ProducesResponseType(typeof(SolutionDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -230,6 +232,7 @@ public class SolutionsController : ControllerBase
     /// <param name="id">Solution ID</param>
     /// <returns>Success message</returns>
     [HttpDelete("{id:int}")]
+    [HttpPost("{id:int}/delete")]
     [Authorize(Policy = "SolutionWrite")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

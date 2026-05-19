@@ -1037,7 +1037,7 @@
 
         try {
             const res = await authFetch(isEdit ? `/api/solutions/${editingId}` : '/api/solutions', {
-                method: isEdit ? 'PUT' : 'POST',
+                method: 'POST',
                 body: JSON.stringify(payload)
             });
 
@@ -1080,7 +1080,7 @@
         btn.textContent = 'Suppression...';
 
         try {
-            const res = await authFetch('/api/solutions/' + deletingId, { method: 'DELETE' });
+            const res = await authFetch('/api/solutions/' + deletingId + '/delete', { method: 'POST' });
 
             if (res.ok) {
                 await loadAllowedSectors();
@@ -1103,7 +1103,7 @@
 
     async function toggleStatus(id) {
         try {
-            const res = await authFetch(`/api/solutions/${id}/toggle`, { method: 'PATCH' });
+            const res = await authFetch(`/api/solutions/${id}/toggle`, { method: 'POST' });
 
             if (res.ok) {
                 await loadSolutions();
